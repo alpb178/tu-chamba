@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 180" font-family="Arial, Helvetica, sans-serif" role="img" aria-label="Tu Chamba">
+  <!-- maletín -->
+  <g transform="translate(10,10) scale(0.8)">
+    <path d="M78 72 V58 a14 14 0 0 1 14-14 h16 a14 14 0 0 1 14 14 V72" fill="none" stroke="#102136" stroke-width="14" stroke-linejoin="round"/>
+    <rect x="24" y="64" width="152" height="112" rx="16" fill="#102136"/>
+    <path d="M24 100 L100 126 L176 100" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="84" y="108" width="32" height="32" rx="6" fill="#fdc101"/>
+  </g>
+  <!-- texto -->
+  <g transform="translate(190,12)">
+    <text x="6" y="120" font-size="120" font-weight="800" letter-spacing="-3" fill="#102136">Tu</text>
+    <path d="M150 84 l30 36 l72 -84" fill="none" stroke="#fdc101" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="250" y="120" font-size="120" font-weight="800" letter-spacing="-3" fill="#102136">hamba</text>
+  </g>
+</svg>
