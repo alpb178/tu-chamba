@@ -14,8 +14,10 @@ services:
     plan: free
     region: oregon
     rootDir: backend
-    buildCommand: npm install && npx prisma generate && npm run build
-    preDeployCommand: npx prisma migrate deploy
+    # Las migraciones van en el build: en el plan free de Render, preDeployCommand
+    # NO se ejecuta. migrate deploy es idempotente, así que correrlo en cada build
+    # es seguro y garantiza que las tablas existan.
+    buildCommand: npm install && npx prisma generate && npm run build && npx prisma migrate deploy
     startCommand: node dist/main
     healthCheckPath: /api/health
     envVars:
