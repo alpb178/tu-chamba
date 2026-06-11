@@ -16,9 +16,17 @@ async function bootstrap() {
     }),
   );
 
-  const origins = (process.env.CORS_ORIGINS ?? 'http://localhost:3000')
+  // Orígenes permitidos siempre (producción). CORS compara solo el origen
+  // (esquema + host), sin ruta ni barra final.
+  const defaultOrigins = [
+    'https://tu-chamba.corpsc.com',
+    'https://admin-chamba.corpsc.com',
+  ];
+  const envOrigins = (process.env.CORS_ORIGINS ?? '')
     .split(',')
-    .map((o) => o.trim());
+    .map((o) => o.trim())
+    .filter(Boolean);
+  const origins = [...new Set([...defaultOrigins, ...envOrigins])];
   app.enableCors({
     origin: (origin, cb) => {
       // Permite herramientas sin origin (curl) y cualquier localhost en desarrollo.
