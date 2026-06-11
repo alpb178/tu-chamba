@@ -33,7 +33,17 @@ export async function api<T>(
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  } catch {
+    // fetch lanza TypeError ("Failed to fetch") en fallos de red/CORS.
+    // Lo traducimos a un mensaje entendible para el usuario.
+    throw new ApiError(
+      0,
+      'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
+    );
+  }
 
   if (!res.ok) {
     let message = `Error ${res.status}`;
