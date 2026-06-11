@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Builds / outputs
+**/dist/
+**/.next/
+**/.expo/
+
+# Environment
+.env
+.env.local
+**/.env
+**/.env.local
+
+# Logs
+*.log
+**/*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
