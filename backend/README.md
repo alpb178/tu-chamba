@@ -30,6 +30,25 @@ npm run start:dev                # API en http://localhost:3001/api
 | empleador@tuchamba.com | EMPLEADOR |
 | trabajador@tuchamba.com | TRABAJADOR |
 
+## Despliegue en Vercel
+
+El backend está adaptado a serverless (`api/index.ts` envuelve la app Nest sin `listen()`; `vercel.json` enruta todo a esa función).
+
+1. **Base de datos con pooling.** Vercel es serverless: usa un Postgres con pooler (Neon, Supabase/pgbouncer o Prisma Accelerate). Ver `DATABASE_URL` en `.env.example`.
+2. **Proyecto en Vercel** apuntando a este repo con **Root Directory = `backend`**.
+3. **Variables de entorno** (Project Settings → Environment Variables):
+   - `DATABASE_URL` (URL con pooling)
+   - `JWT_SECRET`, `JWT_EXPIRES_IN`
+   - `CORS_ORIGINS` (dominios de `web` y `admin` en Vercel, separados por coma)
+   - `PORT` **no** hace falta en Vercel.
+4. **Migraciones**: se corren fuera del deploy (no en serverless):
+   ```bash
+   DATABASE_URL="<url-directa-no-pooled>" npx prisma migrate deploy
+   ```
+5. La API queda en `https://<tu-deploy>.vercel.app/api` y Swagger en `/docs`.
+
+> Nota: NestJS + Prisma en serverless tiene cold starts. Si necesitas conexiones persistentes o websockets, un host de servidor (Railway/Fly) encaja mejor — pero para esta API REST, Vercel funciona.
+
 ## Endpoints
 | Método | Ruta | Acceso |
 |--------|------|--------|
