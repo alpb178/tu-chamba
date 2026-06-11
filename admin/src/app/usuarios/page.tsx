@@ -12,12 +12,15 @@ const ROLES: Role[] = ['ADMIN', 'EMPLEADOR', 'TRABAJADOR'];
 export default function UsuariosPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<UserRow | null>(null);
 
   function load() {
     setLoading(true);
+    setError(null);
     api<UserRow[]>('/users')
       .then(setUsers)
+      .catch((e) => setError((e as Error).message))
       .finally(() => setLoading(false));
   }
 
@@ -43,6 +46,11 @@ export default function UsuariosPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold text-gray-800">Usuarios</h1>
+      {error ? (
+        <p className="text-sm text-red-600">{error}</p>
+      ) : users.length === 0 ? (
+        <p className="text-gray-500">No hay usuarios.</p>
+      ) : (
       <DataTable headers={['Nombre', 'Correo', 'Teléfono', 'Rol', 'Anuncios', '']}>
         {users.map((u) => (
           <tr key={u.id}>
@@ -70,6 +78,7 @@ export default function UsuariosPage() {
           </tr>
         ))}
       </DataTable>
+      )}
 
       <ConfirmDialog
         open={!!toDelete}

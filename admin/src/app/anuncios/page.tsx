@@ -8,12 +8,15 @@ import { Badge, Button, ConfirmDialog, DataTable } from '@/components/ui';
 export default function AnunciosAdminPage() {
   const [items, setItems] = useState<Anuncio[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<Anuncio | null>(null);
 
   function load() {
     setLoading(true);
+    setError(null);
     api<Paginated<Anuncio>>('/anuncios?limit=100')
       .then((res) => setItems(res.items))
+      .catch((e) => setError((e as Error).message))
       .finally(() => setLoading(false));
   }
 
@@ -31,6 +34,11 @@ export default function AnunciosAdminPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold text-gray-800">Anuncios</h1>
+      {error ? (
+        <p className="text-sm text-red-600">{error}</p>
+      ) : items.length === 0 ? (
+        <p className="text-gray-500">No hay anuncios.</p>
+      ) : (
       <DataTable headers={['Descripción', 'Salario', 'Jornada', 'Autor', 'Teléfono', '']}>
         {items.map((a) => (
           <tr key={a.id}>
@@ -51,6 +59,7 @@ export default function AnunciosAdminPage() {
           </tr>
         ))}
       </DataTable>
+      )}
 
       <ConfirmDialog
         open={!!toDelete}
