@@ -1,13 +1,23 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
-import { TipoJornada } from '@prisma/client';
+import { Categoria, Departamento, TipoJornada } from '@prisma/client';
 
 export class QueryAnuncioDto {
   @ApiPropertyOptional({ enum: TipoJornada })
   @IsOptional()
   @IsEnum(TipoJornada)
   tipoJornada?: TipoJornada;
+
+  @ApiPropertyOptional({ enum: Departamento })
+  @IsOptional()
+  @IsEnum(Departamento)
+  departamento?: Departamento;
+
+  @ApiPropertyOptional({ enum: Categoria })
+  @IsOptional()
+  @IsEnum(Categoria)
+  categoria?: Categoria;
 
   @ApiPropertyOptional({ description: 'Texto a buscar en la descripción' })
   @IsOptional()

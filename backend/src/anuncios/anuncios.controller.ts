@@ -25,10 +25,19 @@ import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator
 export class AnunciosController {
   constructor(private anuncios: AnunciosService) {}
 
-  // Público: cualquiera que entre al portal puede ver la lista de ofertas.
+  // Público: cualquiera que entre al portal puede ver la lista de ofertas vigentes.
   @Get()
   findAll(@Query() query: QueryAnuncioDto) {
     return this.anuncios.findAll(query);
+  }
+
+  // Panel admin: todos los anuncios, incluidos vencidos y dados de baja.
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get('todos')
+  findAllAdmin(@Query() query: QueryAnuncioDto) {
+    return this.anuncios.findAllAdmin(query);
   }
 
   // Anuncios propios del usuario autenticado (debe ir antes de ':id').
@@ -68,11 +77,28 @@ export class AnunciosController {
     return this.anuncios.update(id, dto, user);
   }
 
-  // Eliminar: dueño o ADMIN (validado en el servicio).
+  // Baja manual: dueño o ADMIN (validado en el servicio).
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  @Post(':id/baja')
+  darDeBaja(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.anuncios.darDeBaja(id, user);
+  }
+
+  // Republicar un anuncio vencido o dado de baja: dueño o ADMIN.
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/republicar')
+  republicar(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.anuncios.republicar(id, user);
+  }
+
+  // Borrado físico: solo ADMIN (los dueños dan de baja).
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @Delete(':id')
-  remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.anuncios.remove(id, user);
+  remove(@Param('id') id: string) {
+    return this.anuncios.remove(id);
   }
 }
