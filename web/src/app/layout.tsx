@@ -4,9 +4,21 @@ import { AuthProvider } from '@/lib/auth';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
+const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tu-chamba.corpsc.com';
+
 export const metadata: Metadata = {
-  title: 'Tu Chamba — Empleos',
-  description: 'Portal de empleos. Encuentra o publica trabajos.',
+  metadataBase: new URL(SITE),
+  title: {
+    default: 'Tu Chamba — Empleos y trabajos en Bolivia',
+    template: '%s',
+  },
+  description:
+    'Encuentra empleo o publica ofertas de trabajo en Bolivia. Chamba por día, tiempo completo o media jornada, con contacto directo por WhatsApp.',
+  openGraph: {
+    siteName: 'Tu Chamba',
+    locale: 'es_BO',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({
