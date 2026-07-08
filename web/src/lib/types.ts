@@ -97,6 +97,7 @@ export const MOTIVO_REPORTE_LABEL: Record<MotivoReporte, string> = {
 export interface User {
   id: string;
   email: string;
+  emailVerified: boolean;
   nombre: string;
   telefono: string | null;
   role: Role;
