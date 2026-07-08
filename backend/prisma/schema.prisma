@@ -91,6 +91,7 @@ model User {
   reviewsRecibidas Review[]  @relation("ReviewsRecibidas")
   reportes         Reporte[]
   notificaciones   Notificacion[]
+  alertas          AlertaEmpleo[]
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 }
@@ -138,6 +139,21 @@ model Review {
   updatedAt   DateTime @updatedAt
 
   @@unique([autorId, empleadorId])
+}
+
+// Suscripción de un TRABAJADOR a nuevas ofertas por criterio. Un campo null
+// significa "cualquiera". Reemplaza el aviso masivo: solo se notifica a los
+// trabajadores cuya alerta coincide con el anuncio recién publicado.
+model AlertaEmpleo {
+  id           String        @id @default(uuid())
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  departamento Departamento?
+  categoria    Categoria?
+  createdAt    DateTime      @default(now())
+
+  @@index([departamento, categoria])
+  @@index([userId])
 }
 
 // Notificación in-app para usuarios autenticados. El vencimiento de anuncios

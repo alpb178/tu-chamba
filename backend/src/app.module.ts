@@ -7,6 +7,7 @@ import { AnunciosModule } from './anuncios/anuncios.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
+import { AlertasModule } from './alertas/alertas.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -19,6 +20,7 @@ import { HealthModule } from './health/health.module';
     ReviewsModule,
     ReportesModule,
     NotificacionesModule,
+    AlertasModule,
     HealthModule,
   ],
 })

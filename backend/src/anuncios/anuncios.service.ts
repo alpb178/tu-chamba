@@ -97,7 +97,12 @@ export class AnunciosService {
       },
       include: includeAutor,
     });
-    await this.notificaciones.notificarNuevoAnuncio(anuncio);
+    // El aviso a suscriptores no debe romper la publicación si falla.
+    try {
+      await this.notificaciones.notificarNuevoAnuncio(anuncio);
+    } catch {
+      /* noop: la notificación es best-effort */
+    }
     return anuncio;
   }
 
