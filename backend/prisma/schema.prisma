@@ -19,26 +19,155 @@ enum TipoJornada {
   MEDIA_JORNADA
 }
 
+// Los 9 departamentos de Bolivia (para filtrar por zona).
+enum Departamento {
+  LA_PAZ
+  SANTA_CRUZ
+  COCHABAMBA
+  ORURO
+  POTOSI
+  CHUQUISACA
+  TARIJA
+  BENI
+  PANDO
+}
+
+// Rubros frecuentes en el mercado de "chamba" boliviano.
+enum Categoria {
+  VENTAS
+  GASTRONOMIA
+  CONSTRUCCION
+  LIMPIEZA
+  CUIDADO_PERSONAS
+  TRANSPORTE
+  ADMINISTRACION
+  TECNOLOGIA
+  EDUCACION
+  SALUD
+  BELLEZA
+  SEGURIDAD
+  OTRO
+}
+
+// VENCIDO no se persiste: un anuncio ACTIVO con expiraEn en el pasado
+// se considera vencido al leer (no dependemos de cron jobs).
+enum EstadoAnuncio {
+  ACTIVO
+  DADO_DE_BAJA
+}
+
+enum MotivoReporte {
+  SPAM
+  FRAUDE
+  CONTENIDO_INAPROPIADO
+  OTRO
+}
+
+enum EstadoReporte {
+  PENDIENTE
+  ATENDIDO
+  DESCARTADO
+}
+
+enum TipoNotificacion {
+  CHAT_INICIADO
+  NUEVA_REVIEW
+  ANUNCIO_VENCIDO
+  NUEVO_ANUNCIO
+}
+
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  password  String
-  nombre    String
-  telefono  String
-  role      Role
-  anuncios  Anuncio[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id               String    @id @default(uuid())
+  email            String    @unique
+  // Nullable: las cuentas creadas con Google no tienen contraseña local.
+  password         String?
+  nombre           String
+  // Obligatorio solo para EMPLEADOR (validado en la API).
+  telefono         String?
+  googleId         String?   @unique
+  role             Role
+  anuncios         Anuncio[]
+  reviewsEscritas  Review[]  @relation("ReviewsEscritas")
+  reviewsRecibidas Review[]  @relation("ReviewsRecibidas")
+  reportes         Reporte[]
+  notificaciones   Notificacion[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model Anuncio {
-  id          String      @id @default(uuid())
-  descripcion String
-  salario     Decimal     @db.Decimal(12, 2)
-  telefono    String
-  tipoJornada TipoJornada
-  createdBy   User        @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  createdById String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id           String        @id @default(uuid())
+  descripcion  String
+  // Requisitos del candidato, separados de la descripción del puesto.
+  requisitos   String?
+  // Nullable solo por anuncios previos a la migración; la API lo exige al crear.
+  ubicacion    String?
+  // Departamento y rubro para filtrar (nullable por datos previos a la migración).
+  departamento Departamento?
+  categoria    Categoria?
+  // Coordenadas del pin elegido en el mapa (opcional).
+  latitud      Float?
+  longitud     Float?
+  horario      String?
+  salario      Decimal       @db.Decimal(12, 2)
+  telefono     String
+  tipoJornada  TipoJornada
+  estado       EstadoAnuncio @default(ACTIVO)
+  duracionDias Int           @default(3)
+  expiraEn     DateTime
+  // Evita duplicar la notificación de vencimiento (se resetea al republicar).
+  vencimientoNotificado Boolean @default(false)
+  reportes     Reporte[]
+  notificaciones Notificacion[]
+  createdBy    User          @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdById  String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+// Reseña de un TRABAJADOR hacia un EMPLEADOR (máx. una por par).
+model Review {
+  id          String   @id @default(uuid())
+  rating      Int
+  comentario  String
+  autor       User     @relation("ReviewsEscritas", fields: [autorId], references: [id], onDelete: Cascade)
+  autorId     String
+  empleador   User     @relation("ReviewsRecibidas", fields: [empleadorId], references: [id], onDelete: Cascade)
+  empleadorId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([autorId, empleadorId])
+}
+
+// Notificación in-app para usuarios autenticados. El vencimiento de anuncios
+// se genera al leer (lazy, sin cron); el resto en el momento del evento.
+model Notificacion {
+  id        String           @id @default(uuid())
+  tipo      TipoNotificacion
+  mensaje   String
+  leida     Boolean          @default(false)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  anuncio   Anuncio?         @relation(fields: [anuncioId], references: [id], onDelete: Cascade)
+  anuncioId String?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, leida])
+}
+
+// Reporte de spam/abuso sobre un anuncio. La visibilidad del anuncio
+// solo cambia por decisión del ADMIN (no hay auto-ocultado).
+model Reporte {
+  id         String        @id @default(uuid())
+  motivo     MotivoReporte
+  comentario String?
+  estado     EstadoReporte @default(PENDIENTE)
+  anuncio    Anuncio       @relation(fields: [anuncioId], references: [id], onDelete: Cascade)
+  anuncioId  String
+  reporter   User          @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reporterId String
+  createdAt  DateTime      @default(now())
+
+  @@unique([anuncioId, reporterId])
 }

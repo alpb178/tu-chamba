@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { Button, FormField, Input } from '@/components/ui';
+import { GoogleSignIn } from '@/components/GoogleSignIn';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -53,6 +54,11 @@ export default function LoginPage() {
           {loading ? 'Ingresando...' : 'Ingresar'}
         </Button>
       </form>
+
+      <div className="mt-4">
+        <GoogleSignIn />
+      </div>
+
       <p className="mt-4 text-center text-sm text-gray-600">
         ¿No tienes cuenta?{' '}
         <Link href="/register" className="text-brand hover:underline">

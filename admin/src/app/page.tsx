@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { Anuncio, Paginated, User } from '@/lib/types';
 import { StatCard } from '@/components/ui';
+import { MarcasDestacadas } from '@/components/MarcasDestacadas';
 
 export default function DashboardPage() {
   const [usuarios, setUsuarios] = useState<number | null>(null);
@@ -11,7 +12,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     api<User[]>('/users').then((u) => setUsuarios(u.length));
-    api<Paginated<Anuncio>>('/anuncios?limit=1').then((a) =>
+    // /anuncios (público) solo cuenta vigentes; el panel necesita el total
+    // real, incluidos vencidos y dados de baja.
+    api<Paginated<Anuncio>>('/anuncios/todos?limit=1').then((a) =>
       setAnuncios(a.total),
     );
   }, []);
@@ -23,6 +26,8 @@ export default function DashboardPage() {
         <StatCard label="Usuarios registrados" value={usuarios ?? '—'} />
         <StatCard label="Anuncios publicados" value={anuncios ?? '—'} />
       </div>
+
+      <MarcasDestacadas />
     </div>
   );
 }

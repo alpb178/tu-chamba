@@ -4,6 +4,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { AnunciosModule } from './anuncios/anuncios.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { ReportesModule } from './reportes/reportes.module';
+import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
@@ -13,6 +16,9 @@ import { HealthModule } from './health/health.module';
     AuthModule,
     UsersModule,
     AnunciosModule,
+    ReviewsModule,
+    ReportesModule,
+    NotificacionesModule,
     HealthModule,
   ],
 })

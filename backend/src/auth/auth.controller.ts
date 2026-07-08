@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { GoogleAuthDto } from './dto/google-auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser, AuthUser } from './decorators/current-user.decorator';
 
@@ -19,6 +20,12 @@ export class AuthController {
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
+  }
+
+  // Registro/login con Google (requiere GOOGLE_CLIENT_ID configurado).
+  @Post('google')
+  google(@Body() dto: GoogleAuthDto) {
+    return this.auth.googleAuth(dto);
   }
 
   @ApiBearerAuth()
