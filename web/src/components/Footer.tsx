@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { EMPRESAS } from '@/lib/empresas';
+import { DEPARTAMENTO_LABEL, DEPARTAMENTO_SLUG, Departamento } from '@/lib/types';
 import { NewsletterForm } from './NewsletterForm';
 
 // Redes sociales del Grupo CorpSC.
@@ -80,7 +81,27 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <nav
+          aria-label="Empleos por departamento"
+          className="mt-8 border-t border-white/10 pt-6"
+        >
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+            Empleos por departamento
+          </h3>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            {(Object.keys(DEPARTAMENTO_SLUG) as Departamento[]).map((dep) => (
+              <Link
+                key={dep}
+                href={`/empleos/${DEPARTAMENTO_SLUG[dep]}`}
+                className={linkClass}
+              >
+                {DEPARTAMENTO_LABEL[dep]}
+              </Link>
+            ))}
+          </div>
+        </nav>
+
+        <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
