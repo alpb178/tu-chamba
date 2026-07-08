@@ -8,12 +8,14 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { ReportesModule } from './reportes/reportes.module';
 import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { AlertasModule } from './alertas/alertas.module';
+import { MailModule } from './mail/mail.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    MailModule,
     AuthModule,
     UsersModule,
     AnunciosModule,
