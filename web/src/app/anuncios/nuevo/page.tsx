@@ -46,6 +46,9 @@ function Form() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Empleador (no admin) con correo sin verificar no puede publicar.
+  const noVerificado = !!user && user.role !== 'ADMIN' && !user.emailVerified;
+
   useEffect(() => {
     if (editId) {
       api<Anuncio>(`/anuncios/${editId}`).then((a) => {
@@ -128,6 +131,12 @@ function Form() {
       <h1 className="mb-4 text-xl font-semibold text-gray-800">
         {editId ? 'Editar anuncio' : 'Publicar anuncio'}
       </h1>
+      {noVerificado && (
+        <div className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Verifica tu correo para poder publicar. Revisa el enlace que te
+          enviamos o reenvíalo desde el aviso superior.
+        </div>
+      )}
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label="Descripción del puesto">
           <textarea
@@ -256,7 +265,7 @@ function Form() {
           </Select>
         </FormField>
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" className="w-full" disabled={saving}>
+        <Button type="submit" className="w-full" disabled={saving || noVerificado}>
           {saving ? 'Guardando...' : editId ? 'Guardar cambios' : 'Publicar'}
         </Button>
       </form>

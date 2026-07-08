@@ -79,6 +79,7 @@ enum TipoNotificacion {
 model User {
   id               String    @id @default(uuid())
   email            String    @unique
+  emailVerified    Boolean   @default(false)
   // Nullable: las cuentas creadas con Google no tienen contraseña local.
   password         String?
   nombre           String
@@ -92,8 +93,21 @@ model User {
   reportes         Reporte[]
   notificaciones   Notificacion[]
   alertas          AlertaEmpleo[]
+  verificaciones   VerificationToken[]
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+}
+
+// Token de verificación de correo (un solo uso, con expiración).
+model VerificationToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Anuncio {

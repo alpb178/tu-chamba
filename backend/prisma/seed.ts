@@ -15,6 +15,7 @@ async function main() {
       nombre: 'Administrador',
       telefono: '70000000',
       role: Role.ADMIN,
+      emailVerified: true,
     },
   });
 
@@ -27,6 +28,7 @@ async function main() {
       nombre: 'Empresa Demo',
       telefono: '71111111',
       role: Role.EMPLEADOR,
+      emailVerified: true,
     },
   });
 
@@ -39,6 +41,7 @@ async function main() {
       nombre: 'Juan Trabajador',
       telefono: '72222222',
       role: Role.TRABAJADOR,
+      emailVerified: true,
     },
   });
 

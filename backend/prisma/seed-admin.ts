@@ -17,6 +17,7 @@ async function main() {
       nombre: 'Administrador',
       telefono: '70000000',
       role: Role.ADMIN,
+      emailVerified: true,
     },
   });
 

@@ -36,6 +36,7 @@ interface AuthContextValue {
     idToken: string,
     extra?: { role: RegisterRole; telefono?: string },
   ) => Promise<GoogleResult>;
+  refresh: () => Promise<void>;
   logout: () => void;
 }
 
@@ -97,6 +98,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { needsProfile: false, user: session.user };
   }
 
+  // Recarga el usuario desde el backend (p. ej. tras verificar el correo).
+  async function refresh() {
+    try {
+      setUser(await api<User>('/auth/me'));
+    } catch {
+      /* sin sesión válida: no hacemos nada */
+    }
+  }
+
   function logout() {
     clearToken();
     setUser(null);
@@ -104,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, register, loginWithGoogle, logout }}
+      value={{ user, loading, login, register, loginWithGoogle, refresh, logout }}
     >
       {children}
     </AuthContext.Provider>

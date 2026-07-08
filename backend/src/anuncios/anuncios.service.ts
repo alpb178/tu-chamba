@@ -106,6 +106,17 @@ export class AnunciosService {
   }
 
   async create(dto: CreateAnuncioDto, userId: string) {
+    // Un empleador debe verificar su correo antes de publicar (anti-spam).
+    const autor = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, emailVerified: true },
+    });
+    if (autor?.role === Role.EMPLEADOR && !autor.emailVerified) {
+      throw new ForbiddenException(
+        'Verifica tu correo para poder publicar anuncios',
+      );
+    }
+
     const duracionDias = dto.duracionDias ?? 3;
     const anuncio = await this.prisma.anuncio.create({
       data: {

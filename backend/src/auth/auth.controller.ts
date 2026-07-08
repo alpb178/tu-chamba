@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser, AuthUser } from './decorators/current-user.decorator';
 
@@ -26,6 +27,20 @@ export class AuthController {
   @Post('google')
   google(@Body() dto: GoogleAuthDto) {
     return this.auth.googleAuth(dto);
+  }
+
+  // Verifica el correo con el token del enlace (público).
+  @Post('verify-email')
+  verifyEmail(@Body() dto: VerifyEmailDto) {
+    return this.auth.verifyEmail(dto.token);
+  }
+
+  // Reenvía el correo de verificación al usuario autenticado.
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('resend-verification')
+  resend(@CurrentUser() user: AuthUser) {
+    return this.auth.resendVerification(user.id);
   }
 
   @ApiBearerAuth()

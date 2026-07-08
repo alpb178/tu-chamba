@@ -2,16 +2,21 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
   ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
 import { User } from '@prisma/client';
+
+const VERIF_TTL_MS = 24 * 60 * 60 * 1000;
 
 // Payload relevante del ID token de Google (endpoint tokeninfo).
 interface GoogleTokenInfo {
@@ -27,7 +32,27 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
+    private mail: MailService,
   ) {}
+
+  // Crea un token de verificación y envía el correo (o lo registra en dev).
+  private async enviarVerificacion(user: User) {
+    await this.prisma.verificationToken.deleteMany({ where: { userId: user.id } });
+    const token = randomBytes(32).toString('hex');
+    await this.prisma.verificationToken.create({
+      data: {
+        token,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + VERIF_TTL_MS),
+      },
+    });
+    const base = process.env.WEB_URL ?? 'http://localhost:3000';
+    await this.mail.sendVerification(
+      user.email,
+      user.nombre,
+      `${base}/verificar?token=${token}`,
+    );
+  }
 
   private sanitize(user: User) {
     const { password, ...rest } = user;
@@ -65,7 +90,37 @@ export class AuthService {
       },
     });
 
+    await this.enviarVerificacion(user);
     return this.session(user);
+  }
+
+  // Verifica el correo a partir del token del enlace.
+  async verifyEmail(token: string) {
+    const vt = await this.prisma.verificationToken.findUnique({
+      where: { token },
+    });
+    if (!vt || vt.expiresAt < new Date()) {
+      throw new BadRequestException('El enlace de verificación no es válido o expiró');
+    }
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: vt.userId },
+        data: { emailVerified: true },
+      }),
+      this.prisma.verificationToken.deleteMany({ where: { userId: vt.userId } }),
+    ]);
+    return { verified: true };
+  }
+
+  // Reenvía el correo de verificación al usuario autenticado.
+  async resendVerification(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException();
+    if (user.emailVerified) {
+      throw new BadRequestException('Tu correo ya está verificado');
+    }
+    await this.enviarVerificacion(user);
+    return { sent: true };
   }
 
   async login(dto: LoginDto) {
@@ -123,6 +178,8 @@ export class AuthService {
         telefono: dto.telefono?.trim() || null,
         googleId: payload.sub,
         role: dto.role,
+        // Google ya verificó el correo (validado en verifyGoogleToken).
+        emailVerified: true,
       },
     });
     return this.session(user);
