@@ -5,11 +5,13 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
+import { CORPSC, EMPRESAS } from '@/lib/empresas';
 
 const NAV = [
   { href: '/', label: 'Dashboard' },
   { href: '/usuarios', label: 'Usuarios' },
   { href: '/anuncios', label: 'Anuncios' },
+  { href: '/reportes', label: 'Reportes' },
 ];
 
 export function AdminLayout({ children }: { children: ReactNode }) {
@@ -50,6 +52,16 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               {n.label}
             </Link>
           ))}
+          {/* Acceso destacado a la matriz del grupo. */}
+          <a
+            href={CORPSC.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 flex items-center gap-1 rounded-md px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-brand"
+          >
+            {CORPSC.nombre}
+            <span aria-hidden="true">↗</span>
+          </a>
         </nav>
       </aside>
 
@@ -61,6 +73,25 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           </Button>
         </header>
         <main className="flex-1 p-6">{children}</main>
+        <footer className="border-t border-gray-200 bg-white px-6 py-4">
+          <div className="flex flex-col items-center gap-2 text-xs text-gray-500 sm:flex-row sm:justify-between">
+            <span>© {new Date().getFullYear()} Tu Chamba — Panel de administración</span>
+            <nav aria-label="Nuestras marcas" className="flex items-center gap-3">
+              <span className="text-gray-400">Nuestras marcas:</span>
+              {EMPRESAS.map((e) => (
+                <a
+                  key={e.slug}
+                  href={e.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition hover:text-brand focus:outline-none focus-visible:underline"
+                >
+                  {e.nombre}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </footer>
       </div>
     </div>
   );
