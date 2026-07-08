@@ -32,6 +32,12 @@ export class AnunciosController {
     return this.anuncios.findAll(query);
   }
 
+  // Público: conteos por opción para la barra de filtros.
+  @Get('facetas')
+  facetas() {
+    return this.anuncios.facetas();
+  }
+
   // Panel admin: todos los anuncios, incluidos vencidos y dados de baja.
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)

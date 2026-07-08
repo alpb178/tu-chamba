@@ -3,11 +3,23 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EstadoAnuncio, Prisma, Role } from '@prisma/client';
+import {
+  Categoria,
+  Departamento,
+  EstadoAnuncio,
+  Prisma,
+  Role,
+  TipoJornada,
+} from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAnuncioDto } from './dto/create-anuncio.dto';
 import { UpdateAnuncioDto } from './dto/update-anuncio.dto';
-import { QueryAnuncioDto } from './dto/query-anuncio.dto';
+import {
+  CATEGORIAS,
+  DEPARTAMENTOS,
+  JORNADAS,
+  QueryAnuncioDto,
+} from './dto/query-anuncio.dto';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
 
@@ -21,6 +33,20 @@ function expiraEn(duracionDias: number, desde = new Date()) {
   return new Date(desde.getTime() + duracionDias * DIA_MS);
 }
 
+// "VENTAS,GASTRONOMIA" -> ['VENTAS','GASTRONOMIA'], filtrando valores válidos.
+function parseEnums<T extends string>(csv: string | undefined, validos: T[]): T[] {
+  if (!csv) return [];
+  return csv
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s): s is T => (validos as string[]).includes(s));
+}
+
+// Solo anuncios vigentes (activos y no vencidos) — regla de negocio compartida.
+function whereVigente(): Prisma.AnuncioWhereInput {
+  return { estado: EstadoAnuncio.ACTIVO, expiraEn: { gt: new Date() } };
+}
+
 @Injectable()
 export class AnunciosService {
   constructor(
@@ -30,10 +56,44 @@ export class AnunciosService {
 
   // Listado público: solo anuncios vigentes (activos y no vencidos).
   async findAll(query: QueryAnuncioDto) {
-    return this.paginate(query, {
-      estado: EstadoAnuncio.ACTIVO,
-      expiraEn: { gt: new Date() },
-    });
+    return this.paginate(query, whereVigente());
+  }
+
+  // Conteos por opción sobre anuncios vigentes (para la barra de filtros).
+  async facetas() {
+    const where = whereVigente();
+    const [porJornada, porDepto, porCat, agg, total] = await Promise.all([
+      this.prisma.anuncio.groupBy({ by: ['tipoJornada'], where, _count: true }),
+      this.prisma.anuncio.groupBy({ by: ['departamento'], where, _count: true }),
+      this.prisma.anuncio.groupBy({ by: ['categoria'], where, _count: true }),
+      this.prisma.anuncio.aggregate({
+        where,
+        _min: { salario: true },
+        _max: { salario: true },
+      }),
+      this.prisma.anuncio.count({ where }),
+    ]);
+
+    const conteo = <K extends string>(
+      rows: { _count: number }[],
+      key: string,
+    ): Record<string, number> => {
+      const out: Record<string, number> = {};
+      for (const r of rows as (Record<string, unknown> & { _count: number })[]) {
+        const k = r[key] as K | null;
+        if (k) out[k] = r._count;
+      }
+      return out;
+    };
+
+    return {
+      total,
+      tipoJornada: conteo(porJornada, 'tipoJornada'),
+      departamento: conteo(porDepto, 'departamento'),
+      categoria: conteo(porCat, 'categoria'),
+      salarioMin: agg._min.salario ? Number(agg._min.salario) : 0,
+      salarioMax: agg._max.salario ? Number(agg._max.salario) : 0,
+    };
   }
 
   // Listado para el panel admin: incluye vencidos y dados de baja.
@@ -46,9 +106,20 @@ export class AnunciosService {
     const limit = query.limit ?? 20;
 
     const where: Prisma.AnuncioWhereInput = { ...base };
-    if (query.tipoJornada) where.tipoJornada = query.tipoJornada;
-    if (query.departamento) where.departamento = query.departamento;
-    if (query.categoria) where.categoria = query.categoria;
+
+    const jornadas = parseEnums<TipoJornada>(query.tipoJornada, JORNADAS);
+    const deptos = parseEnums<Departamento>(query.departamento, DEPARTAMENTOS);
+    const cats = parseEnums<Categoria>(query.categoria, CATEGORIAS);
+    if (jornadas.length) where.tipoJornada = { in: jornadas };
+    if (deptos.length) where.departamento = { in: deptos };
+    if (cats.length) where.categoria = { in: cats };
+
+    if (query.salarioMin != null || query.salarioMax != null) {
+      where.salario = {};
+      if (query.salarioMin != null) where.salario.gte = query.salarioMin;
+      if (query.salarioMax != null) where.salario.lte = query.salarioMax;
+    }
+
     if (query.search) {
       where.OR = [
         { descripcion: { contains: query.search, mode: 'insensitive' } },
