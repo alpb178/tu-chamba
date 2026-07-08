@@ -10,20 +10,33 @@ import {
 import { api, setToken, clearToken, getToken } from './api';
 import { Role, User } from './types';
 
-interface AuthContextValue {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<User>;
-  register: (data: RegisterData) => Promise<User>;
-  logout: () => void;
-}
+type RegisterRole = Extract<Role, 'TRABAJADOR' | 'EMPLEADOR'>;
 
 interface RegisterData {
   email: string;
   password: string;
   nombre: string;
-  telefono: string;
-  role: Extract<Role, 'TRABAJADOR' | 'EMPLEADOR'>;
+  // Obligatorio solo para EMPLEADOR (validado por la API).
+  telefono?: string;
+  role: RegisterRole;
+}
+
+// Respuesta de /auth/google: sesión iniciada, o falta completar el perfil
+// (cuenta nueva: la API necesita rol y, si es empleador, teléfono).
+export type GoogleResult =
+  | { needsProfile: true; email: string; nombre: string }
+  | { needsProfile: false; user: User };
+
+interface AuthContextValue {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<User>;
+  register: (data: RegisterData) => Promise<User>;
+  loginWithGoogle: (
+    idToken: string,
+    extra?: { role: RegisterRole; telefono?: string },
+  ) => Promise<GoogleResult>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -64,13 +77,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.user;
   }
 
+  async function loginWithGoogle(
+    idToken: string,
+    extra?: { role: RegisterRole; telefono?: string },
+  ): Promise<GoogleResult> {
+    const res = await api<
+      | { needsProfile: true; email: string; nombre: string }
+      | { accessToken: string; user: User }
+    >('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ idToken, ...extra }),
+    });
+    if ('needsProfile' in res && res.needsProfile) {
+      return { needsProfile: true, email: res.email, nombre: res.nombre };
+    }
+    const session = res as { accessToken: string; user: User };
+    setToken(session.accessToken);
+    setUser(session.user);
+    return { needsProfile: false, user: session.user };
+  }
+
   function logout() {
     clearToken();
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, loginWithGoogle, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );
