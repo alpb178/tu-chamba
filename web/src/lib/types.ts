@@ -144,6 +144,13 @@ export interface NotificacionesResponse {
   noLeidas: number;
 }
 
+export interface AlertaEmpleo {
+  id: string;
+  departamento: Departamento | null;
+  categoria: Categoria | null;
+  createdAt: string;
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;
