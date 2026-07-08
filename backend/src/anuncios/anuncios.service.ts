@@ -86,6 +86,25 @@ export class AnunciosService {
     return anuncio;
   }
 
+  // Detalle público: el teléfono de contacto solo se expone a usuarios con
+  // sesión (regla de negocio). Los anónimos ven todo lo demás (para SEO).
+  async findOnePublic(id: string, user: AuthUser | null) {
+    const anuncio = await this.findOne(id);
+    if (user) return anuncio;
+    const { telefono: _oculto, ...publico } = anuncio;
+    return publico;
+  }
+
+  // Teléfono de contacto: requiere sesión.
+  async getContacto(id: string) {
+    const anuncio = await this.prisma.anuncio.findUnique({
+      where: { id },
+      select: { telefono: true },
+    });
+    if (!anuncio) throw new NotFoundException('Anuncio no encontrado');
+    return { telefono: anuncio.telefono };
+  }
+
   async create(dto: CreateAnuncioDto, userId: string) {
     const duracionDias = dto.duracionDias ?? 3;
     const anuncio = await this.prisma.anuncio.create({
