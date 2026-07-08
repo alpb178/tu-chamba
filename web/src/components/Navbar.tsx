@@ -18,6 +18,7 @@ export function Navbar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const puedePublicar = user?.role === 'EMPLEADOR' || user?.role === 'ADMIN';
+  const esTrabajador = user?.role === 'TRABAJADOR';
 
   const [menuUsuario, setMenuUsuario] = useState(false);
   const [menuMovil, setMenuMovil] = useState(false);
@@ -78,6 +79,15 @@ export function Navbar() {
             </Link>
           )}
 
+          {esTrabajador && (
+            <Link
+              href="/alertas"
+              className={`rounded-md px-3 py-2 text-sm transition hover:bg-gray-50 ${linkActivo('/alertas')}`}
+            >
+              Alertas
+            </Link>
+          )}
+
           {puedePublicar && (
             <Link href="/anuncios/nuevo" className="ml-1">
               <Button variant="accent">Publicar anuncio</Button>
@@ -127,6 +137,15 @@ export function Navbar() {
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       >
                         Mis anuncios
+                      </Link>
+                    )}
+                    {esTrabajador && (
+                      <Link
+                        href="/alertas"
+                        role="menuitem"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        Alertas de empleo
                       </Link>
                     )}
                     <button
@@ -206,6 +225,11 @@ export function Navbar() {
                   Mis anuncios
                 </Link>
               </>
+            )}
+            {esTrabajador && (
+              <Link href="/alertas" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/alertas')}`}>
+                Alertas de empleo
+              </Link>
             )}
             <a
               href={CORPSC.url}

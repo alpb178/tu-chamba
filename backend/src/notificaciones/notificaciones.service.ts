@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Anuncio, Review, Role, TipoNotificacion, User } from '@prisma/client';
+import { Anuncio, Review, TipoNotificacion } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
 
@@ -84,18 +84,30 @@ export class NotificacionesService {
     });
   }
 
-  // Anuncio nuevo publicado: avisa a todos los trabajadores (la llama AnunciosService).
+  // Anuncio nuevo publicado: avisa solo a los trabajadores con una alerta
+  // que coincide (departamento y categoría; null = cualquiera). Un usuario
+  // con varias alertas coincidentes recibe una sola notificación.
   async notificarNuevoAnuncio(anuncio: Anuncio) {
-    const trabajadores = await this.prisma.user.findMany({
-      where: { role: Role.TRABAJADOR },
-      select: { id: true },
+    const alertas = await this.prisma.alertaEmpleo.findMany({
+      where: {
+        // El dueño del anuncio no se notifica a sí mismo.
+        userId: { not: anuncio.createdById },
+        AND: [
+          { OR: [{ departamento: null }, { departamento: anuncio.departamento }] },
+          { OR: [{ categoria: null }, { categoria: anuncio.categoria }] },
+        ],
+      },
+      select: { userId: true },
     });
-    if (!trabajadores.length) return;
+
+    const destinatarios = [...new Set(alertas.map((a) => a.userId))];
+    if (!destinatarios.length) return;
+
     await this.prisma.notificacion.createMany({
-      data: trabajadores.map((t) => ({
+      data: destinatarios.map((userId) => ({
         tipo: TipoNotificacion.NUEVO_ANUNCIO,
         mensaje: `Nueva oferta${anuncio.ubicacion ? ` en ${anuncio.ubicacion}` : ''}: «${resumen(anuncio.descripcion)}»`,
-        userId: t.id,
+        userId,
         anuncioId: anuncio.id,
       })),
     });
