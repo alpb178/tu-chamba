@@ -16,6 +16,7 @@ import { CreateAnuncioDto } from './dto/create-anuncio.dto';
 import { UpdateAnuncioDto } from './dto/update-anuncio.dto';
 import { QueryAnuncioDto } from './dto/query-anuncio.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator';
@@ -48,12 +49,20 @@ export class AnunciosController {
     return this.anuncios.findMine(user.id);
   }
 
-  // Detalle: requiere registro/sesión (aquí se expone el teléfono de contacto).
+  // Detalle público (indexable). El teléfono solo se incluye con sesión.
+  @ApiBearerAuth()
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get(':id')
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthUser | null) {
+    return this.anuncios.findOnePublic(id, user);
+  }
+
+  // Teléfono de contacto: requiere sesión (registro/login).
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.anuncios.findOne(id);
+  @Get(':id/contacto')
+  getContacto(@Param('id') id: string) {
+    return this.anuncios.getContacto(id);
   }
 
   // Crear: solo EMPLEADOR o ADMIN.

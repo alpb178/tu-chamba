@@ -31,6 +31,23 @@ export const DEPARTAMENTO_LABEL: Record<Departamento, string> = {
   PANDO: 'Pando',
 };
 
+// Slugs para las URLs SEO por departamento (/empleos/[slug]).
+export const DEPARTAMENTO_SLUG: Record<Departamento, string> = {
+  LA_PAZ: 'la-paz',
+  SANTA_CRUZ: 'santa-cruz',
+  COCHABAMBA: 'cochabamba',
+  ORURO: 'oruro',
+  POTOSI: 'potosi',
+  CHUQUISACA: 'chuquisaca',
+  TARIJA: 'tarija',
+  BENI: 'beni',
+  PANDO: 'pando',
+};
+
+export const SLUG_DEPARTAMENTO: Record<string, Departamento> = Object.fromEntries(
+  Object.entries(DEPARTAMENTO_SLUG).map(([dep, slug]) => [slug, dep as Departamento]),
+);
+
 export type Categoria =
   | 'VENTAS'
   | 'GASTRONOMIA'

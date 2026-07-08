@@ -1,8 +1,15 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { api } from '@/lib/api';
-import { Anuncio, Paginated } from '@/lib/types';
+import {
+  Anuncio,
+  DEPARTAMENTO_LABEL,
+  DEPARTAMENTO_SLUG,
+  Departamento,
+  Paginated,
+} from '@/lib/types';
 import { SearchBar } from '@/components/SearchBar';
 import { FiltrosAnuncios, Filtros } from '@/components/FiltrosAnuncios';
 import { AnuncioCard } from '@/components/AnuncioCard';
@@ -83,6 +90,23 @@ export default function HomePage() {
           />
         )}
       </section>
+
+      <nav aria-label="Empleos por departamento" className="border-t border-gray-200 pt-4">
+        <h2 className="mb-2 text-sm font-semibold text-gray-700">
+          Empleos por departamento
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {(Object.keys(DEPARTAMENTO_SLUG) as Departamento[]).map((dep) => (
+            <Link
+              key={dep}
+              href={`/empleos/${DEPARTAMENTO_SLUG[dep]}`}
+              className="rounded-full border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 transition hover:border-brand hover:text-brand"
+            >
+              {DEPARTAMENTO_LABEL[dep]}
+            </Link>
+          ))}
+        </div>
+      </nav>
 
       <MarcasDestacadas />
     </div>
