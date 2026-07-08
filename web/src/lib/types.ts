@@ -177,6 +177,16 @@ export interface Paginated<T> {
   totalPages: number;
 }
 
+// Conteos por opción para la barra de filtros (endpoint /anuncios/facetas).
+export interface Facetas {
+  total: number;
+  tipoJornada: Partial<Record<TipoJornada, number>>;
+  departamento: Partial<Record<Departamento, number>>;
+  categoria: Partial<Record<Categoria, number>>;
+  salarioMin: number;
+  salarioMax: number;
+}
+
 // Estado efectivo de un anuncio: un ACTIVO con expiraEn en el pasado está VENCIDO.
 export function estadoAnuncio(a: Pick<Anuncio, 'estado' | 'expiraEn'>): EstadoEfectivo {
   if (a.estado === 'DADO_DE_BAJA') return 'DADO_DE_BAJA';
