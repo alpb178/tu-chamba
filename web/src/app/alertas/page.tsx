@@ -12,6 +12,7 @@ import {
 } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { Button, FormField, Select } from '@/components/ui';
+import { Skeleton } from '@/components/Skeleton';
 
 export default function JobAlertsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -78,7 +79,20 @@ export default function JobAlertsPage() {
     return `${cat} · ${dep}`;
   }
 
-  if (authLoading || loading) return <p className="text-gray-500">Cargando...</p>;
+  if (authLoading || loading)
+    return (
+      <div className="mx-auto max-w-xl space-y-6" aria-hidden="true">
+        <div className="space-y-2">
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-4 w-72" />
+        </div>
+        <Skeleton className="h-40 w-full rounded-lg" />
+        <div className="space-y-2">
+          <Skeleton className="h-12 w-full rounded-md" />
+          <Skeleton className="h-12 w-full rounded-md" />
+        </div>
+      </div>
+    );
 
   return (
     <div className="mx-auto max-w-xl space-y-6">

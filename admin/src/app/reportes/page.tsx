@@ -8,7 +8,9 @@ import {
   REPORT_REASON_LABEL,
   Report,
 } from '@/lib/types';
-import { Button, DataTable, Select } from '@/components/ui';
+import { Button, DataTable, Select, TableSkeleton } from '@/components/ui';
+
+const HEADERS = ['Anuncio', 'Motivo', 'Comentario', 'Reportado por', 'Fecha', 'Estado', ''];
 
 const STATUS_STYLE: Record<ReportStatus, string> = {
   PENDIENTE: 'bg-amber-100 text-amber-800',
@@ -64,15 +66,13 @@ export default function ReportsAdminPage() {
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Cargando...</p>
+        <TableSkeleton headers={HEADERS} />
       ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : items.length === 0 ? (
         <p className="text-gray-500">No hay reportes con este filtro.</p>
       ) : (
-        <DataTable
-          headers={['Anuncio', 'Motivo', 'Comentario', 'Reportado por', 'Fecha', 'Estado', '']}
-        >
+        <DataTable headers={HEADERS}>
           {items.map((r) => (
             <tr key={r.id}>
               <td className="max-w-xs truncate px-4 py-3">

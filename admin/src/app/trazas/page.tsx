@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { Paginated, Trace, TraceType, TRACE_TYPE_LABEL } from '@/lib/types';
-import { Button, DataTable, Select } from '@/components/ui';
+import { Button, DataTable, Select, TableSkeleton } from '@/components/ui';
+
+const HEADERS = ['Fecha', 'Evento', 'Descripción', 'Actor'];
 
 const LIMIT = 20;
 
@@ -63,14 +65,14 @@ export default function TracesPage() {
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Cargando...</p>
+        <TableSkeleton headers={HEADERS} rows={8} />
       ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : !data || data.items.length === 0 ? (
         <p className="text-gray-500">No hay trazas registradas.</p>
       ) : (
         <>
-          <DataTable headers={['Fecha', 'Evento', 'Descripción', 'Actor']}>
+          <DataTable headers={HEADERS}>
             {data.items.map((t) => (
               <tr key={t.id}>
                 <td className="whitespace-nowrap px-4 py-3 text-gray-600">

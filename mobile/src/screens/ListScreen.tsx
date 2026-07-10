@@ -15,6 +15,7 @@ import { api } from '@/lib/api';
 import { Ad, Paginated, JobType, JOB_TYPE_LABEL } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { AdCard } from '@/components/AdCard';
+import { AdListSkeleton } from '@/components/Skeleton';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'List'>;
 const JOB_TYPES: (JobType | '')[] = ['', 'DIARIA', 'TIEMPO_COMPLETO', 'MEDIA_JORNADA'];
@@ -111,7 +112,7 @@ export function ListScreen({ navigation }: Props) {
       </View>
 
       {loading && items.length === 0 ? (
-        <ActivityIndicator color="#102136" className="mt-6" />
+        <AdListSkeleton />
       ) : (
         <FlatList
           data={items}

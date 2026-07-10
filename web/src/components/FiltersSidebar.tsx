@@ -10,6 +10,7 @@ import {
   JobType,
   JOB_TYPE_LABEL,
 } from '@/lib/types';
+import { Skeleton } from './Skeleton';
 
 export interface Filters {
   jobType: JobType[];
@@ -230,6 +231,25 @@ export function FiltersSidebar({
     return list.includes(item)
       ? list.filter((x) => x !== item)
       : [...list, item];
+  }
+
+  // Mientras cargan las facetas, la barra muestra su silueta.
+  if (!facets) {
+    return (
+      <aside
+        aria-hidden="true"
+        className="w-full shrink-0 rounded-lg border border-gray-200 bg-white p-4 md:w-64"
+      >
+        <Skeleton className="h-4 w-16" />
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="mt-5 space-y-3">
+            <Skeleton className="h-3 w-28" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-5/6" />
+          </div>
+        ))}
+      </aside>
+    );
   }
 
   const hasFilters =

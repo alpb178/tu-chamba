@@ -3,7 +3,16 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { Role, User } from '@/lib/types';
-import { Button, ConfirmDialog, DataTable, Input, Select } from '@/components/ui';
+import {
+  Button,
+  ConfirmDialog,
+  DataTable,
+  Input,
+  Select,
+  TableSkeleton,
+} from '@/components/ui';
+
+const HEADERS = ['Nombre', 'Correo', 'Teléfono', 'Rol', 'Anuncios', ''];
 
 type UserRow = User & { _count?: { ads: number } };
 
@@ -122,20 +131,20 @@ export default function UsersPage() {
     load();
   }
 
-  if (loading) return <p className="text-gray-500">Cargando...</p>;
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-gray-800">Usuarios</h1>
         <Button onClick={() => setCreating(true)}>Crear admin</Button>
       </div>
-      {error ? (
+      {loading ? (
+        <TableSkeleton headers={HEADERS} />
+      ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : users.length === 0 ? (
         <p className="text-gray-500">No hay usuarios.</p>
       ) : (
-      <DataTable headers={['Nombre', 'Correo', 'Teléfono', 'Rol', 'Anuncios', '']}>
+      <DataTable headers={HEADERS}>
         {users.map((u) => (
           <tr key={u.id}>
             <td className="px-4 py-3">{u.name}</td>

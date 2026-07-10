@@ -6,6 +6,7 @@ import { Ad, Facets, Paginated } from '@/lib/types';
 import { SearchBar } from '@/components/SearchBar';
 import { FiltersSidebar, Filters, NO_FILTERS } from '@/components/FiltersSidebar';
 import { AdCard } from '@/components/AdCard';
+import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
 import { Pagination } from '@/components/Pagination';
 import { FeaturedBrands } from '@/components/FeaturedBrands';
 
@@ -72,27 +73,37 @@ export default function HomePage() {
         />
 
         <section className="flex-1">
-          {data && !loading && (
-            <p className="mb-3 text-sm text-gray-500">
-              {data.total}{' '}
-              {data.total === 1 ? 'oferta encontrada' : 'ofertas encontradas'}
-            </p>
-          )}
-          {loading && <p className="text-gray-500">Cargando anuncios...</p>}
-          {error && <p className="text-red-600">{error}</p>}
-          {data && data.items.length === 0 && !loading && (
+          {loading ? (
+            <>
+              <Skeleton className="mb-3 h-4 w-44" />
+              <AdListSkeleton />
+            </>
+          ) : error ? (
+            <p className="text-red-600">{error}</p>
+          ) : data && data.items.length === 0 ? (
             <p className="text-gray-500">
               No se encontraron anuncios con estos filtros.
             </p>
-          )}
-          {/* Tarjetas una debajo de otra. */}
-          <div className="grid grid-cols-1 gap-3">
-            {data?.items.map((a) => (
-              <AdCard key={a.id} ad={a} />
-            ))}
-          </div>
-          {data && (
-            <Pagination page={data.page} totalPages={data.totalPages} onPage={setPage} />
+          ) : (
+            data && (
+              <>
+                <p className="mb-3 text-sm text-gray-500">
+                  {data.total}{' '}
+                  {data.total === 1 ? 'oferta encontrada' : 'ofertas encontradas'}
+                </p>
+                {/* Tarjetas una debajo de otra. */}
+                <div className="grid grid-cols-1 gap-3">
+                  {data.items.map((a) => (
+                    <AdCard key={a.id} ad={a} />
+                  ))}
+                </div>
+                <Pagination
+                  page={data.page}
+                  totalPages={data.totalPages}
+                  onPage={setPage}
+                />
+              </>
+            )
           )}
         </section>
       </div>
