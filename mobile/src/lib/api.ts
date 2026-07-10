@@ -51,7 +51,7 @@ export async function api<T>(
         ? body.message.join(', ')
         : body.message ?? message;
     } catch {
-      /* sin cuerpo */
+      /* no body */
     }
     throw new ApiError(res.status, message);
   }

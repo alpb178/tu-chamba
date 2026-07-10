@@ -8,63 +8,63 @@ import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
-import { NotificacionesService } from '../notificaciones/notificaciones.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
-const includeAutor = {
-  autor: { select: { id: true, nombre: true } },
+const includeAuthor = {
+  author: { select: { id: true, name: true } },
 };
 
 @Injectable()
 export class ReviewsService {
   constructor(
     private prisma: PrismaService,
-    private notificaciones: NotificacionesService,
+    private notifications: NotificationsService,
   ) {}
 
   // Máx. una reseña por (trabajador, empleador): si ya existe, se actualiza.
-  async upsert(dto: CreateReviewDto, autorId: string) {
-    const empleador = await this.prisma.user.findUnique({
-      where: { id: dto.empleadorId },
+  async upsert(dto: CreateReviewDto, authorId: string) {
+    const employer = await this.prisma.user.findUnique({
+      where: { id: dto.employerId },
     });
-    if (!empleador || empleador.role !== Role.EMPLEADOR) {
+    if (!employer || employer.role !== Role.EMPLEADOR) {
       throw new BadRequestException('Solo se puede reseñar a empleadores');
     }
 
-    const existente = await this.prisma.review.findUnique({
+    const existing = await this.prisma.review.findUnique({
       where: {
-        autorId_empleadorId: { autorId, empleadorId: dto.empleadorId },
+        authorId_employerId: { authorId, employerId: dto.employerId },
       },
     });
 
     const review = await this.prisma.review.upsert({
       where: {
-        autorId_empleadorId: { autorId, empleadorId: dto.empleadorId },
+        authorId_employerId: { authorId, employerId: dto.employerId },
       },
       create: {
-        autorId,
-        empleadorId: dto.empleadorId,
+        authorId,
+        employerId: dto.employerId,
         rating: dto.rating,
-        comentario: dto.comentario,
+        comment: dto.comment,
       },
-      update: { rating: dto.rating, comentario: dto.comentario },
-      include: includeAutor,
+      update: { rating: dto.rating, comment: dto.comment },
+      include: includeAuthor,
     });
 
-    await this.notificaciones.notificarReview(
+    await this.notifications.notifyReview(
       review,
-      review.autor.nombre,
-      !existente,
+      review.author.name,
+      !existing,
     );
     return review;
   }
 
   // Reseñas de un empleador con promedio y total (para el detalle del anuncio).
-  async findByEmpleador(empleadorId: string, page = 1, limit = 20) {
-    const where = { empleadorId };
+  async findByEmployer(employerId: string, page = 1, limit = 20) {
+    const where = { employerId };
     const [items, stats] = await Promise.all([
       this.prisma.review.findMany({
         where,
-        include: includeAutor,
+        include: includeAuthor,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
@@ -79,7 +79,7 @@ export class ReviewsService {
     return {
       items,
       total: stats._count,
-      promedio: stats._avg.rating,
+      average: stats._avg.rating,
       page,
       limit,
       totalPages: Math.ceil(stats._count / limit),
@@ -90,7 +90,7 @@ export class ReviewsService {
   async remove(id: string, user: AuthUser) {
     const review = await this.prisma.review.findUnique({ where: { id } });
     if (!review) throw new NotFoundException('Reseña no encontrada');
-    if (user.role !== Role.ADMIN && user.id !== review.autorId) {
+    if (user.role !== Role.ADMIN && user.id !== review.authorId) {
       throw new ForbiddenException('No puedes eliminar esta reseña');
     }
     await this.prisma.review.delete({ where: { id } });

@@ -51,7 +51,7 @@ export class AuthService {
     const base = process.env.WEB_URL ?? 'http://localhost:3000';
     await this.mail.sendVerification(
       user.email,
-      user.nombre,
+      user.name,
       `${base}/verificar?token=${token}`,
     );
   }
@@ -86,8 +86,8 @@ export class AuthService {
       data: {
         email: dto.email,
         password: hashed,
-        nombre: dto.nombre,
-        telefono: dto.telefono?.trim() || null,
+        name: dto.name,
+        phone: dto.phone?.trim() || null,
         role: dto.role,
       },
     });
@@ -188,7 +188,7 @@ export class AuthService {
       return {
         needsProfile: true,
         email: payload.email,
-        nombre: payload.name ?? '',
+        name: payload.name ?? '',
       };
     }
 
@@ -196,8 +196,8 @@ export class AuthService {
       data: {
         email: payload.email,
         password: null,
-        nombre: payload.name || payload.email.split('@')[0],
-        telefono: dto.telefono?.trim() || null,
+        name: payload.name || payload.email.split('@')[0],
+        phone: dto.phone?.trim() || null,
         googleId: payload.sub,
         role: dto.role,
         // Google ya verificó el correo (validado en verifyGoogleToken).

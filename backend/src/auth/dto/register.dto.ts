@@ -28,17 +28,17 @@ export class RegisterDto {
   @ApiProperty({ example: 'Juan Pérez' })
   @IsString()
   @IsNotEmpty()
-  nombre: string;
+  name: string;
 
   // Obligatorio para EMPLEADOR (es el contacto de sus anuncios);
   // opcional para TRABAJADOR. Si viene, debe ser un string no vacío.
   @ApiPropertyOptional({ example: '70000000', description: 'Obligatorio para EMPLEADOR' })
   @ValidateIf(
-    (o) => o.role === RegisterRole.EMPLEADOR || (o.telefono ?? '') !== '',
+    (o) => o.role === RegisterRole.EMPLEADOR || (o.phone ?? '') !== '',
   )
   @IsString()
   @IsNotEmpty({ message: 'El teléfono es obligatorio para empleadores' })
-  telefono?: string;
+  phone?: string;
 
   @ApiProperty({ enum: RegisterRole, example: RegisterRole.EMPLEADOR })
   @IsEnum(RegisterRole, {

@@ -6,16 +6,16 @@ import { useAuth } from '@/lib/auth';
 import { Button, Field } from '@/components/ui';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
-type RolReg = 'TRABAJADOR' | 'EMPLEADOR';
+type RegisterRole = 'TRABAJADOR' | 'EMPLEADOR';
 
 export function RegisterScreen(_props: Props) {
   const { register } = useAuth();
   const [form, setForm] = useState({
-    nombre: '',
+    name: '',
     email: '',
-    telefono: '',
+    phone: '',
     password: '',
-    role: 'TRABAJADOR' as RolReg,
+    role: 'TRABAJADOR' as RegisterRole,
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -39,7 +39,7 @@ export function RegisterScreen(_props: Props) {
   return (
     <ScrollView className="flex-1 bg-gray-50 px-6 pt-6">
       <Text className="mb-4 text-xl font-bold text-gray-800">Crear cuenta</Text>
-      <Field label="Nombre" value={form.nombre} onChangeText={(v) => set('nombre', v)} />
+      <Field label="Nombre" value={form.name} onChangeText={(v) => set('name', v)} />
       <Field
         label="Correo"
         autoCapitalize="none"
@@ -47,12 +47,12 @@ export function RegisterScreen(_props: Props) {
         value={form.email}
         onChangeText={(v) => set('email', v)}
       />
-      <Field label="Teléfono" keyboardType="phone-pad" value={form.telefono} onChangeText={(v) => set('telefono', v)} />
+      <Field label="Teléfono" keyboardType="phone-pad" value={form.phone} onChangeText={(v) => set('phone', v)} />
       <Field label="Contraseña (mín. 6)" secureTextEntry value={form.password} onChangeText={(v) => set('password', v)} />
 
       <Text className="mb-1 text-sm font-medium text-gray-700">Quiero registrarme como</Text>
       <View className="mb-4 flex-row gap-2">
-        {(['TRABAJADOR', 'EMPLEADOR'] as RolReg[]).map((r) => (
+        {(['TRABAJADOR', 'EMPLEADOR'] as RegisterRole[]).map((r) => (
           <TouchableOpacity
             key={r}
             onPress={() => set('role', r)}

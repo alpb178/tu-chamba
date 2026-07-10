@@ -8,7 +8,7 @@ export class VisitsService {
   // Registra la visita al detalle de un anuncio. Silencioso a propósito:
   // el tracking nunca debe romper la navegación del portal.
   async record(adId: string) {
-    const ad = await this.prisma.anuncio.findUnique({
+    const ad = await this.prisma.ad.findUnique({
       where: { id: adId },
       select: { id: true },
     });

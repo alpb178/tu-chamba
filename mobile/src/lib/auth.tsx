@@ -11,8 +11,8 @@ import { Role, User } from './types';
 interface RegisterData {
   email: string;
   password: string;
-  nombre: string;
-  telefono: string;
+  name: string;
+  phone: string;
   role: Extract<Role, 'TRABAJADOR' | 'EMPLEADOR'>;
 }
 
@@ -80,6 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth debe usarse dentro de AuthProvider');
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
   return ctx;
 }

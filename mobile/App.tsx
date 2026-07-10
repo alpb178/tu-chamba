@@ -9,9 +9,9 @@ import { AuthProvider, useAuth } from '@/lib/auth';
 import { RootStackParamList } from '@/navigation';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { RegisterScreen } from '@/screens/RegisterScreen';
-import { ListaScreen } from '@/screens/ListaScreen';
-import { DetalleScreen } from '@/screens/DetalleScreen';
-import { NuevoScreen } from '@/screens/NuevoScreen';
+import { ListScreen } from '@/screens/ListScreen';
+import { DetailScreen } from '@/screens/DetailScreen';
+import { NewAdScreen } from '@/screens/NewAdScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -35,17 +35,17 @@ function Routes() {
   return (
     <Stack.Navigator screenOptions={headerOptions}>
       {!user ? (
-        // Stack de autenticación
+        // Auth stack
         <>
           <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
           <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'Registro' }} />
         </>
       ) : (
-        // Stack de la app
+        // App stack
         <>
-          <Stack.Screen name="Lista" component={ListaScreen} options={{ title: 'Tu Chamba' }} />
-          <Stack.Screen name="Detalle" component={DetalleScreen} options={{ title: 'Anuncio' }} />
-          <Stack.Screen name="Nuevo" component={NuevoScreen} options={{ title: 'Anuncio' }} />
+          <Stack.Screen name="List" component={ListScreen} options={{ title: 'Tu Chamba' }} />
+          <Stack.Screen name="Detail" component={DetailScreen} options={{ title: 'Anuncio' }} />
+          <Stack.Screen name="NewAd" component={NewAdScreen} options={{ title: 'Anuncio' }} />
         </>
       )}
     </Stack.Navigator>

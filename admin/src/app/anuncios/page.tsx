@@ -3,32 +3,32 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import {
-  Anuncio,
-  CATEGORIA_LABEL,
-  ESTADO_LABEL,
-  EstadoEfectivo,
-  estadoAnuncio,
+  Ad,
+  CATEGORY_LABEL,
+  STATUS_LABEL,
+  EffectiveStatus,
+  adEffectiveStatus,
   Paginated,
 } from '@/lib/types';
 import { Badge, Button, ConfirmDialog, DataTable } from '@/components/ui';
 
-const ESTADO_STYLE: Record<EstadoEfectivo, string> = {
+const STATUS_STYLE: Record<EffectiveStatus, string> = {
   ACTIVO: 'bg-green-100 text-green-800',
   VENCIDO: 'bg-amber-100 text-amber-800',
   DADO_DE_BAJA: 'bg-gray-200 text-gray-600',
 };
 
-export default function AnunciosAdminPage() {
-  const [items, setItems] = useState<Anuncio[]>([]);
+export default function AdsAdminPage() {
+  const [items, setItems] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [toDelete, setToDelete] = useState<Anuncio | null>(null);
+  const [toDelete, setToDelete] = useState<Ad | null>(null);
 
   function load() {
     setLoading(true);
     setError(null);
     // Vista admin: incluye vencidos y dados de baja.
-    api<Paginated<Anuncio>>('/anuncios/todos?limit=100')
+    api<Paginated<Ad>>('/ads/all?limit=100')
       .then((res) => setItems(res.items))
       .catch((e) => setError((e as Error).message))
       .finally(() => setLoading(false));
@@ -38,18 +38,18 @@ export default function AnunciosAdminPage() {
 
   async function remove() {
     if (!toDelete) return;
-    await api(`/anuncios/${toDelete.id}`, { method: 'DELETE' });
+    await api(`/ads/${toDelete.id}`, { method: 'DELETE' });
     setToDelete(null);
     load();
   }
 
-  async function darDeBaja(a: Anuncio) {
-    await api(`/anuncios/${a.id}/baja`, { method: 'POST' });
+  async function unpublish(ad: Ad) {
+    await api(`/ads/${ad.id}/unpublish`, { method: 'POST' });
     load();
   }
 
-  async function republicar(a: Anuncio) {
-    await api(`/anuncios/${a.id}/republicar`, { method: 'POST' });
+  async function republish(ad: Ad) {
+    await api(`/ads/${ad.id}/republish`, { method: 'POST' });
     load();
   }
 
@@ -77,47 +77,47 @@ export default function AnunciosAdminPage() {
           '',
         ]}
       >
-        {items.map((a) => {
-          const estado = estadoAnuncio(a);
+        {items.map((ad) => {
+          const status = adEffectiveStatus(ad);
           return (
-            <tr key={a.id}>
-              <td className="max-w-xs truncate px-4 py-3">{a.descripcion}</td>
+            <tr key={ad.id}>
+              <td className="max-w-xs truncate px-4 py-3">{ad.description}</td>
               <td className="px-4 py-3 text-gray-600">
-                {a.categoria ? CATEGORIA_LABEL[a.categoria] : '—'}
+                {ad.category ? CATEGORY_LABEL[ad.category] : '—'}
               </td>
-              <td className="px-4 py-3 text-gray-600">{a.ubicacion ?? '—'}</td>
+              <td className="px-4 py-3 text-gray-600">{ad.location ?? '—'}</td>
               <td className="px-4 py-3 font-medium text-brand">
-                Bs {Number(a.salario).toLocaleString('es-BO')}
+                Bs {Number(ad.salary).toLocaleString('es-BO')}
               </td>
               <td className="px-4 py-3">
-                <Badge tipo={a.tipoJornada} />
+                <Badge type={ad.jobType} />
               </td>
               <td className="px-4 py-3">
                 <span
-                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${ESTADO_STYLE[estado]}`}
+                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}
                 >
-                  {ESTADO_LABEL[estado]}
+                  {STATUS_LABEL[status]}
                 </span>
               </td>
               <td className="px-4 py-3 text-gray-600">
-                {new Date(a.createdAt).toLocaleDateString('es-BO')}
+                {new Date(ad.createdAt).toLocaleDateString('es-BO')}
               </td>
               <td className="px-4 py-3 text-gray-600">
-                {new Date(a.expiraEn).toLocaleDateString('es-BO')}
+                {new Date(ad.expiresAt).toLocaleDateString('es-BO')}
               </td>
-              <td className="px-4 py-3 text-gray-600">{a.createdBy?.nombre ?? '—'}</td>
+              <td className="px-4 py-3 text-gray-600">{ad.createdBy?.name ?? '—'}</td>
               <td className="px-4 py-3 text-right">
                 <div className="flex justify-end gap-2">
-                  {estado === 'ACTIVO' ? (
-                    <Button variant="outline" onClick={() => darDeBaja(a)}>
+                  {status === 'ACTIVO' ? (
+                    <Button variant="outline" onClick={() => unpublish(ad)}>
                       Dar de baja
                     </Button>
                   ) : (
-                    <Button variant="outline" onClick={() => republicar(a)}>
+                    <Button variant="outline" onClick={() => republish(ad)}>
                       Republicar
                     </Button>
                   )}
-                  <Button variant="danger" onClick={() => setToDelete(a)}>
+                  <Button variant="danger" onClick={() => setToDelete(ad)}>
                     Eliminar
                   </Button>
                 </div>

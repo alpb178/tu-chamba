@@ -4,27 +4,27 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import {
-  AlertaEmpleo,
-  Categoria,
-  CATEGORIA_LABEL,
-  Departamento,
-  DEPARTAMENTO_LABEL,
+  JobAlert,
+  Category,
+  CATEGORY_LABEL,
+  Department,
+  DEPARTMENT_LABEL,
 } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { Button, FormField, Select } from '@/components/ui';
 
-export default function AlertasPage() {
+export default function JobAlertsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [items, setItems] = useState<AlertaEmpleo[]>([]);
+  const [items, setItems] = useState<JobAlert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [departamento, setDepartamento] = useState<Departamento | ''>('');
-  const [categoria, setCategoria] = useState<Categoria | ''>('');
+  const [department, setDepartment] = useState<Department | ''>('');
+  const [category, setCategory] = useState<Category | ''>('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   function load() {
-    api<AlertaEmpleo[]>('/alertas')
+    api<JobAlert[]>('/alerts')
       .then(setItems)
       .finally(() => setLoading(false));
   }
@@ -43,20 +43,20 @@ export default function AlertasPage() {
     load();
   }, [authLoading, user, router]);
 
-  async function crear(e: React.FormEvent) {
+  async function create(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSaving(true);
     try {
-      await api('/alertas', {
+      await api('/alerts', {
         method: 'POST',
         body: JSON.stringify({
-          departamento: departamento || undefined,
-          categoria: categoria || undefined,
+          department: department || undefined,
+          category: category || undefined,
         }),
       });
-      setDepartamento('');
-      setCategoria('');
+      setDepartment('');
+      setCategory('');
       load();
     } catch (err) {
       setError((err as Error).message);
@@ -65,15 +65,15 @@ export default function AlertasPage() {
     }
   }
 
-  async function eliminar(id: string) {
-    await api(`/alertas/${id}`, { method: 'DELETE' });
+  async function remove(id: string) {
+    await api(`/alerts/${id}`, { method: 'DELETE' });
     load();
   }
 
-  function describir(a: AlertaEmpleo) {
-    const cat = a.categoria ? CATEGORIA_LABEL[a.categoria] : 'Cualquier categoría';
-    const dep = a.departamento
-      ? DEPARTAMENTO_LABEL[a.departamento]
+  function describe(a: JobAlert) {
+    const cat = a.category ? CATEGORY_LABEL[a.category] : 'Cualquier categoría';
+    const dep = a.department
+      ? DEPARTMENT_LABEL[a.department]
       : 'todo el país';
     return `${cat} · ${dep}`;
   }
@@ -91,17 +91,17 @@ export default function AlertasPage() {
       </div>
 
       <form
-        onSubmit={crear}
+        onSubmit={create}
         className="space-y-4 rounded-lg border border-gray-200 bg-white p-4"
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="Departamento">
             <Select
-              value={departamento}
-              onChange={(e) => setDepartamento(e.target.value as Departamento | '')}
+              value={department}
+              onChange={(e) => setDepartment(e.target.value as Department | '')}
             >
               <option value="">Todo el país</option>
-              {Object.entries(DEPARTAMENTO_LABEL).map(([v, label]) => (
+              {Object.entries(DEPARTMENT_LABEL).map(([v, label]) => (
                 <option key={v} value={v}>
                   {label}
                 </option>
@@ -110,11 +110,11 @@ export default function AlertasPage() {
           </FormField>
           <FormField label="Categoría">
             <Select
-              value={categoria}
-              onChange={(e) => setCategoria(e.target.value as Categoria | '')}
+              value={category}
+              onChange={(e) => setCategory(e.target.value as Category | '')}
             >
               <option value="">Todas las categorías</option>
-              {Object.entries(CATEGORIA_LABEL).map(([v, label]) => (
+              {Object.entries(CATEGORY_LABEL).map(([v, label]) => (
                 <option key={v} value={v}>
                   {label}
                 </option>
@@ -138,10 +138,10 @@ export default function AlertasPage() {
           <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
             {items.map((a) => (
               <li key={a.id} className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-800">{describir(a)}</span>
+                <span className="text-sm text-gray-800">{describe(a)}</span>
                 <button
                   type="button"
-                  onClick={() => eliminar(a.id)}
+                  onClick={() => remove(a.id)}
                   className="text-sm text-red-600 hover:underline"
                 >
                   Eliminar

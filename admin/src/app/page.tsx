@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import { AdminStats } from '@/lib/types';
 import { StatCard } from '@/components/ui';
 import { ChartCard, DailyColumns, HorizontalBars } from '@/components/charts';
-import { MarcasDestacadas } from '@/components/MarcasDestacadas';
+import { FeaturedBrands } from '@/components/FeaturedBrands';
 
 // Tonos de la rama azul de la marca (uno por entidad, validados en claro).
 const ADS_COLOR = '#102136';
@@ -82,7 +82,7 @@ export default function DashboardPage() {
         </>
       )}
 
-      <MarcasDestacadas />
+      <FeaturedBrands />
     </div>
   );
 }

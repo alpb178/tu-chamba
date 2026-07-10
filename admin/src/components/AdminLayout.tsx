@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
-import { CORPSC, EMPRESAS } from '@/lib/empresas';
+import { CORPSC, COMPANIES } from '@/lib/companies';
 
 const NAV = [
   { href: '/', label: 'Dashboard' },
@@ -60,7 +60,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             rel="noopener noreferrer"
             className="mt-1 flex items-center gap-1 rounded-md px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-brand"
           >
-            {CORPSC.nombre}
+            {CORPSC.name}
             <span aria-hidden="true">↗</span>
           </a>
         </nav>
@@ -68,7 +68,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
-          <span className="text-sm text-gray-600">{user.nombre}</span>
+          <span className="text-sm text-gray-600">{user.name}</span>
           <Button variant="outline" onClick={logout}>
             Salir
           </Button>
@@ -79,15 +79,15 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             <span>© {new Date().getFullYear()} Tu Chamba — Panel de administración</span>
             <nav aria-label="Nuestras marcas" className="flex items-center gap-3">
               <span className="text-gray-400">Nuestras marcas:</span>
-              {EMPRESAS.map((e) => (
+              {COMPANIES.map((c) => (
                 <a
-                  key={e.slug}
-                  href={e.url}
+                  key={c.slug}
+                  href={c.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="transition hover:text-brand focus:outline-none focus-visible:underline"
                 >
-                  {e.nombre}
+                  {c.name}
                 </a>
               ))}
             </nav>

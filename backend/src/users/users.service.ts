@@ -13,8 +13,8 @@ import { AuthUser } from '../auth/decorators/current-user.decorator';
 const selectSafe = {
   id: true,
   email: true,
-  nombre: true,
-  telefono: true,
+  name: true,
+  phone: true,
   role: true,
   createdAt: true,
   updatedAt: true,
@@ -29,7 +29,7 @@ export class UsersService {
 
   findAll() {
     return this.prisma.user.findMany({
-      select: { ...selectSafe, _count: { select: { anuncios: true } } },
+      select: { ...selectSafe, _count: { select: { ads: true } } },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -46,7 +46,7 @@ export class UsersService {
         email: dto.email,
         password: await bcrypt.hash(dto.password, 10),
         // Solo se pide correo y contraseña: el nombre sale del correo.
-        nombre: dto.email.split('@')[0],
+        name: dto.email.split('@')[0],
         role: Role.ADMIN,
         // Cuenta creada por un admin de confianza: no exige verificación.
         emailVerified: true,

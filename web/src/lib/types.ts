@@ -1,14 +1,14 @@
 export type Role = 'ADMIN' | 'TRABAJADOR' | 'EMPLEADOR';
 
-export type TipoJornada = 'DIARIA' | 'TIEMPO_COMPLETO' | 'MEDIA_JORNADA';
+export type JobType = 'DIARIA' | 'TIEMPO_COMPLETO' | 'MEDIA_JORNADA';
 
-export const TIPO_JORNADA_LABEL: Record<TipoJornada, string> = {
+export const JOB_TYPE_LABEL: Record<JobType, string> = {
   DIARIA: 'Diaria',
   TIEMPO_COMPLETO: 'Tiempo completo',
   MEDIA_JORNADA: 'Media jornada',
 };
 
-export type Departamento =
+export type Department =
   | 'LA_PAZ'
   | 'SANTA_CRUZ'
   | 'COCHABAMBA'
@@ -19,7 +19,7 @@ export type Departamento =
   | 'BENI'
   | 'PANDO';
 
-export const DEPARTAMENTO_LABEL: Record<Departamento, string> = {
+export const DEPARTMENT_LABEL: Record<Department, string> = {
   LA_PAZ: 'La Paz',
   SANTA_CRUZ: 'Santa Cruz',
   COCHABAMBA: 'Cochabamba',
@@ -32,7 +32,7 @@ export const DEPARTAMENTO_LABEL: Record<Departamento, string> = {
 };
 
 // Slugs para las URLs SEO por departamento (/empleos/[slug]).
-export const DEPARTAMENTO_SLUG: Record<Departamento, string> = {
+export const DEPARTMENT_SLUG: Record<Department, string> = {
   LA_PAZ: 'la-paz',
   SANTA_CRUZ: 'santa-cruz',
   COCHABAMBA: 'cochabamba',
@@ -44,11 +44,11 @@ export const DEPARTAMENTO_SLUG: Record<Departamento, string> = {
   PANDO: 'pando',
 };
 
-export const SLUG_DEPARTAMENTO: Record<string, Departamento> = Object.fromEntries(
-  Object.entries(DEPARTAMENTO_SLUG).map(([dep, slug]) => [slug, dep as Departamento]),
+export const SLUG_TO_DEPARTMENT: Record<string, Department> = Object.fromEntries(
+  Object.entries(DEPARTMENT_SLUG).map(([dep, slug]) => [slug, dep as Department]),
 );
 
-export type Categoria =
+export type Category =
   | 'VENTAS'
   | 'GASTRONOMIA'
   | 'CONSTRUCCION'
@@ -63,7 +63,7 @@ export type Categoria =
   | 'SEGURIDAD'
   | 'OTRO';
 
-export const CATEGORIA_LABEL: Record<Categoria, string> = {
+export const CATEGORY_LABEL: Record<Category, string> = {
   VENTAS: 'Ventas',
   GASTRONOMIA: 'Gastronomía',
   CONSTRUCCION: 'Construcción',
@@ -79,15 +79,15 @@ export const CATEGORIA_LABEL: Record<Categoria, string> = {
   OTRO: 'Otro',
 };
 
-// DADO_DE_BAJA se persiste; VENCIDO se calcula con expiraEn (ver estadoAnuncio).
-export type EstadoAnuncio = 'ACTIVO' | 'DADO_DE_BAJA';
-export type EstadoEfectivo = 'ACTIVO' | 'VENCIDO' | 'DADO_DE_BAJA';
+// DADO_DE_BAJA se persiste; VENCIDO se calcula con expiresAt (ver adEffectiveStatus).
+export type AdStatus = 'ACTIVO' | 'DADO_DE_BAJA';
+export type EffectiveStatus = 'ACTIVO' | 'VENCIDO' | 'DADO_DE_BAJA';
 
-export const DURACIONES_DIAS = [3, 7, 15, 30];
+export const DURATION_DAYS = [3, 7, 15, 30];
 
-export type MotivoReporte = 'SPAM' | 'FRAUDE' | 'CONTENIDO_INAPROPIADO' | 'OTRO';
+export type ReportReason = 'SPAM' | 'FRAUDE' | 'CONTENIDO_INAPROPIADO' | 'OTRO';
 
-export const MOTIVO_REPORTE_LABEL: Record<MotivoReporte, string> = {
+export const REPORT_REASON_LABEL: Record<ReportReason, string> = {
   SPAM: 'Spam',
   FRAUDE: 'Fraude / estafa',
   CONTENIDO_INAPROPIADO: 'Contenido inapropiado',
@@ -98,31 +98,31 @@ export interface User {
   id: string;
   email: string;
   emailVerified: boolean;
-  nombre: string;
-  telefono: string | null;
+  name: string;
+  phone: string | null;
   role: Role;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Anuncio {
+export interface Ad {
   id: string;
-  descripcion: string;
-  requisitos?: string | null;
-  ubicacion?: string | null;
-  departamento?: Departamento | null;
-  categoria?: Categoria | null;
-  latitud?: number | null;
-  longitud?: number | null;
-  horario?: string | null;
-  salario: string | number;
-  telefono: string;
-  tipoJornada: TipoJornada;
-  estado: EstadoAnuncio;
-  duracionDias: number;
-  expiraEn: string;
+  description: string;
+  requirements?: string | null;
+  location?: string | null;
+  department?: Department | null;
+  category?: Category | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  schedule?: string | null;
+  salary: string | number;
+  phone: string;
+  jobType: JobType;
+  status: AdStatus;
+  durationDays: number;
+  expiresAt: string;
   createdById: string;
-  createdBy?: { id: string; nombre: string; email: string };
+  createdBy?: { id: string; name: string; email: string };
   createdAt: string;
   updatedAt: string;
 }
@@ -130,42 +130,42 @@ export interface Anuncio {
 export interface Review {
   id: string;
   rating: number;
-  comentario: string;
-  autorId: string;
-  empleadorId: string;
-  autor?: { id: string; nombre: string };
+  comment: string;
+  authorId: string;
+  employerId: string;
+  author?: { id: string; name: string };
   createdAt: string;
   updatedAt: string;
 }
 
 export interface ReviewsResponse extends Paginated<Review> {
-  promedio: number | null;
+  average: number | null;
 }
 
-export type TipoNotificacion =
+export type NotificationType =
   | 'CHAT_INICIADO'
   | 'NUEVA_REVIEW'
   | 'ANUNCIO_VENCIDO'
   | 'NUEVO_ANUNCIO';
 
-export interface Notificacion {
+export interface AppNotification {
   id: string;
-  tipo: TipoNotificacion;
-  mensaje: string;
-  leida: boolean;
-  anuncioId?: string | null;
+  type: NotificationType;
+  message: string;
+  read: boolean;
+  adId?: string | null;
   createdAt: string;
 }
 
-export interface NotificacionesResponse {
-  items: Notificacion[];
-  noLeidas: number;
+export interface NotificationsResponse {
+  items: AppNotification[];
+  unread: number;
 }
 
-export interface AlertaEmpleo {
+export interface JobAlert {
   id: string;
-  departamento: Departamento | null;
-  categoria: Categoria | null;
+  department: Department | null;
+  category: Category | null;
   createdAt: string;
 }
 
@@ -177,32 +177,32 @@ export interface Paginated<T> {
   totalPages: number;
 }
 
-// Conteos por opción para la barra de filtros (endpoint /anuncios/facetas).
-export interface Facetas {
+// Conteos por opción para la barra de filtros (endpoint /ads/facets).
+export interface Facets {
   total: number;
-  tipoJornada: Partial<Record<TipoJornada, number>>;
-  departamento: Partial<Record<Departamento, number>>;
-  categoria: Partial<Record<Categoria, number>>;
-  salarioMin: number;
-  salarioMax: number;
+  jobType: Partial<Record<JobType, number>>;
+  department: Partial<Record<Department, number>>;
+  category: Partial<Record<Category, number>>;
+  salaryMin: number;
+  salaryMax: number;
 }
 
-// Estado efectivo de un anuncio: un ACTIVO con expiraEn en el pasado está VENCIDO.
-export function estadoAnuncio(a: Pick<Anuncio, 'estado' | 'expiraEn'>): EstadoEfectivo {
-  if (a.estado === 'DADO_DE_BAJA') return 'DADO_DE_BAJA';
-  return new Date(a.expiraEn).getTime() > Date.now() ? 'ACTIVO' : 'VENCIDO';
+// Estado efectivo de un anuncio: un ACTIVO con expiresAt en el pasado está VENCIDO.
+export function adEffectiveStatus(a: Pick<Ad, 'status' | 'expiresAt'>): EffectiveStatus {
+  if (a.status === 'DADO_DE_BAJA') return 'DADO_DE_BAJA';
+  return new Date(a.expiresAt).getTime() > Date.now() ? 'ACTIVO' : 'VENCIDO';
 }
 
-export const ESTADO_LABEL: Record<EstadoEfectivo, string> = {
+export const STATUS_LABEL: Record<EffectiveStatus, string> = {
   ACTIVO: 'Activo',
   VENCIDO: 'Vencido',
   DADO_DE_BAJA: 'Dado de baja',
 };
 
 // Enlace de WhatsApp: wa.me exige el número con código de país (Bolivia 591).
-export function waLink(telefono: string, mensaje?: string) {
-  const digits = telefono.replace(/\D/g, '');
-  const numero = digits.startsWith('591') ? digits : `591${digits}`;
-  const text = mensaje ? `?text=${encodeURIComponent(mensaje)}` : '';
-  return `https://wa.me/${numero}${text}`;
+export function waLink(phone: string, message?: string) {
+  const digits = phone.replace(/\D/g, '');
+  const number = digits.startsWith('591') ? digits : `591${digits}`;
+  const text = message ? `?text=${encodeURIComponent(message)}` : '';
+  return `https://wa.me/${number}${text}`;
 }

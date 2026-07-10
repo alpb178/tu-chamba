@@ -1,6 +1,6 @@
 # Plan de migración: código legado en español → inglés
 
-> Estado: propuesta · Julio 2026
+> Estado: **EJECUTADA (big-bang, julio 2026)** — ver "Resolución" al final.
 > Regla origen: `FLUJO-TRABAJO-DEVS.md` → "Idioma del código: inglés"
 
 ## Objetivo
@@ -121,3 +121,28 @@ manteniendo los valores.
 | 3 mobile | 0.5 día + ciclo de release | Sí |
 | 4 | 1 día | Sí |
 | 5 | 0.5 día (tras ventana mobile) | Sí |
+
+## Resolución (julio 2026)
+
+Como la app móvil **aún no está publicada** en las stores, se descartó el plan
+por fases y se ejecutó un **big-bang** en la rama `refactor/english-codebase`:
+backend, web, admin y mobile migrados a la vez, sin alias de compatibilidad
+(las rutas españolas de la API dejaron de existir).
+
+Decisiones cerradas:
+
+1. **BD intacta con `@map`/`@@map` permanente** — el diff SQL de la migración
+   fue vacío; no hubo migración de datos ni downtime. `Ad @@map("Anuncio")`,
+   `description @map("descripcion")`, etc.
+2. **Valores de enums en español se mantienen** (`VENTAS`, `LA_PAZ`,
+   `ACTIVO`, ...) — son códigos de dominio persistidos; solo se renombraron
+   los tipos (`Categoria` → `Category`).
+3. **URLs públicas del portal sin cambios** (`/anuncios/[id]`,
+   `/empleos/[departamento]`) — solo cambió el código interno.
+
+Mapa de renombrado principal: modelos `Anuncio→Ad`, `Reporte→Report`,
+`Notificacion→Notification`, `AlertaEmpleo→JobAlert`; rutas `/anuncios→/ads`
+(`/todos→/all`, `/mis-anuncios→/mine`, `/facetas→/facets`, `/baja→/unpublish`,
+`/republicar→/republish`, `/contacto→/contact`), `/reportes→/reports`,
+`/notificaciones→/notifications` (`/leer-todas→/read-all`, `/:id/leida→/:id/read`),
+`/alertas→/alerts`; campos de User `nombre→name`, `telefono→phone`.

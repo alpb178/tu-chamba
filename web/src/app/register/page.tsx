@@ -11,9 +11,9 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState({
-    nombre: '',
+    name: '',
     email: '',
-    telefono: '',
+    phone: '',
     password: '',
     role: 'TRABAJADOR' as 'TRABAJADOR' | 'EMPLEADOR',
   });
@@ -24,7 +24,7 @@ export default function RegisterPage() {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
-  const esEmpleador = form.role === 'EMPLEADOR';
+  const isEmployer = form.role === 'EMPLEADOR';
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,12 +32,12 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await register({
-        nombre: form.nombre,
+        name: form.name,
         email: form.email,
         password: form.password,
         role: form.role,
         // El teléfono solo es obligatorio para empleadores.
-        telefono: form.telefono.trim() || undefined,
+        phone: form.phone.trim() || undefined,
       });
       router.push('/');
     } catch (err) {
@@ -64,8 +64,8 @@ export default function RegisterPage() {
         </FormField>
         <FormField label="Nombre">
           <Input
-            value={form.nombre}
-            onChange={(e) => set('nombre', e.target.value)}
+            value={form.name}
+            onChange={(e) => set('name', e.target.value)}
             required
           />
         </FormField>
@@ -79,15 +79,15 @@ export default function RegisterPage() {
         </FormField>
         <FormField
           label={
-            esEmpleador
+            isEmployer
               ? 'Teléfono (WhatsApp, lo verán los candidatos)'
               : 'Teléfono (opcional)'
           }
         >
           <Input
-            value={form.telefono}
-            onChange={(e) => set('telefono', e.target.value)}
-            required={esEmpleador}
+            value={form.phone}
+            onChange={(e) => set('phone', e.target.value)}
+            required={isEmployer}
           />
         </FormField>
         <FormField label="Contraseña (mín. 6)">

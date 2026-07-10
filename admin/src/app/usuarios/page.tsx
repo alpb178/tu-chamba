@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import { Role, User } from '@/lib/types';
 import { Button, ConfirmDialog, DataTable, Input, Select } from '@/components/ui';
 
-type UserRow = User & { _count?: { anuncios: number } };
+type UserRow = User & { _count?: { ads: number } };
 
 const ROLES: Role[] = ['ADMIN', 'EMPLEADOR', 'TRABAJADOR'];
 
@@ -89,7 +89,7 @@ function CreateAdminDialog({
   );
 }
 
-export default function UsuariosPage() {
+export default function UsersPage() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -138,9 +138,9 @@ export default function UsuariosPage() {
       <DataTable headers={['Nombre', 'Correo', 'Teléfono', 'Rol', 'Anuncios', '']}>
         {users.map((u) => (
           <tr key={u.id}>
-            <td className="px-4 py-3">{u.nombre}</td>
+            <td className="px-4 py-3">{u.name}</td>
             <td className="px-4 py-3 text-gray-600">{u.email}</td>
-            <td className="px-4 py-3 text-gray-600">{u.telefono}</td>
+            <td className="px-4 py-3 text-gray-600">{u.phone}</td>
             <td className="px-4 py-3">
               <Select
                 value={u.role}
@@ -153,7 +153,7 @@ export default function UsuariosPage() {
                 ))}
               </Select>
             </td>
-            <td className="px-4 py-3 text-gray-600">{u._count?.anuncios ?? 0}</td>
+            <td className="px-4 py-3 text-gray-600">{u._count?.ads ?? 0}</td>
             <td className="px-4 py-3 text-right">
               <Button variant="danger" onClick={() => setToDelete(u)}>
                 Eliminar
@@ -176,7 +176,7 @@ export default function UsuariosPage() {
       <ConfirmDialog
         open={!!toDelete}
         title="Eliminar usuario"
-        message={`¿Eliminar a ${toDelete?.nombre}? Se borrarán también sus anuncios.`}
+        message={`¿Eliminar a ${toDelete?.name}? Se borrarán también sus anuncios.`}
         onConfirm={remove}
         onCancel={() => setToDelete(null)}
       />

@@ -1,4 +1,4 @@
-import { Categoria, Departamento, PrismaClient, Role, TipoJornada } from '@prisma/client';
+import { Category, Department, JobType, PrismaClient, Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -12,8 +12,8 @@ async function main() {
     create: {
       email: 'admin@tuchamba.com',
       password: passwordHash,
-      nombre: 'Administrador',
-      telefono: '70000000',
+      name: 'Administrador',
+      phone: '70000000',
       role: Role.ADMIN,
       emailVerified: true,
     },
@@ -25,8 +25,8 @@ async function main() {
     create: {
       email: 'empleador@tuchamba.com',
       password: passwordHash,
-      nombre: 'Empresa Demo',
-      telefono: '71111111',
+      name: 'Empresa Demo',
+      phone: '71111111',
       role: Role.EMPLEADOR,
       emailVerified: true,
     },
@@ -38,57 +38,57 @@ async function main() {
     create: {
       email: 'trabajador@tuchamba.com',
       password: passwordHash,
-      nombre: 'Juan Trabajador',
-      telefono: '72222222',
+      name: 'Juan Trabajador',
+      phone: '72222222',
       role: Role.TRABAJADOR,
       emailVerified: true,
     },
   });
 
   // Anuncios de ejemplo (uno por cada tipo de jornada)
-  const count = await prisma.anuncio.count();
+  const count = await prisma.ad.count();
   if (count === 0) {
-    const expiraEn = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
-    await prisma.anuncio.createMany({
+    const expiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+    await prisma.ad.createMany({
       data: [
         {
-          descripcion:
+          description:
             'Se busca ayudante de albañilería para obra en zona norte. Pago por día.',
-          requisitos: 'Experiencia básica en obra. Puntualidad.',
-          ubicacion: 'Santa Cruz, zona norte',
-          departamento: Departamento.SANTA_CRUZ,
-          categoria: Categoria.CONSTRUCCION,
-          salario: 150.0,
-          telefono: '71111111',
-          tipoJornada: TipoJornada.DIARIA,
-          expiraEn,
+          requirements: 'Experiencia básica en obra. Puntualidad.',
+          location: 'Santa Cruz, zona norte',
+          department: Department.SANTA_CRUZ,
+          category: Category.CONSTRUCCION,
+          salary: 150.0,
+          phone: '71111111',
+          jobType: JobType.DIARIA,
+          expiresAt,
           createdById: empleador.id,
         },
         {
-          descripcion:
+          description:
             'Vacante para vendedor/a de tienda. Atención al cliente, manejo de caja.',
-          requisitos: 'Experiencia en ventas de al menos 6 meses.',
-          ubicacion: 'La Paz, centro',
-          departamento: Departamento.LA_PAZ,
-          categoria: Categoria.VENTAS,
-          horario: 'Lun-Sab 9:00 a 18:00',
-          salario: 2500.0,
-          telefono: '71111111',
-          tipoJornada: TipoJornada.TIEMPO_COMPLETO,
-          expiraEn,
+          requirements: 'Experiencia en ventas de al menos 6 meses.',
+          location: 'La Paz, centro',
+          department: Department.LA_PAZ,
+          category: Category.VENTAS,
+          schedule: 'Lun-Sab 9:00 a 18:00',
+          salary: 2500.0,
+          phone: '71111111',
+          jobType: JobType.TIEMPO_COMPLETO,
+          expiresAt,
           createdById: empleador.id,
         },
         {
-          descripcion:
+          description:
             'Recepcionista para turno tarde, medio tiempo. Buena presencia.',
-          ubicacion: 'Cochabamba, zona sur',
-          departamento: Departamento.COCHABAMBA,
-          categoria: Categoria.ADMINISTRACION,
-          horario: 'Lun-Vie 14:00 a 18:00',
-          salario: 1500.0,
-          telefono: '71111111',
-          tipoJornada: TipoJornada.MEDIA_JORNADA,
-          expiraEn,
+          location: 'Cochabamba, zona sur',
+          department: Department.COCHABAMBA,
+          category: Category.ADMINISTRACION,
+          schedule: 'Lun-Vie 14:00 a 18:00',
+          salary: 1500.0,
+          phone: '71111111',
+          jobType: JobType.MEDIA_JORNADA,
+          expiresAt,
           createdById: empleador.id,
         },
       ],

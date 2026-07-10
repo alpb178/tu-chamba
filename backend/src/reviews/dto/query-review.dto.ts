@@ -5,7 +5,7 @@ import { IsInt, IsOptional, IsUUID, Min } from 'class-validator';
 export class QueryReviewDto {
   @ApiProperty({ description: 'ID del empleador' })
   @IsUUID()
-  empleadorId: string;
+  employerId: string;
 
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()

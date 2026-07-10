@@ -3,7 +3,7 @@ import './globals.css';
 import { AuthProvider } from '@/lib/auth';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { VerificacionBanner } from '@/components/VerificacionBanner';
+import { VerificationBanner } from '@/components/VerificationBanner';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tu-chamba.corpsc.com';
 
@@ -33,7 +33,7 @@ export default function RootLayout({
         <AuthProvider>
           <div className="flex min-h-screen flex-col">
             <Navbar />
-            <VerificacionBanner />
+            <VerificationBanner />
             <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6">
               {children}
             </main>

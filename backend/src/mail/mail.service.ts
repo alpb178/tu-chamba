@@ -35,9 +35,9 @@ export class MailService {
     await this.transporter.sendMail({ from: this.from, to, subject, html });
   }
 
-  async sendVerification(to: string, nombre: string, link: string) {
+  async sendVerification(to: string, name: string, link: string) {
     const html = `
-      <p>Hola ${nombre},</p>
+      <p>Hola ${name},</p>
       <p>Gracias por registrarte en <strong>Tu Chamba</strong>. Confirma tu correo para activar tu cuenta:</p>
       <p><a href="${link}" style="background:#102136;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">Verificar mi correo</a></p>
       <p>O copia este enlace: ${link}</p>

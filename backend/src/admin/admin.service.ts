@@ -51,8 +51,8 @@ export class AdminService {
     ] = await Promise.all([
       this.prisma.user.groupBy({ by: ['role'], _count: true }),
       this.prisma.user.count(),
-      this.prisma.anuncio.count(),
-      this.prisma.anuncio.findMany({
+      this.prisma.ad.count(),
+      this.prisma.ad.findMany({
         where: { createdAt: { gte: since } },
         select: { createdAt: true },
       }),

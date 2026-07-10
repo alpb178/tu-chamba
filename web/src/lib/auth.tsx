@@ -15,16 +15,16 @@ type RegisterRole = Extract<Role, 'TRABAJADOR' | 'EMPLEADOR'>;
 interface RegisterData {
   email: string;
   password: string;
-  nombre: string;
+  name: string;
   // Obligatorio solo para EMPLEADOR (validado por la API).
-  telefono?: string;
+  phone?: string;
   role: RegisterRole;
 }
 
 // Respuesta de /auth/google: sesión iniciada, o falta completar el perfil
 // (cuenta nueva: la API necesita rol y, si es empleador, teléfono).
 export type GoogleResult =
-  | { needsProfile: true; email: string; nombre: string }
+  | { needsProfile: true; email: string; name: string }
   | { needsProfile: false; user: User };
 
 interface AuthContextValue {
@@ -34,7 +34,7 @@ interface AuthContextValue {
   register: (data: RegisterData) => Promise<User>;
   loginWithGoogle: (
     idToken: string,
-    extra?: { role: RegisterRole; telefono?: string },
+    extra?: { role: RegisterRole; phone?: string },
   ) => Promise<GoogleResult>;
   refresh: () => Promise<void>;
   logout: () => void;
@@ -80,17 +80,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function loginWithGoogle(
     idToken: string,
-    extra?: { role: RegisterRole; telefono?: string },
+    extra?: { role: RegisterRole; phone?: string },
   ): Promise<GoogleResult> {
     const res = await api<
-      | { needsProfile: true; email: string; nombre: string }
+      | { needsProfile: true; email: string; name: string }
       | { accessToken: string; user: User }
     >('/auth/google', {
       method: 'POST',
       body: JSON.stringify({ idToken, ...extra }),
     });
     if ('needsProfile' in res && res.needsProfile) {
-      return { needsProfile: true, email: res.email, nombre: res.nombre };
+      return { needsProfile: true, email: res.email, name: res.name };
     }
     const session = res as { accessToken: string; user: User };
     setToken(session.accessToken);
