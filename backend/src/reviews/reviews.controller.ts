@@ -34,9 +34,9 @@ export class ReviewsController {
 
   // Público: reseñas y promedio de un empleador (no expone datos de contacto).
   @Get()
-  findByEmpleador(@Query() query: QueryReviewDto) {
-    return this.reviews.findByEmpleador(
-      query.empleadorId,
+  findByEmployer(@Query() query: QueryReviewDto) {
+    return this.reviews.findByEmployer(
+      query.employerId,
       query.page ?? 1,
       query.limit ?? 20,
     );

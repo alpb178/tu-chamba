@@ -5,20 +5,20 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { api } from '@/lib/api';
 import {
-  Anuncio,
-  Categoria,
-  CATEGORIA_LABEL,
-  Departamento,
-  DEPARTAMENTO_LABEL,
-  DURACIONES_DIAS,
-  TipoJornada,
+  Ad,
+  Category,
+  CATEGORY_LABEL,
+  Department,
+  DEPARTMENT_LABEL,
+  DURATION_DAYS,
+  JobType,
 } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { Button, FormField, Input, Select } from '@/components/ui';
 
 // Leaflet usa window: solo en cliente.
 const MapPicker = dynamic(
-  () => import('@/components/Mapa').then((m) => m.MapPicker),
+  () => import('@/components/MapPicker').then((m) => m.MapPicker),
   { ssr: false, loading: () => <div className="h-64 rounded-md bg-gray-100" /> },
 );
 
@@ -29,45 +29,45 @@ function Form() {
   const { user, loading: authLoading } = useAuth();
 
   const [form, setForm] = useState({
-    descripcion: '',
-    requisitos: '',
-    ubicacion: '',
-    departamento: '' as Departamento | '',
-    categoria: '' as Categoria | '',
-    horario: '',
-    salario: '',
-    telefono: '',
-    tipoJornada: 'TIEMPO_COMPLETO' as TipoJornada,
-    duracionDias: 3,
+    description: '',
+    requirements: '',
+    location: '',
+    department: '' as Department | '',
+    category: '' as Category | '',
+    schedule: '',
+    salary: '',
+    phone: '',
+    jobType: 'TIEMPO_COMPLETO' as JobType,
+    durationDays: 3,
   });
   // Pin del mapa (opcional). Se guarda junto al anuncio.
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
-  const [cargado, setCargado] = useState(!editId);
+  const [loaded, setLoaded] = useState(!editId);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   // Empleador (no admin) con correo sin verificar no puede publicar.
-  const noVerificado = !!user && user.role !== 'ADMIN' && !user.emailVerified;
+  const notVerified = !!user && user.role !== 'ADMIN' && !user.emailVerified;
 
   useEffect(() => {
     if (editId) {
-      api<Anuncio>(`/anuncios/${editId}`).then((a) => {
+      api<Ad>(`/ads/${editId}`).then((a) => {
         setForm({
-          descripcion: a.descripcion,
-          requisitos: a.requisitos ?? '',
-          ubicacion: a.ubicacion ?? '',
-          departamento: a.departamento ?? '',
-          categoria: a.categoria ?? '',
-          horario: a.horario ?? '',
-          salario: String(a.salario),
-          telefono: a.telefono,
-          tipoJornada: a.tipoJornada,
-          duracionDias: a.duracionDias ?? 3,
+          description: a.description,
+          requirements: a.requirements ?? '',
+          location: a.location ?? '',
+          department: a.department ?? '',
+          category: a.category ?? '',
+          schedule: a.schedule ?? '',
+          salary: String(a.salary),
+          phone: a.phone,
+          jobType: a.jobType,
+          durationDays: a.durationDays ?? 3,
         });
-        if (a.latitud != null && a.longitud != null) {
-          setCoords({ lat: a.latitud, lng: a.longitud });
+        if (a.latitude != null && a.longitude != null) {
+          setCoords({ lat: a.latitude, lng: a.longitude });
         }
-        setCargado(true);
+        setLoaded(true);
       });
     }
   }, [editId]);
@@ -75,8 +75,8 @@ function Form() {
   // Al crear, el teléfono se precarga con el del perfil del empleador
   // (es el que usarán los botones Llamar y Chatear). Sigue siendo editable.
   useEffect(() => {
-    if (!editId && user?.telefono) {
-      setForm((f) => (f.telefono ? f : { ...f, telefono: user.telefono! }));
+    if (!editId && user?.phone) {
+      setForm((f) => (f.phone ? f : { ...f, phone: user.phone! }));
     }
   }, [editId, user]);
 
@@ -94,26 +94,26 @@ function Form() {
     setSaving(true);
     try {
       const payload = {
-        descripcion: form.descripcion,
-        requisitos: form.requisitos.trim() || undefined,
-        ubicacion: form.ubicacion,
-        departamento: form.departamento,
-        categoria: form.categoria,
-        latitud: coords?.lat,
-        longitud: coords?.lng,
-        horario: form.horario.trim() || undefined,
-        salario: Number(form.salario),
-        telefono: form.telefono,
-        tipoJornada: form.tipoJornada,
-        duracionDias: form.duracionDias,
+        description: form.description,
+        requirements: form.requirements.trim() || undefined,
+        location: form.location,
+        department: form.department,
+        category: form.category,
+        latitude: coords?.lat,
+        longitude: coords?.lng,
+        schedule: form.schedule.trim() || undefined,
+        salary: Number(form.salary),
+        phone: form.phone,
+        jobType: form.jobType,
+        durationDays: form.durationDays,
       };
       if (editId) {
-        await api(`/anuncios/${editId}`, {
+        await api(`/ads/${editId}`, {
           method: 'PATCH',
           body: JSON.stringify(payload),
         });
       } else {
-        await api('/anuncios', {
+        await api('/ads', {
           method: 'POST',
           body: JSON.stringify(payload),
         });
@@ -131,7 +131,7 @@ function Form() {
       <h1 className="mb-4 text-xl font-semibold text-gray-800">
         {editId ? 'Editar anuncio' : 'Publicar anuncio'}
       </h1>
-      {noVerificado && (
+      {notVerified && (
         <div className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
           Verifica tu correo para poder publicar. Revisa el enlace que te
           enviamos o reenvíalo desde el aviso superior.
@@ -142,8 +142,8 @@ function Form() {
           <textarea
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             rows={4}
-            value={form.descripcion}
-            onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
             required
           />
         </FormField>
@@ -152,23 +152,23 @@ function Form() {
             className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             rows={3}
             placeholder="Experiencia, disponibilidad, documentación..."
-            value={form.requisitos}
-            onChange={(e) => setForm({ ...form, requisitos: e.target.value })}
+            value={form.requirements}
+            onChange={(e) => setForm({ ...form, requirements: e.target.value })}
           />
         </FormField>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="Departamento">
             <Select
-              value={form.departamento}
+              value={form.department}
               onChange={(e) =>
-                setForm({ ...form, departamento: e.target.value as Departamento })
+                setForm({ ...form, department: e.target.value as Department })
               }
               required
             >
               <option value="" disabled>
                 Selecciona…
               </option>
-              {Object.entries(DEPARTAMENTO_LABEL).map(([value, label]) => (
+              {Object.entries(DEPARTMENT_LABEL).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
@@ -177,16 +177,16 @@ function Form() {
           </FormField>
           <FormField label="Categoría / rubro">
             <Select
-              value={form.categoria}
+              value={form.category}
               onChange={(e) =>
-                setForm({ ...form, categoria: e.target.value as Categoria })
+                setForm({ ...form, category: e.target.value as Category })
               }
               required
             >
               <option value="" disabled>
                 Selecciona…
               </option>
-              {Object.entries(CATEGORIA_LABEL).map(([value, label]) => (
+              {Object.entries(CATEGORY_LABEL).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>
@@ -197,20 +197,20 @@ function Form() {
         <FormField label="Ubicación del puesto">
           <Input
             placeholder="Zona o dirección de referencia"
-            value={form.ubicacion}
-            onChange={(e) => setForm({ ...form, ubicacion: e.target.value })}
+            value={form.location}
+            onChange={(e) => setForm({ ...form, location: e.target.value })}
             required
           />
         </FormField>
         <FormField label="Marca el lugar en el mapa (opcional)">
           {/* Se monta cuando ya se cargaron los datos en edición, para centrar el pin existente. */}
-          {cargado && (
+          {loaded && (
             <MapPicker
               lat={coords?.lat ?? null}
               lng={coords?.lng ?? null}
               onChange={(lat, lng) => setCoords({ lat, lng })}
-              onPlace={(nombre) =>
-                setForm((f) => (f.ubicacion ? f : { ...f, ubicacion: nombre }))
+              onPlace={(name) =>
+                setForm((f) => (f.location ? f : { ...f, location: name }))
               }
             />
           )}
@@ -218,31 +218,31 @@ function Form() {
         <FormField label="Horario de trabajo (opcional)">
           <Input
             placeholder="Ej. Lun-Vie 8:00 a 16:00"
-            value={form.horario}
-            onChange={(e) => setForm({ ...form, horario: e.target.value })}
+            value={form.schedule}
+            onChange={(e) => setForm({ ...form, schedule: e.target.value })}
           />
         </FormField>
         <FormField label="Salario (Bs)">
           <Input
             type="number"
             min={1}
-            value={form.salario}
-            onChange={(e) => setForm({ ...form, salario: e.target.value })}
+            value={form.salary}
+            onChange={(e) => setForm({ ...form, salary: e.target.value })}
             required
           />
         </FormField>
         <FormField label="Teléfono de contacto (WhatsApp)">
           <Input
-            value={form.telefono}
-            onChange={(e) => setForm({ ...form, telefono: e.target.value })}
+            value={form.phone}
+            onChange={(e) => setForm({ ...form, phone: e.target.value })}
             required
           />
         </FormField>
         <FormField label="Tipo de jornada">
           <Select
-            value={form.tipoJornada}
+            value={form.jobType}
             onChange={(e) =>
-              setForm({ ...form, tipoJornada: e.target.value as TipoJornada })
+              setForm({ ...form, jobType: e.target.value as JobType })
             }
           >
             <option value="DIARIA">Diaria</option>
@@ -252,12 +252,12 @@ function Form() {
         </FormField>
         <FormField label="Duración de la publicación">
           <Select
-            value={form.duracionDias}
+            value={form.durationDays}
             onChange={(e) =>
-              setForm({ ...form, duracionDias: Number(e.target.value) })
+              setForm({ ...form, durationDays: Number(e.target.value) })
             }
           >
-            {DURACIONES_DIAS.map((d) => (
+            {DURATION_DAYS.map((d) => (
               <option key={d} value={d}>
                 {d} días{d === 3 ? ' (por defecto)' : ''}
               </option>
@@ -265,7 +265,7 @@ function Form() {
           </Select>
         </FormField>
         {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" className="w-full" disabled={saving || noVerificado}>
+        <Button type="submit" className="w-full" disabled={saving || notVerified}>
           {saving ? 'Guardando...' : editId ? 'Guardar cambios' : 'Publicar'}
         </Button>
       </form>
@@ -273,7 +273,7 @@ function Form() {
   );
 }
 
-export default function NuevoAnuncioPage() {
+export default function NewAdPage() {
   return (
     <Suspense fallback={<p className="text-gray-500">Cargando...</p>}>
       <Form />

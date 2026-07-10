@@ -1,8 +1,8 @@
 export type Role = 'ADMIN' | 'TRABAJADOR' | 'EMPLEADOR';
 
-export type TipoJornada = 'DIARIA' | 'TIEMPO_COMPLETO' | 'MEDIA_JORNADA';
+export type JobType = 'DIARIA' | 'TIEMPO_COMPLETO' | 'MEDIA_JORNADA';
 
-export const TIPO_JORNADA_LABEL: Record<TipoJornada, string> = {
+export const JOB_TYPE_LABEL: Record<JobType, string> = {
   DIARIA: 'Diaria',
   TIEMPO_COMPLETO: 'Tiempo completo',
   MEDIA_JORNADA: 'Media jornada',
@@ -11,19 +11,20 @@ export const TIPO_JORNADA_LABEL: Record<TipoJornada, string> = {
 export interface User {
   id: string;
   email: string;
-  nombre: string;
-  telefono: string;
+  emailVerified: boolean;
+  name: string;
+  phone: string;
   role: Role;
 }
 
-export interface Anuncio {
+export interface Ad {
   id: string;
-  descripcion: string;
-  salario: string | number;
-  telefono: string;
-  tipoJornada: TipoJornada;
+  description: string;
+  salary: string | number;
+  phone: string;
+  jobType: JobType;
   createdById: string;
-  createdBy?: { id: string; nombre: string; email: string };
+  createdBy?: { id: string; name: string; email: string };
   createdAt: string;
 }
 

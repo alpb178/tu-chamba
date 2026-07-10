@@ -18,9 +18,9 @@ export class GoogleAuthDto {
 
   @ApiPropertyOptional({ description: 'Obligatorio si role es EMPLEADOR' })
   @ValidateIf(
-    (o) => o.role === RegisterRole.EMPLEADOR || (o.telefono ?? '') !== '',
+    (o) => o.role === RegisterRole.EMPLEADOR || (o.phone ?? '') !== '',
   )
   @IsString()
   @IsNotEmpty({ message: 'El teléfono es obligatorio para empleadores' })
-  telefono?: string;
+  phone?: string;
 }

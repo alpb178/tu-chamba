@@ -7,7 +7,7 @@ import {
   TouchableOpacityProps,
   View,
 } from 'react-native';
-import { TipoJornada, TIPO_JORNADA_LABEL } from '@/lib/types';
+import { JobType, JOB_TYPE_LABEL } from '@/lib/types';
 
 export function Button({
   title,
@@ -51,22 +51,22 @@ export function Field({
   );
 }
 
-const BADGE_COLORS: Record<TipoJornada, string> = {
+const BADGE_COLORS: Record<JobType, string> = {
   DIARIA: 'bg-orange-100',
   TIEMPO_COMPLETO: 'bg-green-100',
   MEDIA_JORNADA: 'bg-blue-100',
 };
-const BADGE_TEXT: Record<TipoJornada, string> = {
+const BADGE_TEXT: Record<JobType, string> = {
   DIARIA: 'text-orange-800',
   TIEMPO_COMPLETO: 'text-green-800',
   MEDIA_JORNADA: 'text-blue-800',
 };
 
-export function Badge({ tipo }: { tipo: TipoJornada }) {
+export function Badge({ jobType }: { jobType: JobType }) {
   return (
-    <View className={`self-start rounded-full px-2.5 py-0.5 ${BADGE_COLORS[tipo]}`}>
-      <Text className={`text-xs font-medium ${BADGE_TEXT[tipo]}`}>
-        {TIPO_JORNADA_LABEL[tipo]}
+    <View className={`self-start rounded-full px-2.5 py-0.5 ${BADGE_COLORS[jobType]}`}>
+      <Text className={`text-xs font-medium ${BADGE_TEXT[jobType]}`}>
+        {JOB_TYPE_LABEL[jobType]}
       </Text>
     </View>
   );

@@ -14,8 +14,8 @@ async function main() {
     create: {
       email: 'admin@tuchamba.com',
       password: passwordHash,
-      nombre: 'Administrador',
-      telefono: '70000000',
+      name: 'Administrador',
+      phone: '70000000',
       role: Role.ADMIN,
       emailVerified: true,
     },

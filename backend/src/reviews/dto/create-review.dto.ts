@@ -5,7 +5,7 @@ import { IsInt, IsNotEmpty, IsString, IsUUID, Max, Min } from 'class-validator';
 export class CreateReviewDto {
   @ApiProperty({ description: 'ID del empleador a reseñar' })
   @IsUUID()
-  empleadorId: string;
+  employerId: string;
 
   @ApiProperty({ example: 4, minimum: 1, maximum: 5 })
   @Type(() => Number)
@@ -17,5 +17,5 @@ export class CreateReviewDto {
   @ApiProperty({ example: 'Buen trato y pago puntual.' })
   @IsString()
   @IsNotEmpty({ message: 'El comentario es obligatorio' })
-  comentario: string;
+  comment: string;
 }

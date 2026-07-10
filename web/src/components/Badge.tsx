@@ -1,17 +1,17 @@
-import { TipoJornada, TIPO_JORNADA_LABEL } from '@/lib/types';
+import { JobType, JOB_TYPE_LABEL } from '@/lib/types';
 
-const COLORS: Record<TipoJornada, string> = {
+const COLORS: Record<JobType, string> = {
   DIARIA: 'bg-orange-100 text-orange-800',
   TIEMPO_COMPLETO: 'bg-green-100 text-green-800',
   MEDIA_JORNADA: 'bg-blue-100 text-blue-800',
 };
 
-export function Badge({ tipo }: { tipo: TipoJornada }) {
+export function Badge({ jobType }: { jobType: JobType }) {
   return (
     <span
-      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${COLORS[tipo]}`}
+      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${COLORS[jobType]}`}
     >
-      {TIPO_JORNADA_LABEL[tipo]}
+      {JOB_TYPE_LABEL[jobType]}
     </span>
   );
 }

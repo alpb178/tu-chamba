@@ -31,9 +31,9 @@ export function GoogleSignIn() {
   const buttonRef = useRef<HTMLDivElement>(null);
 
   const [idToken, setIdToken] = useState<string | null>(null);
-  const [nombre, setNombre] = useState('');
+  const [name, setName] = useState('');
   const [role, setRole] = useState<'TRABAJADOR' | 'EMPLEADOR'>('TRABAJADOR');
-  const [telefono, setTelefono] = useState('');
+  const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -46,7 +46,7 @@ export function GoogleSignIn() {
       if (res.needsProfile) {
         // Cuenta nueva: pedimos rol (y teléfono si será empleador).
         setIdToken(token);
-        setNombre(res.nombre);
+        setName(res.name);
       } else {
         router.push('/');
       }
@@ -90,7 +90,7 @@ export function GoogleSignIn() {
 
   if (!CLIENT_ID) return null;
 
-  async function completarPerfil(e: React.FormEvent) {
+  async function completeProfile(e: React.FormEvent) {
     e.preventDefault();
     if (!idToken) return;
     setError(null);
@@ -98,7 +98,7 @@ export function GoogleSignIn() {
     try {
       const res = await loginWithGoogle(idToken, {
         role,
-        telefono: telefono.trim() || undefined,
+        phone: phone.trim() || undefined,
       });
       if (!res.needsProfile) router.push('/');
     } catch (err) {
@@ -118,11 +118,11 @@ export function GoogleSignIn() {
 
       {idToken ? (
         <form
-          onSubmit={completarPerfil}
+          onSubmit={completeProfile}
           className="space-y-3 rounded-md border border-gray-200 p-3"
         >
           <p className="text-sm text-gray-700">
-            ¡Hola{nombre ? `, ${nombre}` : ''}! Para terminar de crear tu
+            ¡Hola{name ? `, ${name}` : ''}! Para terminar de crear tu
             cuenta, cuéntanos cómo usarás Tu Chamba.
           </p>
           <FormField label="Quiero registrarme como">
@@ -142,8 +142,8 @@ export function GoogleSignIn() {
             }
           >
             <Input
-              value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               required={role === 'EMPLEADOR'}
             />
           </FormField>

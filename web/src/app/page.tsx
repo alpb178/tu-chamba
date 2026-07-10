@@ -2,17 +2,17 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import { Anuncio, Facetas, Paginated } from '@/lib/types';
+import { Ad, Facets, Paginated } from '@/lib/types';
 import { SearchBar } from '@/components/SearchBar';
-import { FiltrosSidebar, Filtros, SIN_FILTROS } from '@/components/FiltrosSidebar';
-import { AnuncioCard } from '@/components/AnuncioCard';
+import { FiltersSidebar, Filters, NO_FILTERS } from '@/components/FiltersSidebar';
+import { AdCard } from '@/components/AdCard';
 import { Pagination } from '@/components/Pagination';
-import { MarcasDestacadas } from '@/components/MarcasDestacadas';
+import { FeaturedBrands } from '@/components/FeaturedBrands';
 
 export default function HomePage() {
-  const [data, setData] = useState<Paginated<Anuncio> | null>(null);
-  const [facetas, setFacetas] = useState<Facetas | null>(null);
-  const [filtros, setFiltros] = useState<Filtros>(SIN_FILTROS);
+  const [data, setData] = useState<Paginated<Ad> | null>(null);
+  const [facets, setFacets] = useState<Facets | null>(null);
+  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
@@ -20,8 +20,8 @@ export default function HomePage() {
 
   // Conteos para la barra de filtros (una vez).
   useEffect(() => {
-    api<Facetas>('/anuncios/facetas')
-      .then(setFacetas)
+    api<Facets>('/ads/facets')
+      .then(setFacets)
       .catch(() => {});
   }, []);
 
@@ -30,21 +30,21 @@ export default function HomePage() {
     setError(null);
     try {
       const p = new URLSearchParams();
-      if (filtros.tipoJornada.length) p.set('tipoJornada', filtros.tipoJornada.join(','));
-      if (filtros.departamento.length) p.set('departamento', filtros.departamento.join(','));
-      if (filtros.categoria.length) p.set('categoria', filtros.categoria.join(','));
-      if (filtros.salarioMin != null) p.set('salarioMin', String(filtros.salarioMin));
-      if (filtros.salarioMax != null) p.set('salarioMax', String(filtros.salarioMax));
+      if (filters.jobType.length) p.set('jobType', filters.jobType.join(','));
+      if (filters.department.length) p.set('department', filters.department.join(','));
+      if (filters.category.length) p.set('category', filters.category.join(','));
+      if (filters.salaryMin != null) p.set('salaryMin', String(filters.salaryMin));
+      if (filters.salaryMax != null) p.set('salaryMax', String(filters.salaryMax));
       if (search) p.set('search', search);
       p.set('page', String(page));
       p.set('limit', '12');
-      setData(await api<Paginated<Anuncio>>(`/anuncios?${p}`));
+      setData(await api<Paginated<Ad>>(`/ads?${p}`));
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setLoading(false);
     }
-  }, [filtros, search, page]);
+  }, [filters, search, page]);
 
   useEffect(() => {
     load();
@@ -61,11 +61,11 @@ export default function HomePage() {
       />
 
       <div className="flex flex-col gap-6 md:flex-row md:items-start">
-        <FiltrosSidebar
-          value={filtros}
-          facetas={facetas}
+        <FiltersSidebar
+          value={filters}
+          facets={facets}
           onChange={(f) => {
-            setFiltros(f);
+            setFilters(f);
             setPage(1);
           }}
         />
@@ -87,7 +87,7 @@ export default function HomePage() {
           {/* Tarjetas una debajo de otra. */}
           <div className="grid grid-cols-1 gap-3">
             {data?.items.map((a) => (
-              <AnuncioCard key={a.id} anuncio={a} />
+              <AdCard key={a.id} ad={a} />
             ))}
           </div>
           {data && (
@@ -96,7 +96,7 @@ export default function HomePage() {
         </section>
       </div>
 
-      <MarcasDestacadas />
+      <FeaturedBrands />
     </div>
   );
 }

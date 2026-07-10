@@ -3,49 +3,49 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import {
-  ESTADO_REPORTE_LABEL,
-  EstadoReporte,
-  MOTIVO_REPORTE_LABEL,
-  Reporte,
+  REPORT_STATUS_LABEL,
+  ReportStatus,
+  REPORT_REASON_LABEL,
+  Report,
 } from '@/lib/types';
 import { Button, DataTable, Select } from '@/components/ui';
 
-const ESTADO_STYLE: Record<EstadoReporte, string> = {
+const STATUS_STYLE: Record<ReportStatus, string> = {
   PENDIENTE: 'bg-amber-100 text-amber-800',
   ATENDIDO: 'bg-green-100 text-green-800',
   DESCARTADO: 'bg-gray-200 text-gray-600',
 };
 
-export default function ReportesAdminPage() {
-  const [items, setItems] = useState<Reporte[]>([]);
-  const [filtro, setFiltro] = useState<EstadoReporte | ''>('PENDIENTE');
+export default function ReportsAdminPage() {
+  const [items, setItems] = useState<Report[]>([]);
+  const [filter, setFilter] = useState<ReportStatus | ''>('PENDIENTE');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  function load(estado: EstadoReporte | '' = filtro) {
+  function load(status: ReportStatus | '' = filter) {
     setLoading(true);
     setError(null);
-    api<Reporte[]>(`/reportes${estado ? `?estado=${estado}` : ''}`)
+    api<Report[]>(`/reports${status ? `?status=${status}` : ''}`)
       .then(setItems)
       .catch((e) => setError((e as Error).message))
       .finally(() => setLoading(false));
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => load(), [filtro]);
+  useEffect(() => load(), [filter]);
 
-  async function resolver(r: Reporte, estado: 'ATENDIDO' | 'DESCARTADO') {
-    await api(`/reportes/${r.id}`, {
+  async function resolve(r: Report, status: 'ATENDIDO' | 'DESCARTADO') {
+    await api(`/reports/${r.id}`, {
       method: 'PATCH',
-      body: JSON.stringify({ estado }),
+      body: JSON.stringify({ status }),
     });
     load();
   }
 
   // Atiende el reporte dando de baja el anuncio reportado.
-  async function darDeBajaAnuncio(r: Reporte) {
-    await api(`/anuncios/${r.anuncioId}/baja`, { method: 'POST' });
-    await resolver(r, 'ATENDIDO');
+  async function unpublishAd(r: Report) {
+    await api(`/ads/${r.adId}/unpublish`, { method: 'POST' });
+    await resolve(r, 'ATENDIDO');
   }
 
   return (
@@ -53,8 +53,8 @@ export default function ReportesAdminPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-gray-800">Reportes</h1>
         <Select
-          value={filtro}
-          onChange={(e) => setFiltro(e.target.value as EstadoReporte | '')}
+          value={filter}
+          onChange={(e) => setFilter(e.target.value as ReportStatus | '')}
         >
           <option value="">Todos</option>
           <option value="PENDIENTE">Pendientes</option>
@@ -76,35 +76,35 @@ export default function ReportesAdminPage() {
           {items.map((r) => (
             <tr key={r.id}>
               <td className="max-w-xs truncate px-4 py-3">
-                {r.anuncio?.descripcion ?? '—'}
-                {r.anuncio?.estado === 'DADO_DE_BAJA' && (
+                {r.ad?.description ?? '—'}
+                {r.ad?.status === 'DADO_DE_BAJA' && (
                   <span className="ml-2 text-xs text-gray-400">(de baja)</span>
                 )}
               </td>
-              <td className="px-4 py-3">{MOTIVO_REPORTE_LABEL[r.motivo]}</td>
+              <td className="px-4 py-3">{REPORT_REASON_LABEL[r.reason]}</td>
               <td className="max-w-xs truncate px-4 py-3 text-gray-600">
-                {r.comentario ?? '—'}
+                {r.comment ?? '—'}
               </td>
               <td className="px-4 py-3 text-gray-600">
-                {r.reporter?.nombre ?? '—'}
+                {r.reporter?.name ?? '—'}
               </td>
               <td className="px-4 py-3 text-gray-600">
                 {new Date(r.createdAt).toLocaleDateString('es-BO')}
               </td>
               <td className="px-4 py-3">
                 <span
-                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${ESTADO_STYLE[r.estado]}`}
+                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[r.status]}`}
                 >
-                  {ESTADO_REPORTE_LABEL[r.estado]}
+                  {REPORT_STATUS_LABEL[r.status]}
                 </span>
               </td>
               <td className="px-4 py-3 text-right">
-                {r.estado === 'PENDIENTE' && (
+                {r.status === 'PENDIENTE' && (
                   <div className="flex justify-end gap-2">
-                    <Button variant="danger" onClick={() => darDeBajaAnuncio(r)}>
+                    <Button variant="danger" onClick={() => unpublishAd(r)}>
                       Dar de baja anuncio
                     </Button>
-                    <Button variant="outline" onClick={() => resolver(r, 'DESCARTADO')}>
+                    <Button variant="outline" onClick={() => resolve(r, 'DESCARTADO')}>
                       Descartar
                     </Button>
                   </div>
