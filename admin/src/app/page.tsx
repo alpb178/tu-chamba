@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { AdminStats } from '@/lib/types';
-import { StatCard } from '@/components/ui';
+import { ChartCardSkeleton, StatCard, StatCardSkeleton } from '@/components/ui';
 import { ChartCard, DailyColumns, HorizontalBars } from '@/components/charts';
 import { FeaturedBrands } from '@/components/FeaturedBrands';
 
@@ -27,21 +27,40 @@ export default function DashboardPage() {
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Usuarios registrados" value={stats?.users.total ?? '—'} />
-        <StatCard label="Anuncios publicados" value={stats?.ads.total ?? '—'} />
-        <StatCard
-          label="Visitas (últimas 24 h)"
-          value={stats?.visits.last24h ?? '—'}
-        />
-        <StatCard
-          label="Visitas (últimos 7 días)"
-          value={stats?.visits.last7Days ?? '—'}
-        />
-      </div>
+      {/* Mientras cargan las stats, siluetas con la misma grilla. */}
+      {!stats && !error && (
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }, (_, i) => (
+              <StatCardSkeleton key={i} />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <ChartCardSkeleton />
+            <ChartCardSkeleton />
+          </div>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            <ChartCardSkeleton height="h-24" />
+            <ChartCardSkeleton height="h-24" />
+          </div>
+        </>
+      )}
 
       {stats && (
         <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard label="Usuarios registrados" value={stats.users.total} />
+            <StatCard label="Anuncios publicados" value={stats.ads.total} />
+            <StatCard
+              label="Visitas (últimas 24 h)"
+              value={stats.visits.last24h}
+            />
+            <StatCard
+              label="Visitas (últimos 7 días)"
+              value={stats.visits.last7Days}
+            />
+          </div>
+
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ChartCard title="Anuncios publicados por día (últimos 14 días)">
               <DailyColumns

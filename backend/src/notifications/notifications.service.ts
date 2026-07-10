@@ -74,13 +74,11 @@ export class NotificationsService {
   }
 
   // Nueva calificación recibida (la llama ReviewsService).
-  async notifyReview(review: Review, authorName: string, isNew: boolean) {
+  async notifyReview(review: Review, authorName: string) {
     await this.prisma.notification.create({
       data: {
         type: NotificationType.NUEVA_REVIEW,
-        message: isNew
-          ? `${authorName} te calificó con ${review.rating}★: «${summary(review.comment)}»`
-          : `${authorName} actualizó su calificación a ${review.rating}★`,
+        message: `${authorName} te calificó con ${review.rating}★: «${summary(review.comment)}»`,
         userId: review.employerId,
       },
     });

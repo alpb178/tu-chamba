@@ -125,3 +125,52 @@ export function StatCard({ label, value }: { label: string; value: number | stri
     </div>
   );
 }
+
+// ——— Skeletons: siluetas de carga con pulso, en vez de "Cargando..." ———
+
+export function Skeleton({ className = '' }: { className?: string }) {
+  return <div className={`animate-pulse rounded bg-gray-200 ${className}`} />;
+}
+
+// Tabla en carga: mismas cabeceras reales, filas con siluetas.
+export function TableSkeleton({
+  headers,
+  rows = 6,
+}: {
+  headers: string[];
+  rows?: number;
+}) {
+  return (
+    <div aria-hidden="true">
+      <DataTable headers={headers}>
+        {Array.from({ length: rows }, (_, r) => (
+          <tr key={r}>
+            {headers.map((_, c) => (
+              <td key={c} className="px-4 py-3">
+                <Skeleton className={`h-4 ${c === 0 ? 'w-32' : 'w-20'}`} />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </DataTable>
+    </div>
+  );
+}
+
+export function StatCardSkeleton() {
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-5">
+      <Skeleton className="h-4 w-32" />
+      <Skeleton className="mt-2 h-8 w-16" />
+    </div>
+  );
+}
+
+export function ChartCardSkeleton({ height = 'h-40' }: { height?: string }) {
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-5">
+      <Skeleton className="h-4 w-56" />
+      <Skeleton className={`mt-4 w-full ${height}`} />
+    </div>
+  );
+}

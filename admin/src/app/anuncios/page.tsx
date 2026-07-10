@@ -10,7 +10,26 @@ import {
   adEffectiveStatus,
   Paginated,
 } from '@/lib/types';
-import { Badge, Button, ConfirmDialog, DataTable } from '@/components/ui';
+import {
+  Badge,
+  Button,
+  ConfirmDialog,
+  DataTable,
+  TableSkeleton,
+} from '@/components/ui';
+
+const HEADERS = [
+  'Descripción',
+  'Categoría',
+  'Ubicación',
+  'Salario',
+  'Jornada',
+  'Estado',
+  'Publicado',
+  'Vence',
+  'Autor',
+  '',
+];
 
 const STATUS_STYLE: Record<EffectiveStatus, string> = {
   ACTIVO: 'bg-green-100 text-green-800',
@@ -53,30 +72,17 @@ export default function AdsAdminPage() {
     load();
   }
 
-  if (loading) return <p className="text-gray-500">Cargando...</p>;
-
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold text-gray-800">Anuncios</h1>
-      {error ? (
+      {loading ? (
+        <TableSkeleton headers={HEADERS} rows={8} />
+      ) : error ? (
         <p className="text-sm text-red-600">{error}</p>
       ) : items.length === 0 ? (
         <p className="text-gray-500">No hay anuncios.</p>
       ) : (
-      <DataTable
-        headers={[
-          'Descripción',
-          'Categoría',
-          'Ubicación',
-          'Salario',
-          'Jornada',
-          'Estado',
-          'Publicado',
-          'Vence',
-          'Autor',
-          '',
-        ]}
-      >
+      <DataTable headers={HEADERS}>
         {items.map((ad) => {
           const status = adEffectiveStatus(ad);
           return (

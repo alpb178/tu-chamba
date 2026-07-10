@@ -6,6 +6,7 @@ import { api } from '@/lib/api';
 import { Ad } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { Badge, Button } from '@/components/ui';
+import { Pulse, Skeleton } from '@/components/Skeleton';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Detail'>;
 
@@ -18,7 +19,21 @@ export function DetailScreen({ route, navigation }: Props) {
     api<Ad>(`/ads/${id}`).then(setAd).catch(() => {});
   }, [id]);
 
-  if (!ad) return <Text className="p-6 text-gray-500">Cargando...</Text>;
+  if (!ad)
+    return (
+      <View className="flex-1 bg-gray-50 p-4">
+        <Pulse>
+          <View className="rounded-lg border border-gray-200 bg-white p-4">
+            <Skeleton className="mb-3 h-5 w-24 rounded-full" />
+            <Skeleton className="mb-1.5 h-4 w-11/12" />
+            <Skeleton className="mb-1.5 h-4 w-full" />
+            <Skeleton className="mb-4 h-4 w-1/2" />
+            <Skeleton className="mb-2 h-7 w-28" />
+            <Skeleton className="h-4 w-40" />
+          </View>
+        </Pulse>
+      </View>
+    );
 
   const canEdit =
     user && (user.role === 'ADMIN' || user.id === ad.createdById);

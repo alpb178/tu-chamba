@@ -7,6 +7,7 @@ import { api } from '@/lib/api';
 import { Ad, adEffectiveStatus } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { AdCard } from '@/components/AdCard';
+import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui';
 
 export default function MyAdsPage() {
@@ -43,7 +44,15 @@ export default function MyAdsPage() {
   }
 
   if (authLoading || loading)
-    return <p className="text-gray-500">Cargando...</p>;
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-7 w-40" />
+          <Skeleton className="h-9 w-36 rounded-md" />
+        </div>
+        <AdListSkeleton count={3} />
+      </div>
+    );
 
   return (
     <div className="space-y-4">
