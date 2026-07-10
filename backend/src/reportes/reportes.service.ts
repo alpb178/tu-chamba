@@ -4,9 +4,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { EstadoReporte, Prisma } from '@prisma/client';
+import { EstadoReporte, Prisma, TraceType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { TracesService } from '../traces/traces.service';
 import { CreateReporteDto } from './dto/create-reporte.dto';
+import { AuthUser } from '../auth/decorators/current-user.decorator';
 
 const includeDetalle = {
   anuncio: {
@@ -22,7 +24,10 @@ const includeDetalle = {
 
 @Injectable()
 export class ReportesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private traces: TracesService,
+  ) {}
 
   async create(dto: CreateReporteDto, reporterId: string) {
     const anuncio = await this.prisma.anuncio.findUnique({
@@ -66,13 +71,19 @@ export class ReportesService {
 
   // El admin marca el reporte como atendido o descartado. La baja del
   // anuncio, si corresponde, se hace por el endpoint de baja de anuncios.
-  async resolve(id: string, estado: EstadoReporte) {
+  async resolve(id: string, estado: EstadoReporte, actor: AuthUser) {
     const reporte = await this.prisma.reporte.findUnique({ where: { id } });
     if (!reporte) throw new NotFoundException('Reporte no encontrado');
-    return this.prisma.reporte.update({
+    const actualizado = await this.prisma.reporte.update({
       where: { id },
       data: { estado },
       include: includeDetalle,
     });
+    await this.traces.record(
+      TraceType.REPORT_RESOLVED,
+      `Reporte por ${reporte.motivo} marcado como ${estado} por ${actor.email}`,
+      actor,
+    );
+    return actualizado;
   }
 }

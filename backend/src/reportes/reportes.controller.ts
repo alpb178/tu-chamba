@@ -44,7 +44,11 @@ export class ReportesController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Patch(':id')
-  resolve(@Param('id') id: string, @Body() dto: ResolveReporteDto) {
-    return this.reportes.resolve(id, dto.estado);
+  resolve(
+    @Param('id') id: string,
+    @Body() dto: ResolveReporteDto,
+    @CurrentUser() actor: AuthUser,
+  ) {
+    return this.reportes.resolve(id, dto.estado, actor);
   }
 }

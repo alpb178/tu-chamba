@@ -10,6 +10,7 @@ import {
   Prisma,
   Role,
   TipoJornada,
+  TraceType,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateAnuncioDto } from './dto/create-anuncio.dto';
@@ -22,6 +23,7 @@ import {
 } from './dto/query-anuncio.dto';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
 import { NotificacionesService } from '../notificaciones/notificaciones.service';
+import { TracesService } from '../traces/traces.service';
 
 const includeAutor = {
   createdBy: { select: { id: true, nombre: true, email: true } },
@@ -47,11 +49,17 @@ function whereVigente(): Prisma.AnuncioWhereInput {
   return { estado: EstadoAnuncio.ACTIVO, expiraEn: { gt: new Date() } };
 }
 
+// Descripción corta para las trazas del sistema.
+function resumen(descripcion: string) {
+  return descripcion.length > 60 ? `${descripcion.slice(0, 60)}…` : descripcion;
+}
+
 @Injectable()
 export class AnunciosService {
   constructor(
     private prisma: PrismaService,
     private notificaciones: NotificacionesService,
+    private traces: TracesService,
   ) {}
 
   // Listado público: solo anuncios vigentes (activos y no vencidos).
@@ -204,6 +212,11 @@ export class AnunciosService {
     } catch {
       /* noop: la notificación es best-effort */
     }
+    await this.traces.record(
+      TraceType.AD_CREATED,
+      `Anuncio "${resumen(anuncio.descripcion)}" publicado por ${anuncio.createdBy.email}`,
+      anuncio.createdBy,
+    );
     return anuncio;
   }
 
@@ -228,18 +241,24 @@ export class AnunciosService {
   async darDeBaja(id: string, user: AuthUser) {
     const anuncio = await this.findOne(id);
     this.assertCanModify(anuncio.createdById, user);
-    return this.prisma.anuncio.update({
+    const actualizado = await this.prisma.anuncio.update({
       where: { id },
       data: { estado: EstadoAnuncio.DADO_DE_BAJA },
       include: includeAutor,
     });
+    await this.traces.record(
+      TraceType.AD_UNPUBLISHED,
+      `Anuncio "${resumen(anuncio.descripcion)}" dado de baja por ${user.email}`,
+      user,
+    );
+    return actualizado;
   }
 
   // Reactiva un anuncio vencido o dado de baja con una nueva ventana de vigencia.
   async republicar(id: string, user: AuthUser) {
     const anuncio = await this.findOne(id);
     this.assertCanModify(anuncio.createdById, user);
-    return this.prisma.anuncio.update({
+    const actualizado = await this.prisma.anuncio.update({
       where: { id },
       data: {
         estado: EstadoAnuncio.ACTIVO,
@@ -249,12 +268,23 @@ export class AnunciosService {
       },
       include: includeAutor,
     });
+    await this.traces.record(
+      TraceType.AD_REPUBLISHED,
+      `Anuncio "${resumen(anuncio.descripcion)}" republicado por ${user.email}`,
+      user,
+    );
+    return actualizado;
   }
 
   // Borrado físico: reservado al ADMIN (los dueños usan la baja).
-  async remove(id: string) {
-    await this.findOne(id);
+  async remove(id: string, user: AuthUser) {
+    const anuncio = await this.findOne(id);
     await this.prisma.anuncio.delete({ where: { id } });
+    await this.traces.record(
+      TraceType.AD_DELETED,
+      `Anuncio "${resumen(anuncio.descripcion)}" eliminado por ${user.email}`,
+      user,
+    );
     return { deleted: true };
   }
 

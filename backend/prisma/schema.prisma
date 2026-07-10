@@ -76,6 +76,21 @@ enum TipoNotificacion {
   NUEVO_ANUNCIO
 }
 
+// Eventos que registra la traza del sistema (auditoría, solo lectura).
+enum TraceType {
+  LOGIN
+  REGISTER
+  EMAIL_VERIFIED
+  ADMIN_CREATED
+  ROLE_UPDATED
+  USER_DELETED
+  AD_CREATED
+  AD_UNPUBLISHED
+  AD_REPUBLISHED
+  AD_DELETED
+  REPORT_RESOLVED
+}
+
 model User {
   id               String    @id @default(uuid())
   email            String    @unique
@@ -134,6 +149,7 @@ model Anuncio {
   vencimientoNotificado Boolean @default(false)
   reportes     Reporte[]
   notificaciones Notificacion[]
+  visits       Visit[]
   createdBy    User          @relation(fields: [createdById], references: [id], onDelete: Cascade)
   createdById  String
   createdAt    DateTime      @default(now())
@@ -184,6 +200,33 @@ model Notificacion {
   createdAt DateTime         @default(now())
 
   @@index([userId, leida])
+}
+
+// Visita a la página de detalle de un anuncio (registrada desde el portal).
+// La relación es opcional (SetNull) para que las métricas de visitas
+// sobrevivan al borrado físico del anuncio.
+model Visit {
+  id        String   @id @default(uuid())
+  ad        Anuncio? @relation(fields: [adId], references: [id], onDelete: SetNull)
+  adId      String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([adId])
+}
+
+// Traza del sistema: eventos relevantes para auditoría. El actor se
+// denormaliza (email) para que la traza sobreviva al borrado del usuario.
+model Trace {
+  id          String    @id @default(uuid())
+  type        TraceType
+  description String
+  actorId     String?
+  actorEmail  String?
+  createdAt   DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([type])
 }
 
 // Reporte de spam/abuso sobre un anuncio. La visibilidad del anuncio

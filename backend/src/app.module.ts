@@ -10,11 +10,15 @@ import { NotificacionesModule } from './notificaciones/notificaciones.module';
 import { AlertasModule } from './alertas/alertas.module';
 import { MailModule } from './mail/mail.module';
 import { HealthModule } from './health/health.module';
+import { TracesModule } from './traces/traces.module';
+import { VisitsModule } from './visits/visits.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    TracesModule,
     MailModule,
     AuthModule,
     UsersModule,
@@ -23,6 +27,8 @@ import { HealthModule } from './health/health.module';
     ReportesModule,
     NotificacionesModule,
     AlertasModule,
+    VisitsModule,
+    AdminModule,
     HealthModule,
   ],
 })

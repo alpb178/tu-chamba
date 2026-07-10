@@ -136,6 +136,59 @@ export interface Reporte {
   createdAt: string;
 }
 
+export type TraceType =
+  | 'LOGIN'
+  | 'REGISTER'
+  | 'EMAIL_VERIFIED'
+  | 'ADMIN_CREATED'
+  | 'ROLE_UPDATED'
+  | 'USER_DELETED'
+  | 'AD_CREATED'
+  | 'AD_UNPUBLISHED'
+  | 'AD_REPUBLISHED'
+  | 'AD_DELETED'
+  | 'REPORT_RESOLVED';
+
+export const TRACE_TYPE_LABEL: Record<TraceType, string> = {
+  LOGIN: 'Inicio de sesión',
+  REGISTER: 'Registro',
+  EMAIL_VERIFIED: 'Correo verificado',
+  ADMIN_CREATED: 'Admin creado',
+  ROLE_UPDATED: 'Rol actualizado',
+  USER_DELETED: 'Usuario eliminado',
+  AD_CREATED: 'Anuncio creado',
+  AD_UNPUBLISHED: 'Anuncio dado de baja',
+  AD_REPUBLISHED: 'Anuncio republicado',
+  AD_DELETED: 'Anuncio eliminado',
+  REPORT_RESOLVED: 'Reporte resuelto',
+};
+
+export interface Trace {
+  id: string;
+  type: TraceType;
+  description: string;
+  actorId: string | null;
+  actorEmail: string | null;
+  createdAt: string;
+}
+
+// Punto de una serie diaria del dashboard (fecha en formato YYYY-MM-DD).
+export interface DayPoint {
+  date: string;
+  total: number;
+}
+
+export interface AdminStats {
+  users: { total: number; byRole: Record<Role, number> };
+  ads: { total: number; byDay: DayPoint[] };
+  visits: {
+    total: number;
+    last24h: number;
+    last7Days: number;
+    byDay: DayPoint[];
+  };
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;

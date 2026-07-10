@@ -12,6 +12,7 @@ const NAV = [
   { href: '/usuarios', label: 'Usuarios' },
   { href: '/anuncios', label: 'Anuncios' },
   { href: '/reportes', label: 'Reportes' },
+  { href: '/trazas', label: 'Trazas' },
 ];
 
 export function AdminLayout({ children }: { children: ReactNode }) {

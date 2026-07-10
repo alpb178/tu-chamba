@@ -10,6 +10,7 @@ import {
 import { Badge } from '@/components/Badge';
 import { Reviews } from '@/components/Reviews';
 import { AnuncioAcciones } from '@/components/AnuncioAcciones';
+import { TrackVisit } from '@/components/TrackVisit';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -41,6 +42,7 @@ export default async function AnuncioDetallePage({ params }: Params) {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+      <TrackVisit adId={anuncio.id} />
       {estado !== 'ACTIVO' && (
         <div className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
           Este anuncio está {ESTADO_LABEL[estado].toLowerCase()} y ya no se

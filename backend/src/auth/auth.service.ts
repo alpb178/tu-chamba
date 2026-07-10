@@ -11,10 +11,11 @@ import * as bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
+import { TracesService } from '../traces/traces.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
-import { User } from '@prisma/client';
+import { TraceType, User } from '@prisma/client';
 
 const VERIF_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -33,6 +34,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
     private mail: MailService,
+    private traces: TracesService,
   ) {}
 
   // Crea un token de verificación y envía el correo (o lo registra en dev).
@@ -91,6 +93,11 @@ export class AuthService {
     });
 
     await this.enviarVerificacion(user);
+    await this.traces.record(
+      TraceType.REGISTER,
+      `Nuevo ${user.role} registrado: ${user.email}`,
+      user,
+    );
     return this.session(user);
   }
 
@@ -102,13 +109,18 @@ export class AuthService {
     if (!vt || vt.expiresAt < new Date()) {
       throw new BadRequestException('El enlace de verificación no es válido o expiró');
     }
-    await this.prisma.$transaction([
+    const [user] = await this.prisma.$transaction([
       this.prisma.user.update({
         where: { id: vt.userId },
         data: { emailVerified: true },
       }),
       this.prisma.verificationToken.deleteMany({ where: { userId: vt.userId } }),
     ]);
+    await this.traces.record(
+      TraceType.EMAIL_VERIFIED,
+      `Correo verificado: ${user.email}`,
+      user,
+    );
     return { verified: true };
   }
 
@@ -139,6 +151,11 @@ export class AuthService {
     const ok = await bcrypt.compare(dto.password, user.password);
     if (!ok) throw new UnauthorizedException('Credenciales inválidas');
 
+    await this.traces.record(
+      TraceType.LOGIN,
+      `Inicio de sesión de ${user.email} (${user.role})`,
+      user,
+    );
     return this.session(user);
   }
 
@@ -159,6 +176,11 @@ export class AuthService {
           data: { googleId: payload.sub },
         });
       }
+      await this.traces.record(
+        TraceType.LOGIN,
+        `Inicio de sesión con Google de ${user.email} (${user.role})`,
+        user,
+      );
       return this.session(user);
     }
 
@@ -182,6 +204,11 @@ export class AuthService {
         emailVerified: true,
       },
     });
+    await this.traces.record(
+      TraceType.REGISTER,
+      `Nuevo ${user.role} registrado con Google: ${user.email}`,
+      user,
+    );
     return this.session(user);
   }
 
