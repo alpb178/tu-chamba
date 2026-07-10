@@ -123,6 +123,8 @@ export interface Ad {
   expiresAt: string;
   createdById: string;
   createdBy?: { id: string; name: string; email: string };
+  // Calificación del empleador; el backend la adjunta en los listados.
+  employerRating?: { average: number | null; count: number };
   createdAt: string;
   updatedAt: string;
 }

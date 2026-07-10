@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Category, Department, JobType } from '@prisma/client';
 
 // Los filtros de lista aceptan selección múltiple como cadenas separadas por
@@ -47,12 +47,14 @@ export class QueryAdDto {
   @Min(1)
   page?: number = 1;
 
-  @ApiPropertyOptional({ default: 20 })
+  // Páginas de 10 pensadas para web y mobile; tope para vistas admin/SEO.
+  @ApiPropertyOptional({ default: 10, maximum: 100 })
   @IsOptional()
   @Type(() => Number)
   @IsInt()
   @Min(1)
-  limit?: number = 20;
+  @Max(100)
+  limit?: number = 10;
 }
 
 // Enums válidos para filtrar (se ignoran valores desconocidos en la query).

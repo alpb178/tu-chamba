@@ -111,7 +111,7 @@ export class AdsService {
 
   private async paginate(query: QueryAdDto, base: Prisma.AdWhereInput) {
     const page = query.page ?? 1;
-    const limit = query.limit ?? 20;
+    const limit = query.limit ?? 10;
 
     const where: Prisma.AdWhereInput = { ...base };
 
@@ -148,12 +148,42 @@ export class AdsService {
     ]);
 
     return {
-      items,
+      items: await this.attachEmployerRatings(items),
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  // Calificación del empleador (promedio y conteo de reviews) para mostrar
+  // en las tarjetas del listado, con una sola consulta agrupada por página.
+  private async attachEmployerRatings<T extends { createdById: string }>(
+    items: T[],
+  ) {
+    const employerIds = [...new Set(items.map((i) => i.createdById))];
+    if (!employerIds.length) return [];
+
+    const grouped = await this.prisma.review.groupBy({
+      by: ['employerId'],
+      where: { employerId: { in: employerIds } },
+      _avg: { rating: true },
+      _count: true,
+    });
+    const byEmployer = new Map(
+      grouped.map((g) => [
+        g.employerId,
+        { average: g._avg.rating, count: g._count },
+      ]),
+    );
+
+    return items.map((item) => ({
+      ...item,
+      employerRating: byEmployer.get(item.createdById) ?? {
+        average: null,
+        count: 0,
+      },
+    }));
   }
 
   async findOne(id: string) {

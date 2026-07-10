@@ -16,9 +16,18 @@ export function AdCard({ ad, onPress }: { ad: Ad; onPress: () => void }) {
         </Text>
         <Badge jobType={ad.jobType} />
       </View>
-      <Text className="text-lg font-bold text-brand">
-        Bs {Number(ad.salary).toLocaleString('es-BO')}
-      </Text>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-lg font-bold text-brand">
+          Bs {Number(ad.salary).toLocaleString('es-BO')}
+        </Text>
+        {ad.employerRating && ad.employerRating.count > 0 && (
+          <Text className="text-xs text-gray-600">
+            <Text className="text-amber-500">★</Text>{' '}
+            {Number(ad.employerRating.average).toFixed(1)} (
+            {ad.employerRating.count})
+          </Text>
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
