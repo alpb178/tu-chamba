@@ -1,6 +1,6 @@
 # Flujo de Trabajo para Desarrolladores — EMX Comunicaciones
 
-> Versión 1.0 — Abril 2026
+> Versión 1.1 — Julio 2026
 
 ---
 
@@ -167,6 +167,26 @@ feature/cambios
 fix/bug
 mi-rama
 ```
+
+### Idioma del código: inglés
+
+La interfaz de usuario va en el idioma del producto (español), pero **a nivel
+de código todo se escribe en inglés**: modelos y campos de base de datos,
+enums y sus valores, clases, servicios, DTOs, rutas de API nuevas, claves de
+payloads JSON, componentes, variables y props. Los textos visibles (labels,
+mensajes de error, notificaciones) se mantienen en español.
+
+```ts
+// ✅ Bien
+TraceType.AD_DELETED   ·  POST /visits   ·  { adId: string }
+
+// ❌ Mal
+TipoTraza.ANUNCIO_ELIMINADO   ·  POST /visitas   ·  { anuncioId: string }
+```
+
+El código legado en español **no se renombra "de paso"** en PRs de features
+(cambiaría contratos de API que consumen otros clientes). Su migración se
+planifica aparte — en tu-chamba, ver `docs/MIGRACION-CODIGO-INGLES.md`.
 
 ### Commits atómicos
 
