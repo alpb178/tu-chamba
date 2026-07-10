@@ -64,9 +64,18 @@ export function AdCard({
           <span className="text-xs text-gray-500">📍 {ad.location}</span>
         )}
       </div>
-      <p className="mt-1 text-xs text-gray-400">
-        Publicado: {new Date(ad.createdAt).toLocaleDateString('es-BO')}
-      </p>
+      <div className="mt-1 flex items-center justify-between">
+        <p className="text-xs text-gray-400">
+          Publicado: {new Date(ad.createdAt).toLocaleDateString('es-BO')}
+        </p>
+        {ad.employerRating && ad.employerRating.count > 0 && (
+          <span className="text-xs text-gray-600">
+            <span aria-hidden="true" className="text-amber-500">★</span>{' '}
+            {Number(ad.employerRating.average).toFixed(1)} (
+            {ad.employerRating.count})
+          </span>
+        )}
+      </div>
     </Link>
   );
 }

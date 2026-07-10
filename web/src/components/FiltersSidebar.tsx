@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Category,
   CATEGORY_LABEL,
@@ -78,7 +78,10 @@ function Option({
   );
 }
 
-// Slider de salario con dos manijas (rango) sobre una pista.
+// Slider de salario con dos manijas (rango) sobre una pista. El arrastre se
+// maneja con Pointer Events propios sobre la pista: el truco de dos <input
+// type="range"> superpuestos depende de pointer-events en el pseudo-elemento
+// del thumb, que Safari no soporta (el filtro "no funcionaba" en Mac/iOS).
 function SalaryRange({
   min,
   max,
@@ -94,16 +97,78 @@ function SalaryRange({
 }) {
   const [lo, setLo] = useState(minValue);
   const [hi, setHi] = useState(maxValue);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef<'lo' | 'hi' | null>(null);
+  // Espejo de los valores para leerlos en pointerup sin closures desfasadas.
+  const values = useRef({ lo: minValue, hi: maxValue });
 
   useEffect(() => {
     setLo(minValue);
     setHi(maxValue);
+    values.current = { lo: minValue, hi: maxValue };
   }, [minValue, maxValue]);
 
   if (max <= min) return null;
   const pct = (v: number) => ((v - min) / (max - min)) * 100;
-  const thumb =
-    '[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-brand [&::-webkit-slider-thumb]:bg-white [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-brand [&::-moz-range-thumb]:bg-white';
+  const keyStep = Math.max(1, Math.round((max - min) / 50));
+
+  const valueAt = (clientX: number) => {
+    const rect = trackRef.current!.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+    return Math.round(min + ratio * (max - min));
+  };
+
+  function setValue(which: 'lo' | 'hi', v: number) {
+    if (which === 'lo') {
+      const next = Math.max(min, Math.min(v, values.current.hi));
+      values.current.lo = next;
+      setLo(next);
+    } else {
+      const next = Math.min(max, Math.max(v, values.current.lo));
+      values.current.hi = next;
+      setHi(next);
+    }
+  }
+
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    const v = valueAt(e.clientX);
+    // Arrastra la manija más cercana al punto tocado.
+    dragging.current =
+      Math.abs(v - values.current.lo) <= Math.abs(v - values.current.hi)
+        ? 'lo'
+        : 'hi';
+    e.currentTarget.setPointerCapture(e.pointerId);
+    setValue(dragging.current, v);
+  }
+
+  function onPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (dragging.current) setValue(dragging.current, valueAt(e.clientX));
+  }
+
+  function onPointerEnd() {
+    if (!dragging.current) return;
+    dragging.current = null;
+    onCommit(values.current.lo, values.current.hi);
+  }
+
+  function onThumbKey(which: 'lo' | 'hi') {
+    return (e: React.KeyboardEvent) => {
+      const current = which === 'lo' ? values.current.lo : values.current.hi;
+      const delta =
+        e.key === 'ArrowLeft' || e.key === 'ArrowDown'
+          ? -keyStep
+          : e.key === 'ArrowRight' || e.key === 'ArrowUp'
+            ? keyStep
+            : null;
+      if (delta == null) return;
+      e.preventDefault();
+      setValue(which, current + delta);
+      onCommit(values.current.lo, values.current.hi);
+    };
+  }
+
+  const thumbClass =
+    'absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50';
 
   return (
     <div>
@@ -111,33 +176,40 @@ function SalaryRange({
         <span>Bs {lo.toLocaleString('es-BO')}</span>
         <span>Bs {hi.toLocaleString('es-BO')}</span>
       </div>
-      <div className="relative h-5">
+      <div
+        ref={trackRef}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerEnd}
+        onPointerCancel={onPointerEnd}
+        className="relative h-5 cursor-pointer touch-none"
+      >
         <div className="absolute top-1/2 h-1 w-full -translate-y-1/2 rounded bg-gray-200" />
         <div
           className="absolute top-1/2 h-1 -translate-y-1/2 rounded bg-brand"
           style={{ left: `${pct(lo)}%`, right: `${100 - pct(hi)}%` }}
         />
-        <input
-          type="range"
-          min={min}
-          max={max}
-          value={lo}
-          onChange={(e) => setLo(Math.min(Number(e.target.value), hi))}
-          onPointerUp={() => onCommit(lo, hi)}
-          onKeyUp={() => onCommit(lo, hi)}
+        <div
+          role="slider"
+          tabIndex={0}
           aria-label="Salario mínimo"
-          className={`pointer-events-none absolute inset-0 h-5 w-full appearance-none bg-transparent ${thumb}`}
+          aria-valuemin={min}
+          aria-valuemax={hi}
+          aria-valuenow={lo}
+          onKeyDown={onThumbKey('lo')}
+          className={thumbClass}
+          style={{ left: `${pct(lo)}%` }}
         />
-        <input
-          type="range"
-          min={min}
-          max={max}
-          value={hi}
-          onChange={(e) => setHi(Math.max(Number(e.target.value), lo))}
-          onPointerUp={() => onCommit(lo, hi)}
-          onKeyUp={() => onCommit(lo, hi)}
+        <div
+          role="slider"
+          tabIndex={0}
           aria-label="Salario máximo"
-          className={`pointer-events-none absolute inset-0 h-5 w-full appearance-none bg-transparent ${thumb}`}
+          aria-valuemin={lo}
+          aria-valuemax={max}
+          aria-valuenow={hi}
+          onKeyDown={onThumbKey('hi')}
+          className={thumbClass}
+          style={{ left: `${pct(hi)}%` }}
         />
       </div>
     </div>

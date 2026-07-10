@@ -36,8 +36,9 @@ export default function HomePage() {
       if (filters.salaryMin != null) p.set('salaryMin', String(filters.salaryMin));
       if (filters.salaryMax != null) p.set('salaryMax', String(filters.salaryMax));
       if (search) p.set('search', search);
+      // Páginas de 10 (mismo tamaño que mobile).
       p.set('page', String(page));
-      p.set('limit', '12');
+      p.set('limit', '10');
       setData(await api<Paginated<Ad>>(`/ads?${p}`));
     } catch (e) {
       setError((e as Error).message);
