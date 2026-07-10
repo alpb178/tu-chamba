@@ -5,6 +5,7 @@ import { api } from '@/lib/api';
 import { Review, ReviewsResponse } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { Button, FormField } from './ui';
+import { ReviewSkeleton } from './Skeleton';
 
 function Stars({ value }: { value: number }) {
   return (
@@ -44,15 +45,6 @@ export function Reviews({
     ? data?.items.find((r) => r.authorId === user.id)
     : undefined;
 
-  // Al editar la reseña propia, precarga el formulario.
-  useEffect(() => {
-    if (ownReview && !submitted) {
-      setRating(ownReview.rating);
-      setComment(ownReview.comment);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ownReview?.id]);
-
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -71,7 +63,8 @@ export function Reviews({
     }
   }
 
-  const canReview = user?.role === 'TRABAJADOR';
+  // Una reseña por empleador: con la propia ya enviada, no hay formulario.
+  const canReview = user?.role === 'TRABAJADOR' && !ownReview;
 
   return (
     <section className="space-y-3 border-t border-gray-100 pt-4">
@@ -94,6 +87,14 @@ export function Reviews({
         </p>
       )}
 
+      {/* Mientras cargan las reseñas, siluetas en vez de una lista vacía. */}
+      {!data && (
+        <ul className="space-y-2" aria-hidden="true">
+          <ReviewSkeleton />
+          <ReviewSkeleton />
+        </ul>
+      )}
+
       <ul className="space-y-2">
         {data?.items.map((r) => (
           <li key={r.id} className="rounded-md bg-gray-50 p-3">
@@ -108,10 +109,18 @@ export function Reviews({
         ))}
       </ul>
 
+      {user?.role === 'TRABAJADOR' && ownReview && (
+        <p className="text-sm text-gray-500">
+          {submitted
+            ? '¡Gracias por tu reseña!'
+            : 'Ya calificaste a este empleador.'}
+        </p>
+      )}
+
       {canReview && (
         <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-gray-200 p-3">
           <p className="text-sm font-medium text-gray-700">
-            {ownReview ? 'Editar tu reseña' : 'Calificar a este empleador'}
+            Calificar a este empleador
           </p>
           <FormField label="Calificación">
             <div className="flex gap-1">
@@ -140,11 +149,8 @@ export function Reviews({
             />
           </FormField>
           {error && <p className="text-sm text-red-600">{error}</p>}
-          {submitted && !error && (
-            <p className="text-sm text-brand">¡Gracias por tu reseña!</p>
-          )}
           <Button type="submit" disabled={saving}>
-            {saving ? 'Enviando...' : ownReview ? 'Actualizar reseña' : 'Enviar reseña'}
+            {saving ? 'Enviando...' : 'Enviar reseña'}
           </Button>
         </form>
       )}

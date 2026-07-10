@@ -1,10 +1,11 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Role } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
@@ -21,8 +22,9 @@ export class ReviewsService {
     private notifications: NotificationsService,
   ) {}
 
-  // Máx. una reseña por (trabajador, empleador): si ya existe, se actualiza.
-  async upsert(dto: CreateReviewDto, authorId: string) {
+  // Una única reseña por (trabajador, empleador): no se puede volver a
+  // calificar ni editar la existente.
+  async create(dto: CreateReviewDto, authorId: string) {
     const employer = await this.prisma.user.findUnique({
       where: { id: dto.employerId },
     });
@@ -30,32 +32,28 @@ export class ReviewsService {
       throw new BadRequestException('Solo se puede reseñar a empleadores');
     }
 
-    const existing = await this.prisma.review.findUnique({
-      where: {
-        authorId_employerId: { authorId, employerId: dto.employerId },
-      },
-    });
-
-    const review = await this.prisma.review.upsert({
-      where: {
-        authorId_employerId: { authorId, employerId: dto.employerId },
-      },
-      create: {
-        authorId,
-        employerId: dto.employerId,
-        rating: dto.rating,
-        comment: dto.comment,
-      },
-      update: { rating: dto.rating, comment: dto.comment },
-      include: includeAuthor,
-    });
-
-    await this.notifications.notifyReview(
-      review,
-      review.author.name,
-      !existing,
-    );
-    return review;
+    try {
+      const review = await this.prisma.review.create({
+        data: {
+          authorId,
+          employerId: dto.employerId,
+          rating: dto.rating,
+          comment: dto.comment,
+        },
+        include: includeAuthor,
+      });
+      await this.notifications.notifyReview(review, review.author.name);
+      return review;
+    } catch (e) {
+      // Violación del único (authorId, employerId): ya lo calificó antes.
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
+        throw new ConflictException('Ya calificaste a este empleador');
+      }
+      throw e;
+    }
   }
 
   // Reseñas de un empleador con promedio y total (para el detalle del anuncio).

@@ -23,13 +23,13 @@ import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator
 export class ReviewsController {
   constructor(private reviews: ReviewsService) {}
 
-  // Crear/actualizar reseña: solo TRABAJADOR (una por empleador).
+  // Crear reseña: solo TRABAJADOR, una única vez por empleador.
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.TRABAJADOR)
   @Post()
-  upsert(@Body() dto: CreateReviewDto, @CurrentUser() user: AuthUser) {
-    return this.reviews.upsert(dto, user.id);
+  create(@Body() dto: CreateReviewDto, @CurrentUser() user: AuthUser) {
+    return this.reviews.create(dto, user.id);
   }
 
   // Público: reseñas y promedio de un empleador (no expone datos de contacto).

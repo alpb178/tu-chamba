@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { api } from '@/lib/api';
-import { Ad, adEffectiveStatus, waLink } from '@/lib/types';
+import { Ad, adEffectiveStatus, DEPARTMENT_LABEL, waLink } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
 import { ReportAd } from './ReportAd';
@@ -16,12 +16,42 @@ const MapView = dynamic(() => import('./MapPicker').then((m) => m.MapView), {
   loading: () => <div className="h-56 rounded-md bg-gray-100" />,
 });
 
+// Coordenadas aproximadas de una dirección (Nominatim, best effort).
+// Para anuncios sin pin: así el detalle siempre muestra el lugar en el mapa.
+async function geocode(
+  query: string,
+): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=bo&accept-language=es&q=${encodeURIComponent(query)}`,
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as { lat: string; lon: string }[];
+    if (!data.length) return null;
+    return { lat: Number(data[0].lat), lng: Number(data[0].lon) };
+  } catch {
+    return null;
+  }
+}
+
 // Parte interactiva del detalle: mapa, contacto (teléfono solo con sesión),
 // acciones del dueño y reporte. El contenido textual lo renderiza el server.
 export function AdActions({ ad }: { ad: Ad }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [phone, setPhone] = useState<string | null>(ad.phone ?? null);
+  const [approx, setApprox] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
+
+  // Sin pin exacto: geocodifica la dirección del anuncio para ubicarlo.
+  useEffect(() => {
+    if (ad.latitude != null || !ad.location) return;
+    const department = ad.department ? DEPARTMENT_LABEL[ad.department] : '';
+    geocode([ad.location, department, 'Bolivia'].filter(Boolean).join(', ')).then(
+      setApprox,
+    );
+  }, [ad.latitude, ad.location, ad.department]);
 
   const status = adEffectiveStatus(ad);
   const isOwner = user?.id === ad.createdById;
@@ -52,8 +82,17 @@ export function AdActions({ ad }: { ad: Ad }) {
 
   return (
     <div className="space-y-4">
-      {ad.latitude != null && ad.longitude != null && (
+      {ad.latitude != null && ad.longitude != null ? (
         <MapView lat={ad.latitude} lng={ad.longitude} />
+      ) : (
+        approx && (
+          <div className="space-y-1">
+            <MapView lat={approx.lat} lng={approx.lng} zoom={13} />
+            <p className="text-xs text-gray-400">
+              Ubicación aproximada según la dirección del anuncio.
+            </p>
+          </div>
+        )
       )}
 
       {/* Contacto: con sesión muestra Chatear/Llamar; sin sesión, CTA. */}

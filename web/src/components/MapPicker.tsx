@@ -154,20 +154,29 @@ export function MapPicker({
 }
 
 // Mapa de solo lectura con el pin de la oferta (detalle del anuncio).
-export function MapView({ lat, lng }: { lat: number; lng: number }) {
+// zoom menor para ubicaciones aproximadas (geocodificadas por dirección).
+export function MapView({
+  lat,
+  lng,
+  zoom = PIN_ZOOM,
+}: {
+  lat: number;
+  lng: number;
+  zoom?: number;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const map = createMap(containerRef.current, [lat, lng], PIN_ZOOM);
+    const map = createMap(containerRef.current, [lat, lng], zoom);
     mapRef.current = map;
     L.marker([lat, lng], { icon: pinIcon }).addTo(map);
     return () => {
       map.remove();
       mapRef.current = null;
     };
-  }, [lat, lng]);
+  }, [lat, lng, zoom]);
 
   return (
     <div
