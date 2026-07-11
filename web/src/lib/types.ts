@@ -143,6 +143,8 @@ export interface Review {
 
 export interface ReviewsResponse extends Paginated<Review> {
   average: number | null;
+  // Con sesión y adId en la consulta: si el usuario ya calificó ese anuncio.
+  alreadyReviewed?: boolean;
 }
 
 export type NotificationType =

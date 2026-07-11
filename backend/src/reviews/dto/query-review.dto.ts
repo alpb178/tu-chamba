@@ -7,6 +7,14 @@ export class QueryReviewDto {
   @IsUUID()
   employerId: string;
 
+  @ApiPropertyOptional({
+    description:
+      'ID del anuncio: con sesión, la respuesta incluye alreadyReviewed',
+  })
+  @IsOptional()
+  @IsUUID()
+  adId?: string;
+
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()
   @Type(() => Number)

@@ -61,9 +61,16 @@ export class ReviewsService {
   }
 
   // Reseñas de un empleador con promedio y total (para el detalle del anuncio).
-  async findByEmployer(employerId: string, page = 1, limit = 20) {
+  // Con sesión y adId, incluye si el usuario ya calificó ese anuncio (la
+  // reseña propia puede no estar en la página pedida).
+  async findByEmployer(
+    employerId: string,
+    page = 1,
+    limit = 20,
+    opts: { adId?: string; userId?: string } = {},
+  ) {
     const where = { employerId };
-    const [items, stats] = await Promise.all([
+    const [items, stats, own] = await Promise.all([
       this.prisma.review.findMany({
         where,
         include: includeAuthor,
@@ -76,12 +83,21 @@ export class ReviewsService {
         _avg: { rating: true },
         _count: true,
       }),
+      opts.adId && opts.userId
+        ? this.prisma.review.findUnique({
+            where: {
+              authorId_adId: { authorId: opts.userId, adId: opts.adId },
+            },
+            select: { id: true },
+          })
+        : null,
     ]);
 
     return {
       items,
       total: stats._count,
       average: stats._avg.rating,
+      alreadyReviewed: Boolean(own),
       page,
       limit,
       totalPages: Math.ceil(stats._count / limit),
