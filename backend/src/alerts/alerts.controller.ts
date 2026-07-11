@@ -8,19 +8,15 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
 import { AlertsService } from './alerts.service';
 import { CreateAlertDto } from './dto/create-alert.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator';
 
-// Alertas de empleo: solo para TRABAJADOR (quien recibe avisos de ofertas).
+// Alertas de empleo: cualquier usuario puede suscribirse a nuevas ofertas.
 @ApiTags('alerts')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.TRABAJADOR)
+@UseGuards(JwtAuthGuard)
 @Controller('alerts')
 export class AlertsController {
   constructor(private alerts: AlertsService) {}

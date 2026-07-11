@@ -65,7 +65,6 @@ export class AuthService {
     return this.jwt.sign({
       sub: user.id,
       email: user.email,
-      role: user.role,
     });
   }
 
@@ -88,14 +87,13 @@ export class AuthService {
         password: hashed,
         name: dto.name,
         phone: dto.phone?.trim() || null,
-        role: dto.role,
       },
     });
 
     await this.enviarVerificacion(user);
     await this.traces.record(
       TraceType.REGISTER,
-      `Nuevo ${user.role} registrado: ${user.email}`,
+      `Nuevo usuario registrado: ${user.email}`,
       user,
     );
     return this.session(user);
@@ -153,14 +151,14 @@ export class AuthService {
 
     await this.traces.record(
       TraceType.LOGIN,
-      `Inicio de sesión de ${user.email} (${user.role})`,
+      `Inicio de sesión de ${user.email}`,
       user,
     );
     return this.session(user);
   }
 
-  // Registro/login con Google. Si el correo no existe aún, el frontend debe
-  // reintentar con role (+ telefono si EMPLEADOR): respondemos needsProfile.
+  // Registro/login con Google: si el correo no existe, la cuenta se crea
+  // directamente (el teléfono es opcional y se completa desde el perfil).
   async googleAuth(dto: GoogleAuthDto) {
     const payload = await this.verifyGoogleToken(dto.idToken);
 
@@ -178,18 +176,10 @@ export class AuthService {
       }
       await this.traces.record(
         TraceType.LOGIN,
-        `Inicio de sesión con Google de ${user.email} (${user.role})`,
+        `Inicio de sesión con Google de ${user.email}`,
         user,
       );
       return this.session(user);
-    }
-
-    if (!dto.role) {
-      return {
-        needsProfile: true,
-        email: payload.email,
-        name: payload.name ?? '',
-      };
     }
 
     user = await this.prisma.user.create({
@@ -197,16 +187,14 @@ export class AuthService {
         email: payload.email,
         password: null,
         name: payload.name || payload.email.split('@')[0],
-        phone: dto.phone?.trim() || null,
         googleId: payload.sub,
-        role: dto.role,
         // Google ya verificó el correo (validado en verifyGoogleToken).
         emailVerified: true,
       },
     });
     await this.traces.record(
       TraceType.REGISTER,
-      `Nuevo ${user.role} registrado con Google: ${user.email}`,
+      `Nuevo usuario registrado con Google: ${user.email}`,
       user,
     );
     return this.session(user);

@@ -5,9 +5,10 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
-import { Role, TraceType } from '@prisma/client';
+import { TraceType } from '@prisma/client';
 import { TracesService } from '../traces/traces.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
 
 const selectSafe = {
@@ -15,7 +16,7 @@ const selectSafe = {
   email: true,
   name: true,
   phone: true,
-  role: true,
+  isAdmin: true,
   createdAt: true,
   updatedAt: true,
 };
@@ -34,6 +35,19 @@ export class UsersService {
     });
   }
 
+  // Perfil propio: solo datos personales del usuario autenticado.
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    await this.ensureExists(userId);
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(dto.name != null ? { name: dto.name.trim() } : {}),
+        ...(dto.phone != null ? { phone: dto.phone.trim() || null } : {}),
+      },
+      select: selectSafe,
+    });
+  }
+
   // Alta de un administrador desde el panel (solo correo y contraseña).
   async createAdmin(dto: CreateAdminDto, actor: AuthUser) {
     const exists = await this.prisma.user.findUnique({
@@ -47,7 +61,7 @@ export class UsersService {
         password: await bcrypt.hash(dto.password, 10),
         // Solo se pide correo y contraseña: el nombre sale del correo.
         name: dto.email.split('@')[0],
-        role: Role.ADMIN,
+        isAdmin: true,
         // Cuenta creada por un admin de confianza: no exige verificación.
         emailVerified: true,
       },
@@ -62,16 +76,17 @@ export class UsersService {
     return admin;
   }
 
-  async updateRole(id: string, role: Role, actor: AuthUser) {
+  // Concede o revoca el acceso al panel de administración.
+  async setAdmin(id: string, isAdmin: boolean, actor: AuthUser) {
     const user = await this.ensureExists(id);
     const updated = await this.prisma.user.update({
       where: { id },
-      data: { role },
+      data: { isAdmin },
       select: selectSafe,
     });
     await this.traces.record(
       TraceType.ROLE_UPDATED,
-      `Rol de ${user.email} cambiado a ${role} por ${actor.email}`,
+      `Acceso admin de ${user.email} ${isAdmin ? 'concedido' : 'revocado'} por ${actor.email}`,
       actor,
     );
     return updated;
@@ -82,7 +97,7 @@ export class UsersService {
     await this.prisma.user.delete({ where: { id } });
     await this.traces.record(
       TraceType.USER_DELETED,
-      `Usuario ${user.email} (${user.role}) eliminado por ${actor.email}`,
+      `Usuario ${user.email} eliminado por ${actor.email}`,
       actor,
     );
     return { deleted: true };

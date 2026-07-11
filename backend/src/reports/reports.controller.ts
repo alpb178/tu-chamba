@@ -9,13 +9,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
-import { ReportStatus, Role } from '@prisma/client';
+import { ReportStatus } from '@prisma/client';
 import { ReportsService } from './reports.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { ResolveReportDto } from './dto/resolve-report.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { AdminGuard } from '../auth/guards/admin.guard';
 import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('reports')
@@ -31,18 +30,16 @@ export class ReportsController {
     return this.reports.create(dto, user.id);
   }
 
-  // Cola de reportes: solo ADMIN.
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  // Cola de reportes: solo admin.
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiQuery({ name: 'status', enum: ReportStatus, required: false })
   @Get()
   findAll(@Query('status') status?: ReportStatus) {
     return this.reports.findAll(status);
   }
 
-  // Resolver reporte (ATENDIDO / DESCARTADO): solo ADMIN.
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  // Resolver reporte (ATENDIDO / DESCARTADO): solo admin.
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @Patch(':id')
   resolve(
     @Param('id') id: string,

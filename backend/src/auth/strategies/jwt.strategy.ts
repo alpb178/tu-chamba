@@ -6,7 +6,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 export interface JwtPayload {
   sub: string;
   email: string;
-  role: string;
 }
 
 @Injectable()
@@ -24,6 +23,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       where: { id: payload.sub },
     });
     if (!user) throw new UnauthorizedException('Token inválido');
-    return { id: user.id, email: user.email, role: user.role };
+    return { id: user.id, email: user.email, isAdmin: user.isAdmin };
   }
 }

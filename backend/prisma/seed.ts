@@ -1,4 +1,4 @@
-import { Category, Department, JobType, PrismaClient, Role } from '@prisma/client';
+import { Category, Department, JobType, PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -14,7 +14,7 @@ async function main() {
       password: passwordHash,
       name: 'Administrador',
       phone: '70000000',
-      role: Role.ADMIN,
+      isAdmin: true,
       emailVerified: true,
     },
   });
@@ -27,7 +27,6 @@ async function main() {
       password: passwordHash,
       name: 'Empresa Demo',
       phone: '71111111',
-      role: Role.EMPLEADOR,
       emailVerified: true,
     },
   });
@@ -40,7 +39,6 @@ async function main() {
       password: passwordHash,
       name: 'Juan Trabajador',
       phone: '72222222',
-      role: Role.TRABAJADOR,
       emailVerified: true,
     },
   });
@@ -97,9 +95,9 @@ async function main() {
 
   console.log('Seed completado.');
   console.log('Usuarios (password de todos: Password123):');
-  console.log('  admin@tuchamba.com       (ADMIN)');
-  console.log('  empleador@tuchamba.com   (EMPLEADOR)');
-  console.log('  trabajador@tuchamba.com  (TRABAJADOR)');
+  console.log('  admin@tuchamba.com       (admin)');
+  console.log('  empleador@tuchamba.com');
+  console.log('  trabajador@tuchamba.com');
 }
 
 main()

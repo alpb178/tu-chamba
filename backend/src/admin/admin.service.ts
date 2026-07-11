@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -35,22 +34,22 @@ function countByDay(rows: { createdAt: Date }[]) {
 export class AdminService {
   constructor(private prisma: PrismaService) {}
 
-  // KPIs del dashboard: usuarios por rol, anuncios por día y visitas.
+  // KPIs del dashboard: usuarios, anuncios por día y visitas.
   async stats() {
     // Margen de un día extra para no perder el inicio del primer día local.
     const since = new Date(Date.now() - SERIES_DAYS * DAY_MS);
 
     const [
-      byRoleRows,
       totalUsers,
+      totalAdmins,
       totalAds,
       recentAds,
       totalVisits,
       visits24h,
       recentVisits,
     ] = await Promise.all([
-      this.prisma.user.groupBy({ by: ['role'], _count: true }),
       this.prisma.user.count(),
+      this.prisma.user.count({ where: { isAdmin: true } }),
       this.prisma.ad.count(),
       this.prisma.ad.findMany({
         where: { createdAt: { gte: since } },
@@ -66,18 +65,11 @@ export class AdminService {
       }),
     ]);
 
-    const usersByRole: Record<Role, number> = {
-      ADMIN: 0,
-      TRABAJADOR: 0,
-      EMPLEADOR: 0,
-    };
-    for (const row of byRoleRows) usersByRole[row.role] = row._count;
-
     const visitsByDay = countByDay(recentVisits);
     const last7Days = visitsByDay.slice(-7).reduce((sum, d) => sum + d.total, 0);
 
     return {
-      users: { total: totalUsers, byRole: usersByRole },
+      users: { total: totalUsers, admins: totalAdmins },
       ads: { total: totalAds, byDay: countByDay(recentAds) },
       visits: {
         total: totalVisits,
