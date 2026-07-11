@@ -42,7 +42,7 @@ export default function ProfilePage() {
 
   if (loading || !user)
     return (
-      <div className="mx-auto max-w-md space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+      <div className="mx-auto max-w-md space-y-4 rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
         <Skeleton className="h-7 w-32" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
@@ -51,8 +51,8 @@ export default function ProfilePage() {
     );
 
   return (
-    <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-white p-6">
-      <h1 className="mb-4 text-xl font-semibold text-gray-800">Mi perfil</h1>
+    <div className="mx-auto max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+      <h1 className="mb-4 text-xl font-semibold text-on-surface">Mi perfil</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label="Correo (no se puede modificar)">
           <Input
@@ -60,7 +60,7 @@ export default function ProfilePage() {
             disabled
             readOnly
             aria-readonly="true"
-            className="cursor-not-allowed bg-gray-50 text-gray-500"
+            className="cursor-not-allowed bg-surface-container-low text-on-surface-variant"
           />
         </FormField>
         <FormField label="Nombre">
@@ -76,7 +76,7 @@ export default function ProfilePage() {
             onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
           />
         </FormField>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-error">{error}</p>}
         <Button type="submit" className="w-full" disabled={saving}>
           {saving ? 'Guardando...' : 'Guardar cambios'}
         </Button>

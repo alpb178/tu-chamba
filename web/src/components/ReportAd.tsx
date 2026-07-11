@@ -38,7 +38,7 @@ export function ReportAd({ adId }: { adId: string }) {
 
   if (sent) {
     return (
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-on-surface-variant">
         Gracias, tu reporte fue enviado y será revisado por un administrador.
       </p>
     );
@@ -49,7 +49,7 @@ export function ReportAd({ adId }: { adId: string }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-sm text-gray-400 underline hover:text-red-600"
+        className="text-sm text-outline underline hover:text-error"
       >
         Reportar este anuncio
       </button>
@@ -57,8 +57,8 @@ export function ReportAd({ adId }: { adId: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-gray-200 p-3">
-      <p className="text-sm font-medium text-gray-700">Reportar anuncio</p>
+    <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-outline-variant p-3">
+      <p className="text-sm font-medium text-on-surface-variant">Reportar anuncio</p>
       <FormField label="Motivo">
         <Select
           value={reason}
@@ -73,13 +73,13 @@ export function ReportAd({ adId }: { adId: string }) {
       </FormField>
       <FormField label="Comentario (opcional)">
         <textarea
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+          className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           rows={2}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
         />
       </FormField>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
       <div className="flex gap-2">
         <Button type="submit" variant="danger" disabled={saving}>
           {saving ? 'Enviando...' : 'Enviar reporte'}

@@ -4,7 +4,7 @@ import { Company, COMPANIES } from '@/lib/companies';
 // CTA "Visitar sitio" (enlace externo seguro).
 function BrandCard({ company }: { company: Company }) {
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <article className="group flex flex-col overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
       <a
         href={company.url}
         target="_blank"
@@ -26,7 +26,7 @@ function BrandCard({ company }: { company: Company }) {
 
       <div className="flex flex-1 flex-col gap-2 p-5">
         <h3 className="text-lg font-semibold text-brand">{company.name}</h3>
-        <p className="flex-1 text-sm leading-relaxed text-gray-600">
+        <p className="flex-1 text-sm leading-relaxed text-on-surface-variant">
           {company.description}
         </p>
         <a
@@ -57,10 +57,10 @@ export function FeaturedBrands() {
   return (
     <section aria-labelledby="marcas-title">
       <div className="mb-4 flex items-baseline justify-between">
-        <h2 id="marcas-title" className="text-xl font-semibold text-gray-800">
+        <h2 id="marcas-title" className="text-xl font-semibold text-on-surface">
           Descubre nuestras marcas
         </h2>
-        <span className="text-xs uppercase tracking-wider text-gray-400">
+        <span className="text-xs uppercase tracking-wider text-outline">
           Publicidad
         </span>
       </div>

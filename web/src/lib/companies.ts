@@ -21,7 +21,7 @@ export const COMPANIES: Company[] = [
     description:
       'Estudio de software boliviano: plataformas web, apps móviles y SaaS a medida.',
     url: 'https://corpsc.com',
-    image: '/empresas/corpsc.jpg',
+    image: '/empresas/corpsc-destacada.jpg',
     background: '#102136',
   },
   {
@@ -30,7 +30,7 @@ export const COMPANIES: Company[] = [
     description:
       'App boliviana para conectar con personas. Descárgala y empieza a chatear.',
     url: 'https://dandomuela.com',
-    image: '/empresas/dando-muela.jpg',
+    image: '/empresas/dando-muela-destacada.jpg',
     background: '#111827',
   },
   {
@@ -39,7 +39,7 @@ export const COMPANIES: Company[] = [
     description:
       'Cosmética natural hecha en Santa Cruz de la Sierra para cuidar tu piel.',
     url: 'https://irisnatural.corpsc.com',
-    image: '/empresas/iris-natural.jpg',
+    image: '/empresas/iris-natural-destacada.jpg',
     background: '#fce7f3',
   },
 ];

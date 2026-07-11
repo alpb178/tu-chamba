@@ -47,7 +47,7 @@ export default function TracesPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-800">Trazas del sistema</h1>
+        <h1 className="text-2xl font-semibold text-on-surface">Trazas del sistema</h1>
         <Select
           value={type}
           onChange={(e) => {
@@ -67,15 +67,15 @@ export default function TracesPage() {
       {loading ? (
         <TableSkeleton headers={HEADERS} rows={8} />
       ) : error ? (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-error">{error}</p>
       ) : !data || data.items.length === 0 ? (
-        <p className="text-gray-500">No hay trazas registradas.</p>
+        <p className="text-on-surface-variant">No hay trazas registradas.</p>
       ) : (
         <>
           <DataTable headers={HEADERS}>
             {data.items.map((t) => (
               <tr key={t.id}>
-                <td className="whitespace-nowrap px-4 py-3 text-gray-600">
+                <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant">
                   {new Date(t.createdAt).toLocaleString('es-BO', {
                     dateStyle: 'short',
                     timeStyle: 'short',
@@ -89,12 +89,12 @@ export default function TracesPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3">{t.description}</td>
-                <td className="px-4 py-3 text-gray-600">{t.actorEmail ?? '—'}</td>
+                <td className="px-4 py-3 text-on-surface-variant">{t.actorEmail ?? '—'}</td>
               </tr>
             ))}
           </DataTable>
 
-          <div className="flex items-center justify-between text-sm text-gray-600">
+          <div className="flex items-center justify-between text-sm text-on-surface-variant">
             <span>
               Página {data.page} de {data.totalPages} · {data.total} trazas
             </span>

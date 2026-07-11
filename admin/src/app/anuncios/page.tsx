@@ -34,7 +34,7 @@ const HEADERS = [
 const STATUS_STYLE: Record<EffectiveStatus, string> = {
   ACTIVO: 'bg-green-100 text-green-800',
   VENCIDO: 'bg-amber-100 text-amber-800',
-  DADO_DE_BAJA: 'bg-gray-200 text-gray-600',
+  DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
 };
 
 export default function AdsAdminPage() {
@@ -74,13 +74,13 @@ export default function AdsAdminPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-gray-800">Anuncios</h1>
+      <h1 className="text-2xl font-semibold text-on-surface">Anuncios</h1>
       {loading ? (
         <TableSkeleton headers={HEADERS} rows={8} />
       ) : error ? (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-error">{error}</p>
       ) : items.length === 0 ? (
-        <p className="text-gray-500">No hay anuncios.</p>
+        <p className="text-on-surface-variant">No hay anuncios.</p>
       ) : (
       <DataTable headers={HEADERS}>
         {items.map((ad) => {
@@ -88,10 +88,10 @@ export default function AdsAdminPage() {
           return (
             <tr key={ad.id}>
               <td className="max-w-xs truncate px-4 py-3">{ad.description}</td>
-              <td className="px-4 py-3 text-gray-600">
+              <td className="px-4 py-3 text-on-surface-variant">
                 {ad.category ? CATEGORY_LABEL[ad.category] : '—'}
               </td>
-              <td className="px-4 py-3 text-gray-600">{ad.location ?? '—'}</td>
+              <td className="px-4 py-3 text-on-surface-variant">{ad.location ?? '—'}</td>
               <td className="px-4 py-3 font-medium text-brand">
                 Bs {Number(ad.salary).toLocaleString('es-BO')}
               </td>
@@ -105,13 +105,13 @@ export default function AdsAdminPage() {
                   {STATUS_LABEL[status]}
                 </span>
               </td>
-              <td className="px-4 py-3 text-gray-600">
+              <td className="px-4 py-3 text-on-surface-variant">
                 {new Date(ad.createdAt).toLocaleDateString('es-BO')}
               </td>
-              <td className="px-4 py-3 text-gray-600">
+              <td className="px-4 py-3 text-on-surface-variant">
                 {new Date(ad.expiresAt).toLocaleDateString('es-BO')}
               </td>
-              <td className="px-4 py-3 text-gray-600">{ad.createdBy?.name ?? '—'}</td>
+              <td className="px-4 py-3 text-on-surface-variant">{ad.createdBy?.name ?? '—'}</td>
               <td className="px-4 py-3 text-right">
                 <div className="flex justify-end gap-2">
                   {status === 'ACTIVO' ? (

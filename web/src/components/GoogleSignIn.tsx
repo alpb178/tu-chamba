@@ -81,13 +81,13 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-gray-200" />
-        <span className="text-xs text-gray-400">o</span>
-        <div className="h-px flex-1 bg-gray-200" />
+        <div className="h-px flex-1 bg-surface-container-high" />
+        <span className="text-xs text-outline">o</span>
+        <div className="h-px flex-1 bg-surface-container-high" />
       </div>
 
       <div ref={buttonRef} className="flex justify-center" />
-      {error && <p className="text-center text-sm text-red-600">{error}</p>}
+      {error && <p className="text-center text-sm text-error">{error}</p>}
     </div>
   );
 }

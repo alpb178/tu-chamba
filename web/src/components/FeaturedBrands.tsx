@@ -1,15 +1,15 @@
 import { Company, COMPANIES } from '@/lib/companies';
 
-// Tarjeta promocional de una marca: captura del sitio, nombre, descripción y
-// CTA "Visitar sitio" (enlace externo seguro).
+// Tarjeta promocional de una marca: captura del sitio con el nombre en
+// overlay, descripción y CTA "Visitar sitio" (enlace externo seguro).
 function BrandCard({ company }: { company: Company }) {
   return (
-    <article className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <article className="flex flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-sm transition-shadow hover:shadow-md">
       <a
         href={company.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="block h-40 overflow-hidden"
+        className="group relative block h-48 overflow-hidden"
         style={{ backgroundColor: company.background }}
         tabIndex={-1}
         aria-hidden="true"
@@ -20,43 +20,46 @@ function BrandCard({ company }: { company: Company }) {
           alt=""
           loading="lazy"
           decoding="async"
-          className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-105"
+          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <h3 className="absolute bottom-4 left-4 font-display text-lg font-semibold text-on-primary">
+          {company.name}
+        </h3>
       </a>
 
-      <div className="flex flex-1 flex-col gap-2 p-5">
-        <h3 className="text-lg font-semibold text-brand">{company.name}</h3>
-        <p className="flex-1 text-sm leading-relaxed text-gray-600">
+      <div className="flex flex-1 flex-col p-6">
+        <p className="mb-6 flex-1 text-sm leading-relaxed text-on-surface-variant">
           {company.description}
         </p>
         <a
           href={company.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-2 inline-flex items-center justify-center gap-1 rounded-md bg-brand px-4 py-2 text-sm font-medium text-white transition hover:bg-brand-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-inverse-surface px-4 py-2.5 text-sm font-bold text-on-primary transition-colors hover:bg-on-background focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           aria-label={`Visitar el sitio de ${company.name} (se abre en una pestaña nueva)`}
         >
           Visitar sitio
-          <svg
-            className="h-4 w-4"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+          <span
             aria-hidden="true"
+            className="material-symbols-outlined text-sm"
           >
-            <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-            <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-          </svg>
+            open_in_new
+          </span>
         </a>
       </div>
     </article>
   );
 }
 
-// Tira de marcas del grupo, sin encabezado (solo las tarjetas).
+// Tira de marcas del grupo, con su encabezado de sección.
 export function FeaturedBrands() {
   return (
-    <section aria-label="Nuestras marcas" className="mt-12">
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <section aria-label="Servicios destacados" className="mt-12">
+      <h2 className="mb-6 font-display text-2xl font-semibold text-on-surface">
+        Servicios destacados
+      </h2>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {COMPANIES.map((c) => (
           <BrandCard key={c.slug} company={c} />
         ))}

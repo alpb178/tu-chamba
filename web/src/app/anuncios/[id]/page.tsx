@@ -41,7 +41,7 @@ export default async function AdDetailPage({ params }: Params) {
   const status = adEffectiveStatus(ad);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 rounded-lg border border-gray-200 bg-white p-6">
+    <div className="mx-auto max-w-2xl space-y-4 rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
       <TrackVisit adId={ad.id} />
       {status !== 'ACTIVO' && (
         <div className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
@@ -59,44 +59,48 @@ export default async function AdDetailPage({ params }: Params) {
             </span>
           )}
           {ad.department && (
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+            <span className="rounded-full bg-surface-container px-2 py-0.5 text-xs text-on-surface-variant">
               {DEPARTMENT_LABEL[ad.department]}
             </span>
           )}
         </div>
-        <span className="text-xs text-gray-400">Ref. {ad.id.slice(0, 8)}</span>
+        <span className="text-xs text-outline">Ref. {ad.id.slice(0, 8)}</span>
       </div>
 
       <div>
-        <h1 className="mb-1 text-sm font-semibold text-gray-700">
+        <h1 className="mb-1 text-sm font-semibold text-on-surface-variant">
           Descripción del puesto
         </h1>
-        <p className="whitespace-pre-line text-gray-800">{ad.description}</p>
+        <p className="whitespace-pre-line text-on-surface">{ad.description}</p>
       </div>
 
       {ad.requirements && (
         <div>
-          <h2 className="mb-1 text-sm font-semibold text-gray-700">
+          <h2 className="mb-1 text-sm font-semibold text-on-surface-variant">
             Requisitos del candidato
           </h2>
-          <p className="whitespace-pre-line text-gray-800">{ad.requirements}</p>
+          <p className="whitespace-pre-line text-on-surface">{ad.requirements}</p>
         </div>
       )}
 
-      <div className="space-y-1 border-t border-gray-100 pt-4">
+      <div className="space-y-1 border-t border-outline-variant/60 pt-4">
         <p className="text-2xl font-bold text-brand">
           Bs {Number(ad.salary).toLocaleString('es-BO')}
         </p>
-        <p className="text-sm text-gray-600">
-          📍 Ubicación: {ad.location || 'No especificada'}
-        </p>
-        {ad.schedule && (
-          <p className="text-sm text-gray-600">🕐 Horario: {ad.schedule}</p>
+        {/* La ubicación exacta solo se muestra con sesión (en AdActions);
+            aquí queda el departamento como zona general. */}
+        {ad.department && (
+          <p className="text-sm text-on-surface-variant">
+            📍 Zona: {DEPARTMENT_LABEL[ad.department]}
+          </p>
         )}
-        <p className="text-sm text-gray-600">
+        {ad.schedule && (
+          <p className="text-sm text-on-surface-variant">🕐 Horario: {ad.schedule}</p>
+        )}
+        <p className="text-sm text-on-surface-variant">
           Publicado por: {ad.createdBy?.name ?? '—'}
         </p>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-outline">
           Publicado: {new Date(ad.createdAt).toLocaleDateString('es-BO')} ·
           Vence: {new Date(ad.expiresAt).toLocaleDateString('es-BO')}
           {ad._count != null && (

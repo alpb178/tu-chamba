@@ -41,11 +41,11 @@ export default function InterestsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-semibold text-gray-800">
+      <h1 className="text-xl font-semibold text-on-surface">
         Anuncios de tu interés
       </h1>
       {items.length === 0 ? (
-        <p className="text-gray-500">
+        <p className="text-on-surface-variant">
           Aún no tienes anuncios de interés. Cuando contactes a un publicante
           desde un anuncio (Chatear o Llamar), aparecerá aquí.{' '}
           <Link href="/" className="text-brand underline hover:text-brand-dark">
@@ -59,7 +59,7 @@ export default function InterestsPage() {
             <div key={i.id} className="space-y-2">
               <AdCard ad={i.ad} showStatus />
               <div className="flex items-center justify-between gap-2">
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-outline">
                   Te interesaste el{' '}
                   {new Date(i.createdAt).toLocaleDateString('es-BO')}
                 </p>

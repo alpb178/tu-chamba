@@ -82,21 +82,21 @@ export function NotificationsBell() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="relative rounded-full p-2 text-xl leading-none hover:bg-gray-100"
+        className="relative rounded-full p-2 transition-colors hover:bg-surface-container-high"
         aria-label={`Notificaciones${unread ? ` (${unread} sin leer)` : ''}`}
       >
-        🔔
+        <span aria-hidden="true" className="material-symbols-outlined text-on-surface-variant">
+          notifications
+        </span>
         {unread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold text-white">
-            {unread > 9 ? '9+' : unread}
-          </span>
+          <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-surface bg-error" />
         )}
       </button>
 
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-80 rounded-lg border border-gray-200 bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-gray-100 px-3 py-2">
-            <span className="text-sm font-semibold text-gray-700">
+        <div className="absolute right-0 z-50 mt-2 w-80 rounded-lg border border-outline-variant bg-surface-container-lowest shadow-lg">
+          <div className="flex items-center justify-between border-b border-outline-variant/60 px-3 py-2">
+            <span className="text-sm font-semibold text-on-surface-variant">
               Notificaciones
             </span>
             {unread > 0 && (
@@ -111,7 +111,7 @@ export function NotificationsBell() {
           </div>
           <ul className="max-h-96 overflow-y-auto">
             {!data || data.items.length === 0 ? (
-              <li className="px-3 py-6 text-center text-sm text-gray-500">
+              <li className="px-3 py-6 text-center text-sm text-on-surface-variant">
                 No tienes notificaciones.
               </li>
             ) : (
@@ -120,16 +120,16 @@ export function NotificationsBell() {
                   <button
                     type="button"
                     onClick={() => openNotification(n)}
-                    className={`flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-gray-50 ${
+                    className={`flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-surface-container-low ${
                       n.read ? 'opacity-60' : 'bg-brand-light/30'
                     }`}
                   >
                     <span className="mt-0.5">{ICON[n.type]}</span>
                     <span className="flex-1">
-                      <span className="block text-sm text-gray-800">
+                      <span className="block text-sm text-on-surface">
                         {n.message}
                       </span>
-                      <span className="text-xs text-gray-400">
+                      <span className="text-xs text-outline">
                         {timeAgo(n.createdAt)}
                         {n.adId ? ' · Ver detalles' : ''}
                       </span>

@@ -23,9 +23,9 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-800">Resumen</h1>
+      <h1 className="text-2xl font-semibold text-on-surface">Resumen</h1>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-error">{error}</p>}
 
       {/* Mientras cargan las stats, siluetas con la misma grilla. */}
       {!stats && !error && (
@@ -95,7 +95,7 @@ export default function DashboardPage() {
               <p className="text-4xl font-bold text-brand">
                 {stats.visits.total.toLocaleString('es-BO')}
               </p>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-on-surface-variant">
                 Visitas al detalle de anuncios desde el portal (histórico).
               </p>
             </ChartCard>

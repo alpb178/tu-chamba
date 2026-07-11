@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
 import { NotificationsBell } from './NotificationsBell';
@@ -21,7 +21,7 @@ function primerNombre(nombre: string) {
 
 function IconoAnuncios() {
   return (
-    <svg className="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+    <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M20 7H4a1 1 0 00-1 1v10a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1zM9 7V5a1 1 0 011-1h4a1 1 0 011 1v2" />
     </svg>
   );
@@ -29,7 +29,7 @@ function IconoAnuncios() {
 
 function IconoInteres() {
   return (
-    <svg className="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+    <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M11.05 4.5a1 1 0 011.9 0l1.6 4.1a1 1 0 00.9.64l4.4.2a1 1 0 01.58 1.78l-3.44 2.75a1 1 0 00-.34 1.06l1.18 4.24a1 1 0 01-1.53 1.1L12.55 18a1 1 0 00-1.1 0l-3.75 2.37a1 1 0 01-1.53-1.1l1.18-4.24a1 1 0 00-.34-1.06L3.57 11.2a1 1 0 01.58-1.78l4.4-.2a1 1 0 00.9-.63l1.6-4.1z" />
     </svg>
   );
@@ -37,7 +37,7 @@ function IconoInteres() {
 
 function IconoPerfil() {
   return (
-    <svg className="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+    <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM5 21a7 7 0 0114 0" />
     </svg>
   );
@@ -45,7 +45,7 @@ function IconoPerfil() {
 
 function IconoAlertas() {
   return (
-    <svg className="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+    <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.4-1.4a2 2 0 01-.6-1.4V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
     </svg>
   );
@@ -53,7 +53,7 @@ function IconoAlertas() {
 
 function IconoExterno() {
   return (
-    <svg className="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+    <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M18 13v6a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h6m4-2h6m0 0v6m0-6L10 14" />
     </svg>
   );
@@ -80,7 +80,7 @@ function ItemMenu({
   children: ReactNode;
 }) {
   const clases =
-    'flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition hover:bg-gray-50 hover:text-brand';
+    'flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface-variant transition hover:bg-surface-container-low hover:text-brand';
   if (externo) {
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" role="menuitem" className={clases}>
@@ -99,7 +99,7 @@ function ItemMenu({
 
 function TituloSeccion({ children }: { children: ReactNode }) {
   return (
-    <p className="px-4 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+    <p className="px-4 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-outline">
       {children}
     </p>
   );
@@ -108,6 +108,7 @@ function TituloSeccion({ children }: { children: ReactNode }) {
 export function Navbar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   // El CTA de publicar se muestra siempre: sin sesión manda a registrarse
   // y, al crear la cuenta, vuelve directo al formulario de publicar.
   const publishHref = user
@@ -116,7 +117,15 @@ export function Navbar() {
 
   const [menuUsuario, setMenuUsuario] = useState(false);
   const [menuMovil, setMenuMovil] = useState(false);
+  // Buscador del header: navega a la portada con ?q= (la home lo lee).
+  const [query, setQuery] = useState('');
   const usuarioRef = useRef<HTMLDivElement>(null);
+
+  function onSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    router.push(q ? `/?q=${encodeURIComponent(q)}` : '/');
+  }
 
   // Cierra ambos menús al navegar.
   useEffect(() => {
@@ -142,84 +151,104 @@ export function Navbar() {
   }, [menuUsuario]);
 
   const linkActivo = (href: string) =>
-    pathname === href ? 'text-brand' : 'text-gray-700 hover:text-brand';
+    pathname === href ? 'text-brand' : 'text-on-surface-variant hover:text-brand';
 
   const chevron = (
-    <svg
-      className={`h-4 w-4 text-gray-400 transition-transform ${menuUsuario ? 'rotate-180' : ''}`}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
+    <span
       aria-hidden="true"
+      className={`material-symbols-outlined text-outline transition-all group-hover:text-primary ${
+        menuUsuario ? 'rotate-180' : ''
+      }`}
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-    </svg>
+      expand_more
+    </span>
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-full.svg" alt="Tu Chamba" className="h-9 w-auto" />
-        </Link>
-
-        {/* Navegación de escritorio: solo el CTA queda fuera; el resto vive en el menú de cuenta */}
-        <nav className="hidden items-center gap-3 md:flex">
-          <Link href={publishHref}>
-            <Button variant="accent">Publicar anuncio</Button>
+    <header className="sticky top-0 z-40 bg-surface shadow-md">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
+        <div className="flex flex-1 items-center gap-8">
+          <Link href="/" className="flex shrink-0 items-center gap-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-full.svg" alt="Tu Chamba" className="h-9 w-auto" />
           </Link>
 
-          {user && <NotificationsBell />}
-
-          {/* Menú de cuenta (estilo Amazon: "Hola, Nombre / Cuenta y menú") */}
-          <div className="relative" ref={usuarioRef}>
+          {/* Buscador del header (escritorio): navega a la portada con ?q= */}
+          <form
+            onSubmit={onSearch}
+            className="hidden max-w-xl flex-1 items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2 transition-shadow focus-within:border-primary focus-within:shadow-md md:flex"
+          >
+            <span aria-hidden="true" className="material-symbols-outlined text-outline">
+              search
+            </span>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar empleos por descripción..."
+              className="w-full border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-outline focus:ring-0"
+            />
             <button
-              type="button"
-              onClick={() => setMenuUsuario((o) => !o)}
-              className="flex items-center gap-2 rounded-lg px-2 py-1 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              aria-haspopup="menu"
-              aria-expanded={menuUsuario}
+              type="submit"
+              className="shrink-0 rounded-lg bg-primary px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-on-primary transition-all hover:brightness-110 active:scale-95"
             >
-              {user ? (
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white">
-                  {iniciales(user.name)}
-                </span>
-              ) : (
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500">
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM5 21a7 7 0 0114 0" />
-                  </svg>
-                </span>
-              )}
-              <span className="flex flex-col items-start leading-tight">
-                <span className="max-w-[9rem] truncate text-[11px] text-gray-500">
-                  {user ? `Hola, ${primerNombre(user.name)}` : 'Hola, identifícate'}
-                </span>
-                <span className="flex items-center gap-1 text-sm font-semibold text-gray-800">
-                  Cuenta y menú
-                  {chevron}
-                </span>
-              </span>
+              Buscar
             </button>
+          </form>
+        </div>
+
+        {/* Navegación de escritorio: CTA + campana + menú de cuenta */}
+        <nav className="hidden items-center md:flex">
+          <div className="flex items-center gap-4 border-l border-outline-variant pl-6">
+            <Link href={publishHref}>
+              <Button variant="accent" className="px-5 py-2.5">
+                Publicar anuncio
+              </Button>
+            </Link>
+
+            {user && <NotificationsBell />}
+
+            {/* Menú de cuenta: avatar + chevron (estilo del mock) */}
+            <div className="relative" ref={usuarioRef}>
+              <button
+                type="button"
+                onClick={() => setMenuUsuario((o) => !o)}
+                className="group flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-haspopup="menu"
+                aria-expanded={menuUsuario}
+                aria-label={
+                  user ? `Cuenta de ${primerNombre(user.name)}` : 'Cuenta y menú'
+                }
+              >
+                {user ? (
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-transparent bg-secondary-container text-sm font-bold text-on-secondary-container transition-all group-hover:border-primary">
+                    {iniciales(user.name)}
+                  </span>
+                ) : (
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-transparent bg-surface-container text-on-surface-variant transition-all group-hover:border-primary">
+                    <span aria-hidden="true" className="material-symbols-outlined">
+                      person
+                    </span>
+                  </span>
+                )}
+                {chevron}
+              </button>
 
             {menuUsuario && (
               <div
                 role="menu"
-                className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl ring-1 ring-black/5"
+                className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-xl ring-1 ring-black/5"
               >
                 {user ? (
                   <>
-                    <div className="flex items-center gap-3 border-b border-gray-100 bg-gray-50/70 px-4 py-3">
+                    <div className="flex items-center gap-3 border-b border-outline-variant/60 bg-surface-container-low/70 px-4 py-3">
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">
                         {iniciales(user.name)}
                       </span>
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-gray-900">
+                        <p className="truncate text-sm font-semibold text-on-surface">
                           {user.name}
                         </p>
-                        <p className="truncate text-xs text-gray-500">{user.email}</p>
+                        <p className="truncate text-xs text-on-surface-variant">{user.email}</p>
                       </div>
                     </div>
 
@@ -239,19 +268,19 @@ export function Navbar() {
                       </ItemMenu>
                     </div>
 
-                    <div className="border-t border-gray-100 pb-1">
+                    <div className="border-t border-outline-variant/60 pb-1">
                       <TituloSeccion>Enlaces</TituloSeccion>
                       <ItemMenu href={CORPSC.url} externo icono={<IconoExterno />}>
                         {CORPSC.name}
                       </ItemMenu>
                     </div>
 
-                    <div className="border-t border-gray-100">
+                    <div className="border-t border-outline-variant/60">
                       <button
                         type="button"
                         role="menuitem"
                         onClick={logout}
-                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-red-600 transition hover:bg-red-50"
+                        className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-error transition hover:bg-error-container/40"
                       >
                         <IconoSalir />
                         Cerrar sesión
@@ -260,13 +289,13 @@ export function Navbar() {
                   </>
                 ) : (
                   <>
-                    <div className="border-b border-gray-100 px-4 py-4 text-center">
+                    <div className="border-b border-outline-variant/60 px-4 py-4 text-center">
                       <Link href="/login" className="block">
                         <Button variant="accent" className="w-full">
                           Ingresar
                         </Button>
                       </Link>
-                      <p className="mt-3 text-xs text-gray-500">
+                      <p className="mt-3 text-xs text-on-surface-variant">
                         ¿Eres nuevo?{' '}
                         <Link href="/register" className="font-medium text-brand hover:underline">
                           Regístrate aquí
@@ -283,6 +312,7 @@ export function Navbar() {
                 )}
               </div>
             )}
+            </div>
           </div>
         </nav>
 
@@ -292,7 +322,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setMenuMovil((o) => !o)}
-            className="rounded-md p-2 text-gray-700 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="rounded-md p-2 text-on-surface-variant hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label="Abrir menú"
             aria-expanded={menuMovil}
             aria-controls="menu-movil"
@@ -312,36 +342,36 @@ export function Navbar() {
       {menuMovil && (
         <nav
           id="menu-movil"
-          className="border-t border-gray-200 bg-white px-4 py-3 md:hidden"
+          className="border-t border-outline-variant bg-surface-container-lowest px-4 py-3 md:hidden"
         >
           {user && (
-            <div className="mb-2 flex items-center gap-2 border-b border-gray-100 pb-3">
+            <div className="mb-2 flex items-center gap-2 border-b border-outline-variant/60 pb-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white">
                 {iniciales(user.name)}
               </span>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-gray-800">{user.name}</p>
-                <p className="truncate text-xs text-gray-500">{user.email}</p>
+                <p className="truncate text-sm font-medium text-on-surface">{user.name}</p>
+                <p className="truncate text-xs text-on-surface-variant">{user.email}</p>
               </div>
             </div>
           )}
 
           <div className="flex flex-col gap-1">
-            <Link href={publishHref} className="rounded-md bg-accent px-3 py-2 text-center text-sm font-medium text-brand">
+            <Link href={publishHref} className="rounded-full bg-primary-container px-3 py-2 text-center text-sm font-bold text-on-primary-container">
               Publicar anuncio
             </Link>
             {user && (
               <>
-                <Link href="/mis-anuncios" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/mis-anuncios')}`}>
+                <Link href="/mis-anuncios" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/mis-anuncios')}`}>
                   Mis anuncios
                 </Link>
-                <Link href="/intereses" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/intereses')}`}>
+                <Link href="/intereses" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/intereses')}`}>
                   Anuncios de tu interés
                 </Link>
-                <Link href="/alertas" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/alertas')}`}>
+                <Link href="/alertas" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/alertas')}`}>
                   Alertas de empleo
                 </Link>
-                <Link href="/perfil" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/perfil')}`}>
+                <Link href="/perfil" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/perfil')}`}>
                   Mi perfil
                 </Link>
               </>
@@ -350,7 +380,7 @@ export function Navbar() {
               href={CORPSC.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-md px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+              className="rounded-md px-3 py-2 text-sm text-on-surface-variant hover:bg-surface-container-low"
             >
               {CORPSC.name} ↗
             </a>
@@ -359,16 +389,16 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={logout}
-                className="rounded-md px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                className="rounded-md px-3 py-2 text-left text-sm text-error hover:bg-error-container/40"
               >
                 Cerrar sesión
               </button>
             ) : (
               <>
-                <Link href="/login" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/login')}`}>
+                <Link href="/login" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/login')}`}>
                   Ingresar
                 </Link>
-                <Link href="/register" className="rounded-md bg-accent px-3 py-2 text-center text-sm font-medium text-brand">
+                <Link href="/register" className="rounded-full bg-primary-container px-3 py-2 text-center text-sm font-bold text-on-primary-container">
                   Registrarse
                 </Link>
               </>

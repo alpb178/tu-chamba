@@ -13,7 +13,7 @@ import { ReportAd } from './ReportAd';
 // Leaflet usa window: solo en cliente.
 const MapView = dynamic(() => import('./MapPicker').then((m) => m.MapView), {
   ssr: false,
-  loading: () => <div className="h-56 rounded-md bg-gray-100" />,
+  loading: () => <div className="h-56 rounded-md bg-surface-container" />,
 });
 
 // Mapa del anuncio con botón para ampliarlo (modal) y enlace a Google Maps.
@@ -46,14 +46,14 @@ function LocationMap({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="absolute right-2 top-2 z-[1001] rounded-md border border-gray-200 bg-white/95 px-2 py-1 text-xs font-medium text-gray-700 shadow-sm hover:text-brand"
+          className="absolute right-2 top-2 z-[1001] rounded-md border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-sm hover:text-brand"
         >
           ⤢ Ampliar
         </button>
       </div>
       <div className="flex items-center justify-between gap-2">
         {approximate ? (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-outline">
             Ubicación aproximada según la dirección del anuncio.
           </p>
         ) : (
@@ -77,7 +77,7 @@ function LocationMap({
           aria-label="Mapa ampliado"
         >
           <div
-            className="relative z-0 h-[80vh] w-full max-w-4xl overflow-hidden rounded-lg bg-white"
+            className="relative z-0 h-[80vh] w-full max-w-4xl overflow-hidden rounded-lg bg-surface-container-lowest"
             onClick={(e) => e.stopPropagation()}
           >
             <MapView
@@ -89,7 +89,7 @@ function LocationMap({
             <button
               type="button"
               onClick={() => setExpanded(false)}
-              className="absolute right-3 top-3 z-[1001] rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow hover:text-brand"
+              className="absolute right-3 top-3 z-[1001] rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow hover:text-brand"
             >
               ✕ Cerrar
             </button>
@@ -116,7 +116,7 @@ function IconButton({
       onClick={onClick}
       title={label}
       aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors hover:border-brand hover:text-brand"
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface-variant shadow-sm transition-colors hover:border-brand hover:text-brand"
     >
       {children}
     </button>
@@ -177,18 +177,26 @@ export function AdActions({ ad }: { ad: Ad }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [phone, setPhone] = useState<string | null>(ad.phone ?? null);
+  // Ubicación del anuncio: solo viaja con sesión (vía /contact).
+  const [location, setLocation] = useState<string | null>(ad.location ?? null);
+  const [exact, setExact] = useState<{ lat: number; lng: number } | null>(
+    ad.latitude != null && ad.longitude != null
+      ? { lat: ad.latitude, lng: ad.longitude }
+      : null,
+  );
   const [approx, setApprox] = useState<{ lat: number; lng: number } | null>(
     null,
   );
 
-  // Sin pin exacto: geocodifica la dirección del anuncio para ubicarlo.
+  // Sin pin exacto: geocodifica la dirección del anuncio para ubicarlo
+  // (solo con sesión, que es cuando conocemos la dirección).
   useEffect(() => {
-    if (ad.latitude != null || !ad.location) return;
+    if (!user || exact || !location) return;
     const department = ad.department ? DEPARTMENT_LABEL[ad.department] : '';
-    geocode([ad.location, department, 'Bolivia'].filter(Boolean).join(', ')).then(
+    geocode([location, department, 'Bolivia'].filter(Boolean).join(', ')).then(
       setApprox,
     );
-  }, [ad.latitude, ad.location, ad.department]);
+  }, [user, exact, location, ad.department]);
 
   const status = adEffectiveStatus(ad);
   const isOwner = user?.id === ad.createdById;
@@ -206,11 +214,8 @@ export function AdActions({ ad }: { ad: Ad }) {
     }
   }, [loading, user, adPath, router]);
 
-  // Coordenadas a compartir: el pin exacto o la ubicación geocodificada.
-  const coords =
-    ad.latitude != null && ad.longitude != null
-      ? { lat: ad.latitude, lng: ad.longitude }
-      : approx;
+  // Coordenadas a mostrar/compartir: el pin exacto o la geocodificada.
+  const coords = exact ?? approx;
 
   // Contactar registra el interés en el anuncio: alimenta "anuncios de tu
   // interés" y avisa al dueño la primera vez (best effort).
@@ -230,14 +235,26 @@ export function AdActions({ ad }: { ad: Ad }) {
     );
   }
 
-  // El teléfono no viaja en el detalle público: se pide aparte con sesión.
+  // Teléfono y ubicación no viajan en el detalle público: se piden con sesión.
   useEffect(() => {
-    if (user && !phone) {
-      api<{ phone: string }>(`/ads/${ad.id}/contact`)
-        .then((r) => setPhone(r.phone))
+    if (user && (!phone || !location)) {
+      api<{
+        phone: string;
+        location: string | null;
+        latitude: number | null;
+        longitude: number | null;
+      }>(`/ads/${ad.id}/contact`)
+        .then((r) => {
+          setPhone(r.phone);
+          setLocation(r.location);
+          if (r.latitude != null && r.longitude != null) {
+            setExact({ lat: r.latitude, lng: r.longitude });
+          }
+        })
         .catch(() => {});
     }
-  }, [user, ad.id, phone]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, ad.id]);
 
   async function unpublish() {
     if (!confirm('¿Dar de baja este anuncio? Dejará de mostrarse en el portal.'))
@@ -249,20 +266,29 @@ export function AdActions({ ad }: { ad: Ad }) {
   async function republish() {
     await api(`/ads/${ad.id}/republish`, { method: 'POST' });
     router.refresh();
-    location.reload();
+    window.location.reload();
   }
 
   return (
     <div className="space-y-4">
-      {ad.latitude != null && ad.longitude != null ? (
-        <LocationMap lat={ad.latitude} lng={ad.longitude} />
-      ) : (
-        approx && <LocationMap lat={approx.lat} lng={approx.lng} approximate />
+      {/* Ubicación exacta y mapa: solo con sesión. */}
+      {user && location && (
+        <p className="text-sm text-on-surface-variant">
+          📍 Ubicación: {location}
+        </p>
       )}
+      {user &&
+        (exact ? (
+          <LocationMap lat={exact.lat} lng={exact.lng} />
+        ) : (
+          approx && (
+            <LocationMap lat={approx.lat} lng={approx.lng} approximate />
+          )
+        ))}
 
       {/* Compartir por WhatsApp: iconos discretos, no compiten con el CTA. */}
       <div className="flex items-center justify-end gap-2">
-        <span className="text-xs text-gray-400">Compartir:</span>
+        <span className="text-xs text-outline">Compartir:</span>
         {coords && (
           <IconButton
             label="Compartir ubicación por WhatsApp"
@@ -302,14 +328,14 @@ export function AdActions({ ad }: { ad: Ad }) {
             >
               <Button className="w-full">Chatear</Button>
             </a>
-            <p className="text-center text-xs text-gray-500">
+            <p className="text-center text-xs text-on-surface-variant">
               Teléfono: {phone}
             </p>
           </div>
 
           {/* Móvil: barra fija al pie para que el contacto siempre esté a
               mano aunque la descripción sea larga (safe-area por el notch). */}
-          <div className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-gray-200 bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-2px_8px_rgba(0,0,0,0.08)] sm:hidden">
+          <div className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-outline-variant bg-surface-container-lowest p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-2px_8px_rgba(0,0,0,0.08)] sm:hidden">
             <a
               href={waLink(phone, waMessage)}
               target="_blank"
@@ -329,9 +355,10 @@ export function AdActions({ ad }: { ad: Ad }) {
       ) : (
         !loading &&
         !user && (
-          <div className="rounded-md border border-gray-200 bg-gray-50 p-4 text-center">
-            <p className="text-sm text-gray-700">
-              Inicia sesión para ver el teléfono y contactar por WhatsApp.
+          <div className="rounded-md border border-outline-variant bg-surface-container-low p-4 text-center">
+            <p className="text-sm text-on-surface-variant">
+              Inicia sesión para ver la ubicación y el teléfono, y contactar
+              por WhatsApp.
             </p>
             <div className="mt-3 flex justify-center gap-2">
               <Link href={`/login?next=${encodeURIComponent(adPath)}`}>
@@ -346,7 +373,7 @@ export function AdActions({ ad }: { ad: Ad }) {
       )}
 
       {canEdit && (
-        <div className="flex gap-2 border-t border-gray-100 pt-4">
+        <div className="flex gap-2 border-t border-outline-variant/60 pt-4">
           <Button
             variant="outline"
             onClick={() => router.push(`/anuncios/nuevo?id=${ad.id}`)}
@@ -366,7 +393,7 @@ export function AdActions({ ad }: { ad: Ad }) {
       )}
 
       {user && !isOwner && (
-        <div className="border-t border-gray-100 pt-4">
+        <div className="border-t border-outline-variant/60 pt-4">
           <ReportAd adId={ad.id} />
         </div>
       )}

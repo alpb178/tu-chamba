@@ -1,93 +1,91 @@
 import Link from 'next/link';
-import { COMPANIES } from '@/lib/companies';
+import { CORPSC } from '@/lib/companies';
 import { DEPARTMENT_LABEL, DEPARTMENT_SLUG, Department } from '@/lib/types';
-import { NewsletterForm } from './NewsletterForm';
 
-// Redes sociales del Grupo CorpSC.
-const SOCIAL_LINKS = [
-  {
-    name: 'Facebook',
-    url: 'https://www.facebook.com/corpsc',
-    path: 'M13 10h3l.5-3H13V5.5c0-.9.3-1.5 1.6-1.5H17V1.4A21 21 0 0 0 14.6 1C12.2 1 10.5 2.5 10.5 5.2V7H8v3h2.5v8H13z',
-  },
-  {
-    name: 'Instagram',
-    url: 'https://www.instagram.com/corpsc1992',
-    path: 'M12 2.2c3.2 0 3.6 0 4.8.07 1.2.06 1.8.25 2.2.42.6.2 1 .5 1.4 1 .5.4.8.8 1 1.4.2.4.4 1 .4 2.2.07 1.2.07 1.6.07 4.8s0 3.6-.07 4.8c-.06 1.2-.25 1.8-.42 2.2-.2.6-.5 1-1 1.4-.4.5-.8.8-1.4 1-.4.2-1 .4-2.2.4-1.2.07-1.6.07-4.8.07s-3.6 0-4.8-.07c-1.2-.06-1.8-.25-2.2-.42-.6-.2-1-.5-1.4-1-.5-.4-.8-.8-1-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.8c.06-1.2.25-1.8.42-2.2.2-.6.5-1 1-1.4.4-.5.8-.8 1.4-1 .4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2m0 3.6A6.2 6.2 0 1 0 12 18.2 6.2 6.2 0 0 0 12 5.8m0 10.2a4 4 0 1 1 0-8 4 4 0 0 1 0 8m6.4-10.4a1.44 1.44 0 1 1-2.88 0 1.44 1.44 0 0 1 2.88 0',
-  },
-];
+const SUPPORT_EMAIL = 'alesx2soporte@gmail.com';
 
-function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
+const linkClass =
+  'text-sm text-on-surface-variant transition hover:text-primary focus:outline-none focus-visible:underline';
+
+function FooterCol({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
-    <div>
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+    <div className="flex flex-col gap-2">
+      <span className="mb-2 text-xs font-bold uppercase tracking-widest text-on-surface">
         {title}
-      </h3>
-      <ul className="space-y-2">{children}</ul>
+      </span>
+      {children}
     </div>
   );
 }
 
-const linkClass =
-  'text-sm text-gray-300 transition hover:text-white focus:outline-none focus-visible:underline';
-
 export function Footer() {
   return (
-    <footer className="mt-12 bg-brand text-gray-300">
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          <FooterCol title="Empleos">
-            <li><Link href="/" className={linkClass}>Buscar empleos</Link></li>
-            <li><Link href="/register" className={linkClass}>Crear cuenta</Link></li>
-            <li><Link href="/login" className={linkClass}>Ingresar</Link></li>
-          </FooterCol>
-
-          <FooterCol title="Para empresas">
-            <li><Link href="/anuncios/nuevo" className={linkClass}>Publicar anuncio</Link></li>
-            <li><Link href="/mis-anuncios" className={linkClass}>Mis anuncios</Link></li>
-          </FooterCol>
-
-          <FooterCol title="Nuestras marcas">
-            {COMPANIES.map((c) => (
-              <li key={c.slug}>
-                <a href={c.url} target="_blank" rel="noopener noreferrer" className={linkClass}>
-                  {c.name}
-                </a>
-              </li>
-            ))}
-          </FooterCol>
-
+    <footer className="mt-12 w-full border-t border-outline-variant bg-surface-container-highest py-12">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="mb-8 flex flex-col items-start justify-between gap-8 md:flex-row">
           <div>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
-              Síguenos
-            </h3>
-            <div className="mb-4 flex gap-2">
-              {SOCIAL_LINKS.map((r) => (
-                <a
-                  key={r.name}
-                  href={r.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={r.name}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-gray-300 transition hover:bg-accent hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path d={r.path} />
-                  </svg>
-                </a>
-              ))}
-            </div>
-            <NewsletterForm />
+            <span className="mb-4 block font-display text-2xl font-semibold text-on-surface">
+              TuChamba
+            </span>
+            <p className="max-w-sm text-sm text-on-surface-variant">
+              La plataforma líder en Bolivia para encontrar y publicar empleos
+              de forma rápida y segura.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-12 gap-y-4 sm:grid-cols-3">
+            <FooterCol title="Compañía">
+              <a
+                href={CORPSC.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={linkClass}
+              >
+                Sobre nosotros
+              </a>
+              <a href={`mailto:${SUPPORT_EMAIL}`} className={linkClass}>
+                Contacto
+              </a>
+            </FooterCol>
+            <FooterCol title="Legal">
+              <Link href="/privacidad" className={linkClass}>
+                Política de privacidad
+              </Link>
+              <Link href="/cookies" className={linkClass}>
+                Política de cookies
+              </Link>
+              <a
+                href={`mailto:${SUPPORT_EMAIL}?subject=Términos de servicio`}
+                className={linkClass}
+              >
+                Términos de servicio
+              </a>
+            </FooterCol>
+            <FooterCol title="Empresas">
+              <Link
+                href="/anuncios/nuevo"
+                className="text-sm font-bold text-primary hover:underline"
+              >
+                Publicar anuncio
+              </Link>
+            </FooterCol>
           </div>
         </div>
 
+        {/* Landing SEO por departamento (se conserva del footer anterior). */}
         <nav
           aria-label="Empleos por departamento"
-          className="mt-8 border-t border-white/10 pt-6"
+          className="border-t border-outline-variant/30 pt-6"
         >
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+          <span className="mb-3 block text-xs font-bold uppercase tracking-widest text-on-surface">
             Empleos por departamento
-          </h3>
+          </span>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             {(Object.keys(DEPARTMENT_SLUG) as Department[]).map((dep) => (
               <Link
@@ -101,22 +99,44 @@ export function Footer() {
           </div>
         </nav>
 
-        <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1.5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-icon.svg" alt="Tu Chamba" className="h-full w-auto" />
-            </span>
-            <p className="text-sm text-gray-400">
-              Tu Chamba · Portal de empleos de Bolivia
-            </p>
-          </div>
-          <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} Tu Chamba ·{' '}
-            <a href="mailto:alesx2soporte@gmail.com" className="hover:text-gray-300">
-              alesx2soporte@gmail.com
-            </a>
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-outline-variant/30 pt-8 md:flex-row">
+          <p className="text-xs text-on-surface-variant">
+            © {new Date().getFullYear()} TuChamba. Todos los derechos
+            reservados.
           </p>
+          <div className="flex gap-6">
+            <a
+              href={CORPSC.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Sitio de CorpSC"
+              className="text-on-surface-variant transition-colors hover:text-primary"
+            >
+              <span aria-hidden="true" className="material-symbols-outlined">
+                public
+              </span>
+            </a>
+            <a
+              href={`mailto:${SUPPORT_EMAIL}`}
+              aria-label="Escríbenos por correo"
+              className="text-on-surface-variant transition-colors hover:text-primary"
+            >
+              <span aria-hidden="true" className="material-symbols-outlined">
+                mail
+              </span>
+            </a>
+            <a
+              href="https://www.facebook.com/corpsc"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Síguenos en redes"
+              className="text-on-surface-variant transition-colors hover:text-primary"
+            >
+              <span aria-hidden="true" className="material-symbols-outlined">
+                share
+              </span>
+            </a>
+          </div>
         </div>
       </div>
     </footer>
