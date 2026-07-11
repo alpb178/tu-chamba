@@ -231,7 +231,11 @@ function SalaryRange({
   );
 }
 
+// Ancho de la columna: crece con la pantalla (más aire en monitores grandes).
+const SIDEBAR_WIDTH = 'w-full shrink-0 md:w-64 xl:w-72 2xl:w-80';
+
 // Barra lateral de filtros: jornada, categoría, departamento y salario.
+// En móvil se colapsa tras un botón "Filtros" con el conteo de activos.
 export function FiltersSidebar({
   value,
   facets,
@@ -241,6 +245,8 @@ export function FiltersSidebar({
   facets: Facets | null;
   onChange: (f: Filters) => void;
 }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   function toggle<T>(list: T[], item: T): T[] {
     return list.includes(item)
       ? list.filter((x) => x !== item)
@@ -252,7 +258,7 @@ export function FiltersSidebar({
     return (
       <aside
         aria-hidden="true"
-        className="w-full shrink-0 rounded-xl border border-outline-variant bg-surface-container-low p-5 md:w-64"
+        className={`${SIDEBAR_WIDTH} hidden rounded-xl border border-outline-variant bg-surface-container-low p-5 md:block`}
       >
         <Skeleton className="h-4 w-16" />
         {[0, 1, 2].map((i) => (
@@ -266,18 +272,51 @@ export function FiltersSidebar({
     );
   }
 
-  const hasFilters =
-    value.jobType.length ||
-    value.department.length ||
-    value.category.length ||
-    value.salaryMin != null ||
-    value.salaryMax != null;
+  const activeCount =
+    value.jobType.length +
+    value.category.length +
+    value.department.length +
+    (value.salaryMin != null || value.salaryMax != null ? 1 : 0);
+  const hasFilters = activeCount > 0;
 
   const categories = Object.keys(CATEGORY_LABEL) as Category[];
   const departments = Object.keys(DEPARTMENT_LABEL) as Department[];
 
   return (
-    <aside className="w-full shrink-0 space-y-5 rounded-xl border border-outline-variant bg-surface-container-low p-5 shadow-sm md:sticky md:top-24 md:w-64">
+    <div className={`${SIDEBAR_WIDTH} md:sticky md:top-24`}>
+      {/* Móvil: botón que muestra/oculta los filtros. */}
+      <button
+        type="button"
+        onClick={() => setMobileOpen((o) => !o)}
+        aria-expanded={mobileOpen}
+        aria-controls="filtros-panel"
+        className="flex w-full items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface shadow-sm md:hidden"
+      >
+        <span aria-hidden="true" className="material-symbols-outlined text-lg">
+          tune
+        </span>
+        Filtros
+        {hasFilters && (
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-secondary-container px-1.5 text-xs font-bold text-on-secondary-container">
+            {activeCount}
+          </span>
+        )}
+        <span
+          aria-hidden="true"
+          className={`material-symbols-outlined ml-auto text-outline transition-transform ${
+            mobileOpen ? 'rotate-180' : ''
+          }`}
+        >
+          expand_more
+        </span>
+      </button>
+
+      <aside
+        id="filtros-panel"
+        className={`${
+          mobileOpen ? 'mt-2 block' : 'hidden'
+        } space-y-5 rounded-xl border border-outline-variant bg-surface-container-low p-5 shadow-sm md:mt-0 md:block`}
+      >
       <div className="flex items-start justify-between">
         <div>
           <h2 className="font-display text-lg font-semibold text-on-surface">
@@ -362,6 +401,7 @@ export function FiltersSidebar({
           </p>
         )}
       </Section>
-    </aside>
+      </aside>
+    </div>
   );
 }

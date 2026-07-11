@@ -27,12 +27,15 @@ function FooterCol({
 export function Footer() {
   return (
     <footer className="mt-12 w-full border-t border-outline-variant bg-surface-container-highest py-12">
-      <div className="mx-auto max-w-6xl px-4">
+      <div className="mx-auto max-w-7xl 2xl:max-w-screen-2xl px-4 sm:px-6 lg:px-12">
         <div className="mb-8 flex flex-col items-start justify-between gap-8 md:flex-row">
           <div>
-            <span className="mb-4 block font-display text-2xl font-semibold text-on-surface">
-              TuChamba
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo-full.svg"
+              alt="Tu Chamba"
+              className="mb-4 h-10 w-auto"
+            />
             <p className="max-w-sm text-sm text-on-surface-variant">
               La plataforma líder en Bolivia para encontrar y publicar empleos
               de forma rápida y segura.

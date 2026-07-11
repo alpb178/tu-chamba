@@ -28,7 +28,7 @@ export function VerificationBanner() {
 
   return (
     <div className="border-b border-amber-200 bg-amber-50">
-      <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-2 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex max-w-7xl 2xl:max-w-screen-2xl flex-col gap-1 px-4 py-2 text-sm sm:px-6 lg:px-12 text-amber-900 sm:flex-row sm:items-center sm:justify-between">
         <span>
           Verifica tu correo <strong>{user.email}</strong> para activar tu
           cuenta y poder publicar.
