@@ -221,10 +221,15 @@ export function safeNext(next: string | null): string {
   return next && next.startsWith('/') && !next.startsWith('//') ? next : '/';
 }
 
-// Enlace de WhatsApp: wa.me exige el número con código de país (Bolivia 591).
+// Enlace de WhatsApp: wa.me exige el número con código de país. Los números
+// nuevos llegan en E.164 (+591…); a los antiguos, de 8 dígitos locales, se
+// les antepone el 591 de Bolivia.
 export function waLink(phone: string, message?: string) {
   const digits = phone.replace(/\D/g, '');
-  const number = digits.startsWith('591') ? digits : `591${digits}`;
+  const number =
+    phone.startsWith('+') || digits.startsWith('591') || digits.length > 8
+      ? digits
+      : `591${digits}`;
   const text = message ? `?text=${encodeURIComponent(message)}` : '';
   return `https://wa.me/${number}${text}`;
 }
