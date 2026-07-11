@@ -154,15 +154,18 @@ export function MapPicker({
 }
 
 // Mapa de solo lectura con el pin de la oferta (detalle del anuncio).
-// zoom menor para ubicaciones aproximadas (geocodificadas por dirección).
+// zoom menor para ubicaciones aproximadas (geocodificadas por dirección);
+// className permite la variante ampliada (modal a pantalla completa).
 export function MapView({
   lat,
   lng,
   zoom = PIN_ZOOM,
+  className = 'h-56 rounded-md border border-gray-200',
 }: {
   lat: number;
   lng: number;
   zoom?: number;
+  className?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -178,10 +181,5 @@ export function MapView({
     };
   }, [lat, lng, zoom]);
 
-  return (
-    <div
-      ref={containerRef}
-      className="h-56 w-full rounded-md border border-gray-200"
-    />
-  );
+  return <div ref={containerRef} className={`w-full ${className}`} />;
 }
