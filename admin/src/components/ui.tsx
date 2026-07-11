@@ -102,7 +102,7 @@ export function DataTable({
   children: ReactNode;
 }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-outline-variant bg-surface-container-lowest">
+    <div className="overflow-x-auto rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
       <table className="w-full text-left text-sm">
         <thead className="border-b border-outline-variant bg-surface-container-low text-on-surface-variant">
           <tr>
@@ -121,9 +121,9 @@ export function DataTable({
 
 export function StatCard({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-5">
+    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm">
       <p className="text-sm text-on-surface-variant">{label}</p>
-      <p className="mt-1 text-3xl font-bold text-brand">{value}</p>
+      <p className="mt-1 font-display text-3xl font-bold text-primary">{value}</p>
     </div>
   );
 }

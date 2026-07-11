@@ -29,7 +29,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface-container-low">
-      <div className="w-full max-w-sm rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+      <div className="w-full max-w-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-full.svg" alt="Tu Chamba" className="mx-auto h-9 w-auto" />
         <p className="mb-4 mt-2 text-center text-sm text-on-surface-variant">
