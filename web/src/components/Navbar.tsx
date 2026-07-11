@@ -27,6 +27,22 @@ function IconoAnuncios() {
   );
 }
 
+function IconoInteres() {
+  return (
+    <svg className="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.05 4.5a1 1 0 011.9 0l1.6 4.1a1 1 0 00.9.64l4.4.2a1 1 0 01.58 1.78l-3.44 2.75a1 1 0 00-.34 1.06l1.18 4.24a1 1 0 01-1.53 1.1L12.55 18a1 1 0 00-1.1 0l-3.75 2.37a1 1 0 01-1.53-1.1l1.18-4.24a1 1 0 00-.34-1.06L3.57 11.2a1 1 0 01.58-1.78l4.4-.2a1 1 0 00.9-.63l1.6-4.1z" />
+    </svg>
+  );
+}
+
+function IconoPerfil() {
+  return (
+    <svg className="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM5 21a7 7 0 0114 0" />
+    </svg>
+  );
+}
+
 function IconoAlertas() {
   return (
     <svg className="h-4 w-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
@@ -92,8 +108,6 @@ function TituloSeccion({ children }: { children: ReactNode }) {
 export function Navbar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
-  const puedePublicar = user?.role === 'EMPLEADOR' || user?.role === 'ADMIN';
-  const esTrabajador = user?.role === 'TRABAJADOR';
 
   const [menuUsuario, setMenuUsuario] = useState(false);
   const [menuMovil, setMenuMovil] = useState(false);
@@ -148,7 +162,7 @@ export function Navbar() {
 
         {/* Navegación de escritorio: solo el CTA queda fuera; el resto vive en el menú de cuenta */}
         <nav className="hidden items-center gap-3 md:flex">
-          {puedePublicar && (
+          {user && (
             <Link href="/anuncios/nuevo">
               <Button variant="accent">Publicar anuncio</Button>
             </Link>
@@ -206,21 +220,21 @@ export function Navbar() {
                       </div>
                     </div>
 
-                    {(puedePublicar || esTrabajador) && (
-                      <div className="pb-1">
-                        <TituloSeccion>Mi cuenta</TituloSeccion>
-                        {puedePublicar && (
-                          <ItemMenu href="/mis-anuncios" icono={<IconoAnuncios />}>
-                            Mis anuncios
-                          </ItemMenu>
-                        )}
-                        {esTrabajador && (
-                          <ItemMenu href="/alertas" icono={<IconoAlertas />}>
-                            Alertas de empleo
-                          </ItemMenu>
-                        )}
-                      </div>
-                    )}
+                    <div className="pb-1">
+                      <TituloSeccion>Mi cuenta</TituloSeccion>
+                      <ItemMenu href="/mis-anuncios" icono={<IconoAnuncios />}>
+                        Mis anuncios
+                      </ItemMenu>
+                      <ItemMenu href="/intereses" icono={<IconoInteres />}>
+                        Anuncios de tu interés
+                      </ItemMenu>
+                      <ItemMenu href="/alertas" icono={<IconoAlertas />}>
+                        Alertas de empleo
+                      </ItemMenu>
+                      <ItemMenu href="/perfil" icono={<IconoPerfil />}>
+                        Mi perfil
+                      </ItemMenu>
+                    </div>
 
                     <div className="border-t border-gray-100 pb-1">
                       <TituloSeccion>Enlaces</TituloSeccion>
@@ -310,7 +324,7 @@ export function Navbar() {
           )}
 
           <div className="flex flex-col gap-1">
-            {puedePublicar && (
+            {user && (
               <>
                 <Link href="/anuncios/nuevo" className="rounded-md bg-accent px-3 py-2 text-center text-sm font-medium text-brand">
                   Publicar anuncio
@@ -318,12 +332,16 @@ export function Navbar() {
                 <Link href="/mis-anuncios" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/mis-anuncios')}`}>
                   Mis anuncios
                 </Link>
+                <Link href="/intereses" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/intereses')}`}>
+                  Anuncios de tu interés
+                </Link>
+                <Link href="/alertas" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/alertas')}`}>
+                  Alertas de empleo
+                </Link>
+                <Link href="/perfil" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/perfil')}`}>
+                  Mi perfil
+                </Link>
               </>
-            )}
-            {esTrabajador && (
-              <Link href="/alertas" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/alertas')}`}>
-                Alertas de empleo
-              </Link>
             )}
             <a
               href={CORPSC.url}

@@ -8,34 +8,21 @@ import {
   ReactNode,
 } from 'react';
 import { api, setToken, clearToken, getToken } from './api';
-import { Role, User } from './types';
-
-type RegisterRole = Extract<Role, 'TRABAJADOR' | 'EMPLEADOR'>;
+import { User } from './types';
 
 interface RegisterData {
   email: string;
   password: string;
   name: string;
-  // Obligatorio solo para EMPLEADOR (validado por la API).
   phone?: string;
-  role: RegisterRole;
 }
-
-// Respuesta de /auth/google: sesión iniciada, o falta completar el perfil
-// (cuenta nueva: la API necesita rol y, si es empleador, teléfono).
-export type GoogleResult =
-  | { needsProfile: true; email: string; name: string }
-  | { needsProfile: false; user: User };
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
   register: (data: RegisterData) => Promise<User>;
-  loginWithGoogle: (
-    idToken: string,
-    extra?: { role: RegisterRole; phone?: string },
-  ) => Promise<GoogleResult>;
+  loginWithGoogle: (idToken: string) => Promise<User>;
   refresh: () => Promise<void>;
   logout: () => void;
 }
@@ -78,24 +65,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.user;
   }
 
-  async function loginWithGoogle(
-    idToken: string,
-    extra?: { role: RegisterRole; phone?: string },
-  ): Promise<GoogleResult> {
-    const res = await api<
-      | { needsProfile: true; email: string; name: string }
-      | { accessToken: string; user: User }
-    >('/auth/google', {
+  // Con Google la cuenta se crea directamente si no existe (correo ya
+  // verificado); el teléfono se completa después desde el perfil.
+  async function loginWithGoogle(idToken: string) {
+    const res = await api<{ accessToken: string; user: User }>('/auth/google', {
       method: 'POST',
-      body: JSON.stringify({ idToken, ...extra }),
+      body: JSON.stringify({ idToken }),
     });
-    if ('needsProfile' in res && res.needsProfile) {
-      return { needsProfile: true, email: res.email, name: res.name };
-    }
-    const session = res as { accessToken: string; user: User };
-    setToken(session.accessToken);
-    setUser(session.user);
-    return { needsProfile: false, user: session.user };
+    setToken(res.accessToken);
+    setUser(res.user);
+    return res.user;
   }
 
   // Recarga el usuario desde el backend (p. ej. tras verificar el correo).

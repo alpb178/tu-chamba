@@ -31,7 +31,7 @@ export function VerificationBanner() {
       <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-2 text-sm text-amber-900 sm:flex-row sm:items-center sm:justify-between">
         <span>
           Verifica tu correo <strong>{user.email}</strong> para activar tu
-          cuenta{user.role === 'EMPLEADOR' ? ' y poder publicar' : ''}.
+          cuenta y poder publicar.
         </span>
         {sent ? (
           <span className="font-medium text-amber-800">

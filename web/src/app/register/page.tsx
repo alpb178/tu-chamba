@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { safeNext } from '@/lib/types';
-import { Button, FormField, Input, Select } from '@/components/ui';
+import { Button, FormField, Input } from '@/components/ui';
 import { GoogleSignIn } from '@/components/GoogleSignIn';
 
 function RegisterForm() {
@@ -17,7 +17,6 @@ function RegisterForm() {
     email: '',
     phone: '',
     password: '',
-    role: 'TRABAJADOR' as 'TRABAJADOR' | 'EMPLEADOR',
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -25,8 +24,6 @@ function RegisterForm() {
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((f) => ({ ...f, [key]: value }));
   }
-
-  const isEmployer = form.role === 'EMPLEADOR';
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,8 +34,6 @@ function RegisterForm() {
         name: form.name,
         email: form.email,
         password: form.password,
-        role: form.role,
-        // El teléfono solo es obligatorio para empleadores.
         phone: form.phone.trim() || undefined,
       });
       router.push(next);
@@ -53,17 +48,6 @@ function RegisterForm() {
     <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-white p-6">
       <h1 className="mb-4 text-xl font-semibold text-gray-800">Crear cuenta</h1>
       <form onSubmit={onSubmit} className="space-y-4">
-        <FormField label="Quiero registrarme como">
-          <Select
-            value={form.role}
-            onChange={(e) =>
-              set('role', e.target.value as 'TRABAJADOR' | 'EMPLEADOR')
-            }
-          >
-            <option value="TRABAJADOR">Trabajador (busco empleo)</option>
-            <option value="EMPLEADOR">Empleador (publico empleos)</option>
-          </Select>
-        </FormField>
         <FormField label="Nombre">
           <Input
             value={form.name}
@@ -79,17 +63,10 @@ function RegisterForm() {
             required
           />
         </FormField>
-        <FormField
-          label={
-            isEmployer
-              ? 'Teléfono (WhatsApp, lo verán los candidatos)'
-              : 'Teléfono (opcional)'
-          }
-        >
+        <FormField label="Teléfono (opcional)">
           <Input
             value={form.phone}
             onChange={(e) => set('phone', e.target.value)}
-            required={isEmployer}
           />
         </FormField>
         <FormField label="Contraseña (mín. 6)">

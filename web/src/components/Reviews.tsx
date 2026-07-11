@@ -16,16 +16,16 @@ function Stars({ value }: { value: number }) {
   );
 }
 
-// Reseñas del empleador dueño del anuncio. Los TRABAJADORES pueden
-// calificar (1-5 + comentario obligatorio); una reseña por anuncio.
+// Reseñas del publicante dueño del anuncio. Cualquier usuario autenticado
+// puede calificar un anuncio ajeno (1-5 + comentario); una por anuncio.
 export function Reviews({
   adId,
-  employerId,
-  employerName,
+  ownerId,
+  ownerName,
 }: {
   adId: string;
-  employerId: string;
-  employerName: string;
+  ownerId: string;
+  ownerName: string;
 }) {
   const { user } = useAuth();
   const [data, setData] = useState<ReviewsResponse | null>(null);
@@ -39,15 +39,15 @@ export function Reviews({
 
   // Se recarga al cambiar el usuario: alreadyReviewed depende del token.
   const load = useCallback(() => {
-    api<ReviewsResponse>(`/reviews?employerId=${employerId}&adId=${adId}`)
+    api<ReviewsResponse>(`/reviews?ownerId=${ownerId}&adId=${adId}`)
       .then(setData)
       .catch(() => setData(null));
-  }, [employerId, adId, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ownerId, adId, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(load, [load]);
 
   // Ya calificó este anuncio: lo dice el backend (la reseña propia puede no
-  // venir en la primera página de la lista del empleador).
+  // venir en la primera página de la lista del publicante).
   const alreadyReviewed = Boolean(data?.alreadyReviewed);
 
   async function onSubmit(e: React.FormEvent) {
@@ -68,15 +68,16 @@ export function Reviews({
     }
   }
 
-  // Una reseña por anuncio: con la propia ya enviada, no hay formulario.
-  // Espera la carga para no mostrar el botón y retirarlo después.
-  const canReview = user?.role === 'TRABAJADOR' && data != null && !alreadyReviewed;
+  // Una reseña por anuncio y nunca sobre el anuncio propio. Espera la
+  // carga para no mostrar el botón y retirarlo después.
+  const isOwner = user?.id === ownerId;
+  const canReview = Boolean(user) && !isOwner && data != null && !alreadyReviewed;
 
   return (
     <section className="space-y-3 border-t border-gray-100 pt-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-700">
-          Reseñas de {employerName}
+          Reseñas de {ownerName}
         </h2>
         {data && data.total > 0 && (
           <p className="text-sm text-gray-600">
@@ -89,7 +90,7 @@ export function Reviews({
 
       {data && data.items.length === 0 && (
         <p className="text-sm text-gray-500">
-          Este empleador aún no tiene reseñas.
+          Este publicante aún no tiene reseñas.
         </p>
       )}
 
@@ -115,7 +116,7 @@ export function Reviews({
         ))}
       </ul>
 
-      {user?.role === 'TRABAJADOR' && alreadyReviewed && (
+      {user && !isOwner && alreadyReviewed && (
         <p className="text-sm text-gray-500">
           {submitted
             ? '¡Gracias por tu reseña!'

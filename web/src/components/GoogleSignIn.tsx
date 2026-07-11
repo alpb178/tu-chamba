@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
-import { Button, FormField, Input, Select } from './ui';
 
 const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 const SCRIPT_ID = 'google-gsi-client';
@@ -22,35 +21,23 @@ declare global {
   }
 }
 
-// Botón "Continuar con Google" + paso de completar perfil para cuentas
-// nuevas (rol y, si es empleador, teléfono — coherente con el registro).
+// Botón "Continuar con Google". Si la cuenta no existe se crea al momento
+// (sin más datos: el teléfono se completa después desde el perfil).
 // No se renderiza si NEXT_PUBLIC_GOOGLE_CLIENT_ID no está configurado.
 // `next`: ruta a la que volver tras entrar (p. ej. el anuncio compartido).
 export function GoogleSignIn({ next = '/' }: { next?: string }) {
   const { loginWithGoogle } = useAuth();
   const router = useRouter();
   const buttonRef = useRef<HTMLDivElement>(null);
-
-  const [idToken, setIdToken] = useState<string | null>(null);
-  const [name, setName] = useState('');
-  const [role, setRole] = useState<'TRABAJADOR' | 'EMPLEADOR'>('TRABAJADOR');
-  const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
 
   // Referencia estable para el callback de GIS (se inicializa una sola vez).
   const onCredentialRef = useRef<(token: string) => void>(() => {});
   onCredentialRef.current = async (token: string) => {
     setError(null);
     try {
-      const res = await loginWithGoogle(token);
-      if (res.needsProfile) {
-        // Cuenta nueva: pedimos rol (y teléfono si será empleador).
-        setIdToken(token);
-        setName(res.name);
-      } else {
-        router.push(next);
-      }
+      await loginWithGoogle(token);
+      router.push(next);
     } catch (err) {
       setError((err as Error).message);
     }
@@ -91,24 +78,6 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
 
   if (!CLIENT_ID) return null;
 
-  async function completeProfile(e: React.FormEvent) {
-    e.preventDefault();
-    if (!idToken) return;
-    setError(null);
-    setSaving(true);
-    try {
-      const res = await loginWithGoogle(idToken, {
-        role,
-        phone: phone.trim() || undefined,
-      });
-      if (!res.needsProfile) router.push(next);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setSaving(false);
-    }
-  }
-
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
@@ -117,48 +86,8 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
         <div className="h-px flex-1 bg-gray-200" />
       </div>
 
-      {idToken ? (
-        <form
-          onSubmit={completeProfile}
-          className="space-y-3 rounded-md border border-gray-200 p-3"
-        >
-          <p className="text-sm text-gray-700">
-            ¡Hola{name ? `, ${name}` : ''}! Para terminar de crear tu
-            cuenta, cuéntanos cómo usarás Tu Chamba.
-          </p>
-          <FormField label="Quiero registrarme como">
-            <Select
-              value={role}
-              onChange={(e) =>
-                setRole(e.target.value as 'TRABAJADOR' | 'EMPLEADOR')
-              }
-            >
-              <option value="TRABAJADOR">Trabajador (busco empleo)</option>
-              <option value="EMPLEADOR">Empleador (publico empleos)</option>
-            </Select>
-          </FormField>
-          <FormField
-            label={
-              role === 'EMPLEADOR' ? 'Teléfono (WhatsApp)' : 'Teléfono (opcional)'
-            }
-          >
-            <Input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required={role === 'EMPLEADOR'}
-            />
-          </FormField>
-          {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" className="w-full" disabled={saving}>
-            {saving ? 'Creando cuenta...' : 'Crear cuenta con Google'}
-          </Button>
-        </form>
-      ) : (
-        <>
-          <div ref={buttonRef} className="flex justify-center" />
-          {error && <p className="text-center text-sm text-red-600">{error}</p>}
-        </>
-      )}
+      <div ref={buttonRef} className="flex justify-center" />
+      {error && <p className="text-center text-sm text-red-600">{error}</p>}
     </div>
   );
 }

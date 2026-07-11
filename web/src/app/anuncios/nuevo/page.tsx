@@ -13,7 +13,7 @@ import {
   DURATION_DAYS,
   JobType,
 } from '@/lib/types';
-import { useAuth } from '@/lib/auth';
+import { useRequireAuth } from '@/lib/useRequireAuth';
 import { Button, FormField, Input, Select } from '@/components/ui';
 
 // Leaflet usa window: solo en cliente.
@@ -26,7 +26,7 @@ function Form() {
   const router = useRouter();
   const params = useSearchParams();
   const editId = params.get('id');
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useRequireAuth();
 
   const [form, setForm] = useState({
     description: '',
@@ -46,8 +46,8 @@ function Form() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Empleador (no admin) con correo sin verificar no puede publicar.
-  const notVerified = !!user && user.role !== 'ADMIN' && !user.emailVerified;
+  // Con el correo sin verificar no se puede publicar (admins exentos).
+  const notVerified = !!user && !user.isAdmin && !user.emailVerified;
 
   useEffect(() => {
     if (editId) {
@@ -72,21 +72,13 @@ function Form() {
     }
   }, [editId]);
 
-  // Al crear, el teléfono se precarga con el del perfil del empleador
+  // Al crear, el teléfono se precarga con el del perfil del usuario
   // (es el que usarán los botones Llamar y Chatear). Sigue siendo editable.
   useEffect(() => {
     if (!editId && user?.phone) {
       setForm((f) => (f.phone ? f : { ...f, phone: user.phone! }));
     }
   }, [editId, user]);
-
-  // Guard de rol: solo EMPLEADOR/ADMIN.
-  useEffect(() => {
-    if (!authLoading) {
-      if (!user) router.push('/login');
-      else if (user.role === 'TRABAJADOR') router.push('/');
-    }
-  }, [authLoading, user, router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

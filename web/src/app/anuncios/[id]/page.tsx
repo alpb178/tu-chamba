@@ -106,8 +106,8 @@ export default async function AdDetailPage({ params }: Params) {
 
       <Reviews
         adId={ad.id}
-        employerId={ad.createdById}
-        employerName={ad.createdBy?.name ?? 'este empleador'}
+        ownerId={ad.createdById}
+        ownerName={ad.createdBy?.name ?? 'este publicante'}
       />
 
       {/* Holgura para la barra de contacto fija de AdActions en móvil. */}
