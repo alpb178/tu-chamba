@@ -8,7 +8,8 @@ import {
   REPORT_REASON_LABEL,
   Report,
 } from '@/lib/types';
-import { Button, DataTable, Select, TableSkeleton } from '@/components/ui';
+import { Button, DataTable, TableSkeleton } from '@/components/ui';
+import { CustomSelect } from '@/components/CustomSelect';
 
 const HEADERS = ['Anuncio', 'Motivo', 'Comentario', 'Reportado por', 'Fecha', 'Estado', ''];
 
@@ -54,15 +55,18 @@ export default function ReportsAdminPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-on-surface">Reportes</h1>
-        <Select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value as ReportStatus | '')}
-        >
-          <option value="">Todos</option>
-          <option value="PENDIENTE">Pendientes</option>
-          <option value="ATENDIDO">Atendidos</option>
-          <option value="DESCARTADO">Descartados</option>
-        </Select>
+        <div className="w-48">
+          <CustomSelect
+            value={filter}
+            onChange={(v) => setFilter(v as ReportStatus | '')}
+            options={[
+              { value: '', label: 'Todos' },
+              { value: 'PENDIENTE', label: 'Pendientes' },
+              { value: 'ATENDIDO', label: 'Atendidos' },
+              { value: 'DESCARTADO', label: 'Descartados' },
+            ]}
+          />
+        </div>
       </div>
 
       {loading ? (

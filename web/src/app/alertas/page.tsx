@@ -10,7 +10,8 @@ import {
   DEPARTMENT_LABEL,
 } from '@/lib/types';
 import { useRequireAuth } from '@/lib/useRequireAuth';
-import { Button, FormField, Select } from '@/components/ui';
+import { Button, FormField } from '@/components/ui';
+import { CustomSelect } from '@/components/CustomSelect';
 import { Skeleton } from '@/components/Skeleton';
 
 export default function JobAlertsPage() {
@@ -98,30 +99,30 @@ export default function JobAlertsPage() {
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="Departamento">
-            <Select
+            <CustomSelect
               value={department}
-              onChange={(e) => setDepartment(e.target.value as Department | '')}
-            >
-              <option value="">Todo el país</option>
-              {Object.entries(DEPARTMENT_LABEL).map(([v, label]) => (
-                <option key={v} value={v}>
-                  {label}
-                </option>
-              ))}
-            </Select>
+              onChange={(v) => setDepartment(v as Department | '')}
+              options={[
+                { value: '', label: 'Todo el país' },
+                ...Object.entries(DEPARTMENT_LABEL).map(([value, label]) => ({
+                  value,
+                  label,
+                })),
+              ]}
+            />
           </FormField>
           <FormField label="Categoría">
-            <Select
+            <CustomSelect
               value={category}
-              onChange={(e) => setCategory(e.target.value as Category | '')}
-            >
-              <option value="">Todas las categorías</option>
-              {Object.entries(CATEGORY_LABEL).map(([v, label]) => (
-                <option key={v} value={v}>
-                  {label}
-                </option>
-              ))}
-            </Select>
+              onChange={(v) => setCategory(v as Category | '')}
+              options={[
+                { value: '', label: 'Todas las categorías' },
+                ...Object.entries(CATEGORY_LABEL).map(([value, label]) => ({
+                  value,
+                  label,
+                })),
+              ]}
+            />
           </FormField>
         </div>
         {error && <p className="text-sm text-error">{error}</p>}

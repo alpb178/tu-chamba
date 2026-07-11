@@ -2,31 +2,44 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { DEPARTMENT_LABEL, Department } from '@/lib/types';
+import { CustomSelect } from './CustomSelect';
+
+// Todos los departamentos + "Todo el país" como opción vacía.
+const DEPARTMENT_OPTIONS = [
+  { value: '', label: 'Todo el país' },
+  ...Object.entries(DEPARTMENT_LABEL).map(([value, label]) => ({
+    value,
+    label,
+  })),
+];
 
 // Hero de la portada: imagen con degradado azul de marca y buscador
-// "glass" de dos campos (qué + dónde). Navega a /?q=&loc= (la home los lee).
+// "glass" de dos campos (qué + departamento). Navega a /?q=&dep=.
 export function Hero({
   initialQuery = '',
-  initialLocation = '',
+  initialDep = '',
 }: {
   initialQuery?: string;
-  initialLocation?: string;
+  initialDep?: Department | '';
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(initialQuery);
-  const [location, setLocation] = useState(initialLocation);
+  const [dep, setDep] = useState<string>(initialDep);
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const p = new URLSearchParams();
     if (query.trim()) p.set('q', query.trim());
-    if (location.trim()) p.set('loc', location.trim());
+    if (dep) p.set('dep', dep);
     router.push(p.size ? `/?${p}` : '/');
   }
 
+  // z-30 (bajo el navbar z-40): el desplegable del select sobresale por
+  // encima del contenido siguiente. El clip vive en la capa de fondo.
   return (
-    <section className="relative -mt-6 ml-[calc(50%-50vw)] flex min-h-[440px] w-screen items-center justify-center overflow-hidden sm:min-h-[540px]">
-      <div className="absolute inset-0 z-0">
+    <section className="relative z-30 -mt-6 ml-[calc(50%-50vw)] flex min-h-[440px] w-screen items-center justify-center sm:min-h-[540px]">
+      <div className="absolute inset-0 z-0 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/hero.jpg"
@@ -74,19 +87,14 @@ export function Hero({
               className="w-full border-none bg-transparent text-base text-on-surface outline-none placeholder:text-outline-variant focus:ring-0"
             />
           </div>
-          <div className="flex items-center rounded-xl border border-outline-variant bg-white px-4 py-3 transition-all focus-within:ring-2 focus-within:ring-primary-container md:w-1/3">
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined mr-3 text-outline"
-            >
-              location_on
-            </span>
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="La Paz, Bolivia"
-              aria-label="Ciudad o zona"
-              className="w-full border-none bg-transparent text-base text-on-surface outline-none placeholder:text-outline-variant focus:ring-0"
+          <div className="md:w-1/3">
+            <CustomSelect
+              value={dep}
+              onChange={setDep}
+              options={DEPARTMENT_OPTIONS}
+              placeholder="Todo el país"
+              icon="location_on"
+              className="rounded-xl px-4 py-3 text-base"
             />
           </div>
           <button

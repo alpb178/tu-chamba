@@ -14,7 +14,8 @@ import {
   JobType,
 } from '@/lib/types';
 import { useRequireAuth } from '@/lib/useRequireAuth';
-import { Button, FormField, Input, Select } from '@/components/ui';
+import { Button, FormField, Input } from '@/components/ui';
+import { CustomSelect } from '@/components/CustomSelect';
 
 // Leaflet usa window: solo en cliente.
 const MapPicker = dynamic(
@@ -150,40 +151,28 @@ function Form() {
         </FormField>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="Departamento">
-            <Select
+            <CustomSelect
               value={form.department}
-              onChange={(e) =>
-                setForm({ ...form, department: e.target.value as Department })
+              onChange={(v) =>
+                setForm({ ...form, department: v as Department })
               }
               required
-            >
-              <option value="" disabled>
-                Selecciona…
-              </option>
-              {Object.entries(DEPARTMENT_LABEL).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </Select>
+              placeholder="Selecciona…"
+              options={Object.entries(DEPARTMENT_LABEL).map(
+                ([value, label]) => ({ value, label }),
+              )}
+            />
           </FormField>
           <FormField label="Categoría / rubro">
-            <Select
+            <CustomSelect
               value={form.category}
-              onChange={(e) =>
-                setForm({ ...form, category: e.target.value as Category })
-              }
+              onChange={(v) => setForm({ ...form, category: v as Category })}
               required
-            >
-              <option value="" disabled>
-                Selecciona…
-              </option>
-              {Object.entries(CATEGORY_LABEL).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </Select>
+              placeholder="Selecciona…"
+              options={Object.entries(CATEGORY_LABEL).map(
+                ([value, label]) => ({ value, label }),
+              )}
+            />
           </FormField>
         </div>
         <FormField label="Ubicación del puesto">
@@ -231,30 +220,25 @@ function Form() {
           />
         </FormField>
         <FormField label="Tipo de jornada">
-          <Select
+          <CustomSelect
             value={form.jobType}
-            onChange={(e) =>
-              setForm({ ...form, jobType: e.target.value as JobType })
-            }
-          >
-            <option value="DIARIA">Diaria</option>
-            <option value="TIEMPO_COMPLETO">Tiempo completo</option>
-            <option value="MEDIA_JORNADA">Media jornada</option>
-          </Select>
+            onChange={(v) => setForm({ ...form, jobType: v as JobType })}
+            options={[
+              { value: 'DIARIA', label: 'Diaria' },
+              { value: 'TIEMPO_COMPLETO', label: 'Tiempo completo' },
+              { value: 'MEDIA_JORNADA', label: 'Media jornada' },
+            ]}
+          />
         </FormField>
         <FormField label="Duración de la publicación">
-          <Select
-            value={form.durationDays}
-            onChange={(e) =>
-              setForm({ ...form, durationDays: Number(e.target.value) })
-            }
-          >
-            {DURATION_DAYS.map((d) => (
-              <option key={d} value={d}>
-                {d} días{d === 3 ? ' (por defecto)' : ''}
-              </option>
-            ))}
-          </Select>
+          <CustomSelect
+            value={String(form.durationDays)}
+            onChange={(v) => setForm({ ...form, durationDays: Number(v) })}
+            options={DURATION_DAYS.map((d) => ({
+              value: String(d),
+              label: `${d} días${d === 3 ? ' (por defecto)' : ''}`,
+            }))}
+          />
         </FormField>
         {error && <p className="text-sm text-error">{error}</p>}
         <Button type="submit" className="w-full" disabled={saving || notVerified}>

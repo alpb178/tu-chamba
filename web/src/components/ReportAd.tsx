@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { api } from '@/lib/api';
 import { REPORT_REASON_LABEL, ReportReason } from '@/lib/types';
-import { Button, FormField, Select } from './ui';
+import { Button, FormField } from './ui';
+import { CustomSelect } from './CustomSelect';
 
 // Reporte de spam/abuso. La visibilidad del anuncio la decide el admin.
 export function ReportAd({ adId }: { adId: string }) {
@@ -60,16 +61,13 @@ export function ReportAd({ adId }: { adId: string }) {
     <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-outline-variant p-3">
       <p className="text-sm font-medium text-on-surface-variant">Reportar anuncio</p>
       <FormField label="Motivo">
-        <Select
+        <CustomSelect
           value={reason}
-          onChange={(e) => setReason(e.target.value as ReportReason)}
-        >
-          {Object.entries(REPORT_REASON_LABEL).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </Select>
+          onChange={(v) => setReason(v as ReportReason)}
+          options={Object.entries(REPORT_REASON_LABEL).map(
+            ([value, label]) => ({ value, label }),
+          )}
+        />
       </FormField>
       <FormField label="Comentario (opcional)">
         <textarea
