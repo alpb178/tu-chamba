@@ -37,18 +37,18 @@ export function Reviews({
   // El formulario pesa visualmente: colapsado hasta que quieran calificar.
   const [formOpen, setFormOpen] = useState(false);
 
+  // Se recarga al cambiar el usuario: alreadyReviewed depende del token.
   const load = useCallback(() => {
-    api<ReviewsResponse>(`/reviews?employerId=${employerId}`)
+    api<ReviewsResponse>(`/reviews?employerId=${employerId}&adId=${adId}`)
       .then(setData)
       .catch(() => setData(null));
-  }, [employerId]);
+  }, [employerId, adId, user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(load, [load]);
 
-  // La reseña propia sobre ESTE anuncio (la lista trae las del empleador).
-  const ownReview = user
-    ? data?.items.find((r) => r.authorId === user.id && r.adId === adId)
-    : undefined;
+  // Ya calificó este anuncio: lo dice el backend (la reseña propia puede no
+  // venir en la primera página de la lista del empleador).
+  const alreadyReviewed = Boolean(data?.alreadyReviewed);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -69,7 +69,8 @@ export function Reviews({
   }
 
   // Una reseña por anuncio: con la propia ya enviada, no hay formulario.
-  const canReview = user?.role === 'TRABAJADOR' && !ownReview;
+  // Espera la carga para no mostrar el botón y retirarlo después.
+  const canReview = user?.role === 'TRABAJADOR' && data != null && !alreadyReviewed;
 
   return (
     <section className="space-y-3 border-t border-gray-100 pt-4">
@@ -114,7 +115,7 @@ export function Reviews({
         ))}
       </ul>
 
-      {user?.role === 'TRABAJADOR' && ownReview && (
+      {user?.role === 'TRABAJADOR' && alreadyReviewed && (
         <p className="text-sm text-gray-500">
           {submitted
             ? '¡Gracias por tu reseña!'
