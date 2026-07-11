@@ -168,10 +168,12 @@ export class AuthService {
 
     if (user) {
       // Vincula la cuenta Google a un usuario existente con el mismo correo.
-      if (!user.googleId) {
+      // Google ya verificó ese correo (validado en verifyGoogleToken), así
+      // que la cuenta queda verificada aunque no hubiera confirmado el suyo.
+      if (!user.googleId || !user.emailVerified) {
         user = await this.prisma.user.update({
           where: { id: user.id },
-          data: { googleId: payload.sub },
+          data: { googleId: user.googleId ?? payload.sub, emailVerified: true },
         });
       }
       await this.traces.record(
