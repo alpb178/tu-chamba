@@ -82,14 +82,14 @@ export function NotificationsBell() {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="relative rounded-full p-2 text-xl leading-none hover:bg-surface-container"
+        className="relative rounded-full p-2 transition-colors hover:bg-surface-container-high"
         aria-label={`Notificaciones${unread ? ` (${unread} sin leer)` : ''}`}
       >
-        🔔
+        <span aria-hidden="true" className="material-symbols-outlined text-on-surface-variant">
+          notifications
+        </span>
         {unread > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-error px-1 text-xs font-bold text-white">
-            {unread > 9 ? '9+' : unread}
-          </span>
+          <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-surface bg-error" />
         )}
       </button>
 

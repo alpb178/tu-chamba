@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Ad, Facets, Paginated } from '@/lib/types';
 import { SearchBar } from '@/components/SearchBar';
@@ -10,14 +11,22 @@ import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
 import { Pagination } from '@/components/Pagination';
 import { FeaturedBrands } from '@/components/FeaturedBrands';
 
-export default function HomePage() {
+function HomeContent() {
+  const router = useRouter();
+  // La búsqueda vive en la URL (?q=): la escribe el buscador del navbar
+  // (escritorio) o el de la portada (móvil).
+  const search = useSearchParams().get('q')?.trim() ?? '';
   const [data, setData] = useState<Paginated<Ad> | null>(null);
   const [facets, setFacets] = useState<Facets | null>(null);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
-  const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Al cambiar la búsqueda, volvemos a la primera página.
+  useEffect(() => {
+    setPage(1);
+  }, [search]);
 
   // Conteos para la barra de filtros (una vez).
   useEffect(() => {
@@ -54,13 +63,13 @@ export default function HomePage() {
 
   return (
     <div className="space-y-4">
-      <SearchBar
-        initial={search}
-        onSearch={(q) => {
-          setSearch(q);
-          setPage(1);
-        }}
-      />
+      {/* En escritorio el buscador vive en el navbar. */}
+      <div className="md:hidden">
+        <SearchBar
+          initial={search}
+          onSearch={(q) => router.push(q ? `/?q=${encodeURIComponent(q)}` : '/')}
+        />
+      </div>
 
       <div className="flex flex-col gap-6 md:flex-row md:items-start">
         <FiltersSidebar
@@ -110,5 +119,13 @@ export default function HomePage() {
 
       <FeaturedBrands />
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<AdListSkeleton />}>
+      <HomeContent />
+    </Suspense>
   );
 }

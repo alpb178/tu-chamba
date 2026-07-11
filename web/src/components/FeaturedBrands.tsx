@@ -9,7 +9,7 @@ function BrandCard({ company }: { company: Company }) {
         href={company.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="group relative block h-44 overflow-hidden"
+        className="group relative block h-48 overflow-hidden"
         style={{ backgroundColor: company.background }}
         tabIndex={-1}
         aria-hidden="true"
@@ -23,7 +23,7 @@ function BrandCard({ company }: { company: Company }) {
           className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <h3 className="absolute bottom-4 left-4 font-display text-lg font-semibold text-white">
+        <h3 className="absolute bottom-4 left-4 font-display text-lg font-semibold text-on-primary">
           {company.name}
         </h3>
       </a>
@@ -36,7 +36,7 @@ function BrandCard({ company }: { company: Company }) {
           href={company.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-inverse-surface px-4 py-2.5 text-sm font-bold text-inverse-on-surface transition-colors hover:bg-on-background focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-inverse-surface px-4 py-2.5 text-sm font-bold text-on-primary transition-colors hover:bg-on-background focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           aria-label={`Visitar el sitio de ${company.name} (se abre en una pestaña nueva)`}
         >
           Visitar sitio

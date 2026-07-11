@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
 import { NotificationsBell } from './NotificationsBell';
@@ -108,6 +108,7 @@ function TituloSeccion({ children }: { children: ReactNode }) {
 export function Navbar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   // El CTA de publicar se muestra siempre: sin sesión manda a registrarse
   // y, al crear la cuenta, vuelve directo al formulario de publicar.
   const publishHref = user
@@ -116,7 +117,15 @@ export function Navbar() {
 
   const [menuUsuario, setMenuUsuario] = useState(false);
   const [menuMovil, setMenuMovil] = useState(false);
+  // Buscador del header: navega a la portada con ?q= (la home lo lee).
+  const [query, setQuery] = useState('');
   const usuarioRef = useRef<HTMLDivElement>(null);
+
+  function onSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = query.trim();
+    router.push(q ? `/?q=${encodeURIComponent(q)}` : '/');
+  }
 
   // Cierra ambos menús al navegar.
   useEffect(() => {
@@ -145,64 +154,91 @@ export function Navbar() {
     pathname === href ? 'text-brand' : 'text-on-surface-variant hover:text-brand';
 
   const chevron = (
-    <svg
-      className={`h-4 w-4 text-outline transition-transform ${menuUsuario ? 'rotate-180' : ''}`}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
+    <span
       aria-hidden="true"
+      className={`material-symbols-outlined text-outline transition-all group-hover:text-primary ${
+        menuUsuario ? 'rotate-180' : ''
+      }`}
     >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-    </svg>
+      expand_more
+    </span>
   );
 
   return (
-    <header className="sticky top-0 z-40 border-b border-outline-variant bg-surface/90 shadow-sm backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-full.svg" alt="Tu Chamba" className="h-9 w-auto" />
-        </Link>
-
-        {/* Navegación de escritorio: solo el CTA queda fuera; el resto vive en el menú de cuenta */}
-        <nav className="hidden items-center gap-3 md:flex">
-          <Link href={publishHref}>
-            <Button variant="accent">Publicar anuncio</Button>
+    <header className="sticky top-0 z-40 bg-surface shadow-md">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
+        <div className="flex flex-1 items-center gap-8">
+          <Link href="/" className="flex shrink-0 items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="material-symbols-outlined icon-fill text-3xl text-primary"
+            >
+              work
+            </span>
+            <span className="font-display text-lg font-bold tracking-tight text-on-surface">
+              TuChamba
+            </span>
           </Link>
 
-          {user && <NotificationsBell />}
-
-          {/* Menú de cuenta (estilo Amazon: "Hola, Nombre / Cuenta y menú") */}
-          <div className="relative" ref={usuarioRef}>
+          {/* Buscador del header (escritorio): navega a la portada con ?q= */}
+          <form
+            onSubmit={onSearch}
+            className="hidden max-w-xl flex-1 items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2 transition-shadow focus-within:border-primary focus-within:shadow-md md:flex"
+          >
+            <span aria-hidden="true" className="material-symbols-outlined text-outline">
+              search
+            </span>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar empleos por descripción..."
+              className="w-full border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-outline focus:ring-0"
+            />
             <button
-              type="button"
-              onClick={() => setMenuUsuario((o) => !o)}
-              className="flex items-center gap-2 rounded-lg px-2 py-1 transition hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              aria-haspopup="menu"
-              aria-expanded={menuUsuario}
+              type="submit"
+              className="shrink-0 rounded-lg bg-primary px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-on-primary transition-all hover:brightness-110 active:scale-95"
             >
-              {user ? (
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white">
-                  {iniciales(user.name)}
-                </span>
-              ) : (
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-container text-on-surface-variant">
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM5 21a7 7 0 0114 0" />
-                  </svg>
-                </span>
-              )}
-              <span className="flex flex-col items-start leading-tight">
-                <span className="max-w-[9rem] truncate text-[11px] text-on-surface-variant">
-                  {user ? `Hola, ${primerNombre(user.name)}` : 'Hola, identifícate'}
-                </span>
-                <span className="flex items-center gap-1 text-sm font-semibold text-on-surface">
-                  Cuenta y menú
-                  {chevron}
-                </span>
-              </span>
+              Buscar
             </button>
+          </form>
+        </div>
+
+        {/* Navegación de escritorio: CTA + campana + menú de cuenta */}
+        <nav className="hidden items-center md:flex">
+          <div className="flex items-center gap-4 border-l border-outline-variant pl-6">
+            <Link href={publishHref}>
+              <Button variant="accent" className="px-5 py-2.5">
+                Publicar anuncio
+              </Button>
+            </Link>
+
+            {user && <NotificationsBell />}
+
+            {/* Menú de cuenta: avatar + chevron (estilo del mock) */}
+            <div className="relative" ref={usuarioRef}>
+              <button
+                type="button"
+                onClick={() => setMenuUsuario((o) => !o)}
+                className="group flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                aria-haspopup="menu"
+                aria-expanded={menuUsuario}
+                aria-label={
+                  user ? `Cuenta de ${primerNombre(user.name)}` : 'Cuenta y menú'
+                }
+              >
+                {user ? (
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-transparent bg-secondary-container text-sm font-bold text-on-secondary-container transition-all group-hover:border-primary">
+                    {iniciales(user.name)}
+                  </span>
+                ) : (
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-transparent bg-surface-container text-on-surface-variant transition-all group-hover:border-primary">
+                    <span aria-hidden="true" className="material-symbols-outlined">
+                      person
+                    </span>
+                  </span>
+                )}
+                {chevron}
+              </button>
 
             {menuUsuario && (
               <div
@@ -283,6 +319,7 @@ export function Navbar() {
                 )}
               </div>
             )}
+            </div>
           </div>
         </nav>
 
