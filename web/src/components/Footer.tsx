@@ -20,7 +20,7 @@ const SOCIAL_LINKS = [
 function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-outline">
         {title}
       </h3>
       <ul className="space-y-2">{children}</ul>
@@ -29,11 +29,11 @@ function FooterCol({ title, children }: { title: string; children: React.ReactNo
 }
 
 const linkClass =
-  'text-sm text-gray-300 transition hover:text-white focus:outline-none focus-visible:underline';
+  'text-sm text-on-surface-variant transition hover:text-primary focus:outline-none focus-visible:underline';
 
 export function Footer() {
   return (
-    <footer className="mt-12 bg-brand text-gray-300">
+    <footer className="mt-12 border-t border-outline-variant bg-surface-container-highest text-on-surface-variant">
       <div className="mx-auto max-w-6xl px-4 py-12">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <FooterCol title="Empleos">
@@ -58,7 +58,7 @@ export function Footer() {
           </FooterCol>
 
           <div>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-outline">
               Síguenos
             </h3>
             <div className="mb-4 flex gap-2">
@@ -69,7 +69,7 @@ export function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={r.name}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-gray-300 transition hover:bg-accent hover:text-brand focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-lowest text-on-surface-variant transition hover:bg-primary hover:text-on-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                     <path d={r.path} />
@@ -83,9 +83,9 @@ export function Footer() {
 
         <nav
           aria-label="Empleos por departamento"
-          className="mt-8 border-t border-white/10 pt-6"
+          className="mt-8 border-t border-outline-variant/50 pt-6"
         >
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-outline">
             Empleos por departamento
           </h3>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
@@ -101,19 +101,19 @@ export function Footer() {
           </div>
         </nav>
 
-        <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-8 flex flex-col gap-4 border-t border-outline-variant/50 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white p-1.5">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-container-lowest p-1.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo-icon.svg" alt="Tu Chamba" className="h-full w-auto" />
             </span>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-on-surface-variant">
               Tu Chamba · Portal de empleos de Bolivia
             </p>
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-on-surface-variant">
             © {new Date().getFullYear()} Tu Chamba ·{' '}
-            <a href="mailto:alesx2soporte@gmail.com" className="hover:text-gray-300">
+            <a href="mailto:alesx2soporte@gmail.com" className="hover:text-primary">
               alesx2soporte@gmail.com
             </a>
           </p>

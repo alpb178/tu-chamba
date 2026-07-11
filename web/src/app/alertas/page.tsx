@@ -85,8 +85,8 @@ export default function JobAlertsPage() {
   return (
     <div className="mx-auto max-w-xl space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-gray-800">Alertas de empleo</h1>
-        <p className="mt-1 text-sm text-gray-600">
+        <h1 className="text-xl font-semibold text-on-surface">Alertas de empleo</h1>
+        <p className="mt-1 text-sm text-on-surface-variant">
           Te avisamos con una notificación cuando se publique una oferta que
           coincida con tus criterios.
         </p>
@@ -94,7 +94,7 @@ export default function JobAlertsPage() {
 
       <form
         onSubmit={create}
-        className="space-y-4 rounded-lg border border-gray-200 bg-white p-4"
+        className="space-y-4 rounded-lg border border-outline-variant bg-surface-container-lowest p-4"
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="Departamento">
@@ -124,27 +124,27 @@ export default function JobAlertsPage() {
             </Select>
           </FormField>
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-error">{error}</p>}
         <Button type="submit" disabled={saving}>
           {saving ? 'Creando...' : 'Crear alerta'}
         </Button>
       </form>
 
       <div className="space-y-2">
-        <h2 className="text-sm font-semibold text-gray-700">Tus alertas</h2>
+        <h2 className="text-sm font-semibold text-on-surface-variant">Tus alertas</h2>
         {items.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-on-surface-variant">
             Aún no tienes alertas. Crea una para recibir avisos de nuevas ofertas.
           </p>
         ) : (
-          <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
+          <ul className="divide-y divide-outline-variant/60 rounded-lg border border-outline-variant bg-surface-container-lowest">
             {items.map((a) => (
               <li key={a.id} className="flex items-center justify-between px-4 py-3">
-                <span className="text-sm text-gray-800">{describe(a)}</span>
+                <span className="text-sm text-on-surface">{describe(a)}</span>
                 <button
                   type="button"
                   onClick={() => remove(a.id)}
-                  className="text-sm text-red-600 hover:underline"
+                  className="text-sm text-error hover:underline"
                 >
                   Eliminar
                 </button>

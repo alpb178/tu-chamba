@@ -9,9 +9,9 @@ import { ReviewSkeleton } from './Skeleton';
 
 function Stars({ value }: { value: number }) {
   return (
-    <span className="text-amber-500" aria-label={`${value} de 5 estrellas`}>
+    <span className="text-secondary-container" aria-label={`${value} de 5 estrellas`}>
       {'★'.repeat(value)}
-      <span className="text-gray-300">{'★'.repeat(5 - value)}</span>
+      <span className="text-outline-variant">{'★'.repeat(5 - value)}</span>
     </span>
   );
 }
@@ -74,13 +74,13 @@ export function Reviews({
   const canReview = Boolean(user) && !isOwner && data != null && !alreadyReviewed;
 
   return (
-    <section className="space-y-3 border-t border-gray-100 pt-4">
+    <section className="space-y-3 border-t border-outline-variant/60 pt-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700">
+        <h2 className="text-sm font-semibold text-on-surface-variant">
           Reseñas de {ownerName}
         </h2>
         {data && data.total > 0 && (
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-on-surface-variant">
             <Stars value={Math.round(data.average ?? 0)} />{' '}
             {data.average?.toFixed(1)} · {data.total}{' '}
             {data.total === 1 ? 'reseña' : 'reseñas'}
@@ -89,7 +89,7 @@ export function Reviews({
       </div>
 
       {data && data.items.length === 0 && (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-on-surface-variant">
           Este publicante aún no tiene reseñas.
         </p>
       )}
@@ -104,20 +104,20 @@ export function Reviews({
 
       <ul className="space-y-2">
         {data?.items.map((r) => (
-          <li key={r.id} className="rounded-md bg-gray-50 p-3">
+          <li key={r.id} className="rounded-md bg-surface-container-low p-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-on-surface-variant">
                 {r.author?.name ?? 'Usuario'}
               </span>
               <Stars value={r.rating} />
             </div>
-            <p className="mt-1 text-sm text-gray-600">{r.comment}</p>
+            <p className="mt-1 text-sm text-on-surface-variant">{r.comment}</p>
           </li>
         ))}
       </ul>
 
       {user && !isOwner && alreadyReviewed && (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-on-surface-variant">
           {submitted
             ? '¡Gracias por tu reseña!'
             : 'Ya calificaste este anuncio.'}
@@ -131,15 +131,15 @@ export function Reviews({
       )}
 
       {canReview && formOpen && (
-        <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-gray-200 p-3">
+        <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-outline-variant p-3">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-700">
+            <p className="text-sm font-medium text-on-surface-variant">
               Calificar este anuncio
             </p>
             <button
               type="button"
               onClick={() => setFormOpen(false)}
-              className="text-xs text-gray-500 underline hover:text-brand"
+              className="text-xs text-on-surface-variant underline hover:text-brand"
             >
               Cancelar
             </button>
@@ -152,7 +152,7 @@ export function Reviews({
                   type="button"
                   onClick={() => setRating(n)}
                   className={`text-2xl leading-none ${
-                    n <= rating ? 'text-amber-500' : 'text-gray-300'
+                    n <= rating ? 'text-secondary-container' : 'text-outline-variant'
                   }`}
                   aria-label={`${n} estrellas`}
                 >
@@ -163,14 +163,14 @@ export function Reviews({
           </FormField>
           <FormField label="Comentario">
             <textarea
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+              className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               required
             />
           </FormField>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-error">{error}</p>}
           <Button type="submit" disabled={saving}>
             {saving ? 'Enviando...' : 'Enviar reseña'}
           </Button>

@@ -61,13 +61,13 @@ export default function MyAdsPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-gray-800">Mis anuncios</h1>
+        <h1 className="text-xl font-semibold text-on-surface">Mis anuncios</h1>
         <Link href="/anuncios/nuevo">
           <Button>Publicar anuncio</Button>
         </Link>
       </div>
       {items.length === 0 ? (
-        <p className="text-gray-500">Aún no has publicado anuncios.</p>
+        <p className="text-on-surface-variant">Aún no has publicado anuncios.</p>
       ) : (
         <div className="grid grid-cols-1 gap-3">
           {items.map((a) => {
@@ -77,7 +77,7 @@ export default function MyAdsPage() {
                 <AdCard ad={a} showStatus />
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   {/* Actividad: cuántas personas accedieron y se interesaron. */}
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-on-surface-variant">
                     {a._count?.visits ?? 0}{' '}
                     {(a._count?.visits ?? 0) === 1 ? 'acceso' : 'accesos'} ·{' '}
                     {a._count?.interests ?? 0}{' '}
@@ -88,7 +88,7 @@ export default function MyAdsPage() {
                   <div className="flex items-center gap-2">
                     {status === 'ACTIVO' ? (
                       <>
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-outline">
                           Vence:{' '}
                           {new Date(a.expiresAt).toLocaleDateString('es-BO')}
                         </span>

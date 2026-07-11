@@ -32,8 +32,8 @@ function LoginForm() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-white p-6">
-      <h1 className="mb-4 text-xl font-semibold text-gray-800">Ingresar</h1>
+    <div className="mx-auto max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+      <h1 className="mb-4 text-xl font-semibold text-on-surface">Ingresar</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label="Correo">
           <Input
@@ -51,7 +51,7 @@ function LoginForm() {
             required
           />
         </FormField>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-error">{error}</p>}
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Ingresando...' : 'Ingresar'}
         </Button>
@@ -61,7 +61,7 @@ function LoginForm() {
         <GoogleSignIn next={next} />
       </div>
 
-      <p className="mt-4 text-center text-sm text-gray-600">
+      <p className="mt-4 text-center text-sm text-on-surface-variant">
         ¿No tienes cuenta?{' '}
         <Link
           href={
@@ -78,7 +78,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<p className="text-gray-500">Cargando...</p>}>
+    <Suspense fallback={<p className="text-on-surface-variant">Cargando...</p>}>
       <LoginForm />
     </Suspense>
   );

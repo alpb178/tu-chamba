@@ -28,16 +28,16 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   }, [loading, user, pathname, router]);
 
   if (pathname === '/login') return <>{children}</>;
-  if (loading) return <p className="p-6 text-gray-500">Cargando...</p>;
+  if (loading) return <p className="p-6 text-on-surface-variant">Cargando...</p>;
   if (!user) return null;
 
   return (
     <div className="flex min-h-screen">
-      <aside className="w-56 shrink-0 border-r border-gray-200 bg-white">
-        <div className="border-b border-gray-200 p-4">
+      <aside className="w-56 shrink-0 border-r border-outline-variant bg-surface-container-lowest">
+        <div className="border-b border-outline-variant p-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo-full.svg" alt="Tu Chamba" className="h-8 w-auto" />
-          <p className="mt-1 text-xs text-gray-500">Administración</p>
+          <p className="mt-1 text-xs text-on-surface-variant">Administración</p>
         </div>
         <nav className="flex flex-col p-2">
           {NAV.map((n) => (
@@ -47,7 +47,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               className={`rounded-md px-3 py-2 text-sm ${
                 pathname === n.href
                   ? 'bg-brand-light font-medium text-brand'
-                  : 'text-gray-700 hover:bg-gray-50'
+                  : 'text-on-surface-variant hover:bg-surface-container-low'
               }`}
             >
               {n.label}
@@ -58,7 +58,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             href={CORPSC.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 flex items-center gap-1 rounded-md px-3 py-2 text-sm text-gray-500 hover:bg-gray-50 hover:text-brand"
+            className="mt-1 flex items-center gap-1 rounded-md px-3 py-2 text-sm text-on-surface-variant hover:bg-surface-container-low hover:text-brand"
           >
             {CORPSC.name}
             <span aria-hidden="true">↗</span>
@@ -67,18 +67,18 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-3">
-          <span className="text-sm text-gray-600">{user.name}</span>
+        <header className="flex items-center justify-between border-b border-outline-variant bg-surface-container-lowest px-6 py-3">
+          <span className="text-sm text-on-surface-variant">{user.name}</span>
           <Button variant="outline" onClick={logout}>
             Salir
           </Button>
         </header>
         <main className="flex-1 p-6">{children}</main>
-        <footer className="border-t border-gray-200 bg-white px-6 py-4">
-          <div className="flex flex-col items-center gap-2 text-xs text-gray-500 sm:flex-row sm:justify-between">
+        <footer className="border-t border-outline-variant bg-surface-container-lowest px-6 py-4">
+          <div className="flex flex-col items-center gap-2 text-xs text-on-surface-variant sm:flex-row sm:justify-between">
             <span>© {new Date().getFullYear()} Tu Chamba — Panel de administración</span>
             <nav aria-label="Nuestras marcas" className="flex items-center gap-3">
-              <span className="text-gray-400">Nuestras marcas:</span>
+              <span className="text-outline">Nuestras marcas:</span>
               {COMPANIES.map((c) => (
                 <a
                   key={c.slug}

@@ -79,20 +79,20 @@ export default function HomePage() {
               <AdListSkeleton />
             </>
           ) : error ? (
-            <p className="text-red-600">{error}</p>
+            <p className="text-error">{error}</p>
           ) : data && data.items.length === 0 ? (
-            <p className="text-gray-500">
+            <p className="text-on-surface-variant">
               No se encontraron anuncios con estos filtros.
             </p>
           ) : (
             data && (
               <>
-                <p className="mb-3 text-sm text-gray-500">
+                <h1 className="mb-4 font-display text-2xl font-semibold text-on-surface">
                   {data.total}{' '}
                   {data.total === 1 ? 'oferta encontrada' : 'ofertas encontradas'}
-                </p>
+                </h1>
                 {/* Tarjetas una debajo de otra. */}
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 gap-4">
                   {data.items.map((a) => (
                     <AdCard key={a.id} ad={a} />
                   ))}

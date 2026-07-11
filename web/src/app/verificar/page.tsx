@@ -41,17 +41,17 @@ function VerifyEmail() {
   }, [token, refresh]);
 
   return (
-    <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-white p-8 text-center">
+    <div className="mx-auto max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-8 text-center">
       {status === 'verifying' && (
-        <p className="text-gray-600">Verificando tu correo...</p>
+        <p className="text-on-surface-variant">Verificando tu correo...</p>
       )}
       {status === 'ok' && (
         <>
           <div className="mb-2 text-3xl">✅</div>
-          <h1 className="text-xl font-semibold text-gray-800">
+          <h1 className="text-xl font-semibold text-on-surface">
             ¡Correo verificado!
           </h1>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-on-surface-variant">
             Tu cuenta ya está activa. Ya puedes publicar y usar Tu Chamba con
             normalidad.
           </p>
@@ -65,11 +65,11 @@ function VerifyEmail() {
       {status === 'error' && (
         <>
           <div className="mb-2 text-3xl">⚠️</div>
-          <h1 className="text-xl font-semibold text-gray-800">
+          <h1 className="text-xl font-semibold text-on-surface">
             No pudimos verificar tu correo
           </h1>
-          <p className="mt-2 text-gray-600">{message}</p>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-on-surface-variant">{message}</p>
+          <p className="mt-2 text-sm text-on-surface-variant">
             Inicia sesión y pide un nuevo enlace desde el aviso de tu cuenta.
           </p>
           <div className="mt-4 flex justify-center gap-2">
@@ -85,7 +85,7 @@ function VerifyEmail() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<p className="text-gray-500">Cargando...</p>}>
+    <Suspense fallback={<p className="text-on-surface-variant">Cargando...</p>}>
       <VerifyEmail />
     </Suspense>
   );

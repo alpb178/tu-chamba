@@ -135,10 +135,10 @@ export function MapPicker({
     <div className="space-y-1">
       <div
         ref={containerRef}
-        className="h-64 w-full rounded-md border border-gray-300"
+        className="h-64 w-full rounded-md border border-outline-variant"
       />
       <div className="flex items-center justify-between">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-on-surface-variant">
           Haz clic en el mapa o arrastra el pin para marcar el lugar de trabajo.
         </p>
         <button
@@ -160,7 +160,7 @@ export function MapView({
   lat,
   lng,
   zoom = PIN_ZOOM,
-  className = 'h-56 rounded-md border border-gray-200',
+  className = 'h-56 rounded-md border border-outline-variant',
 }: {
   lat: number;
   lng: number;

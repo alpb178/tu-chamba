@@ -26,27 +26,39 @@ export const NO_FILTERS: Filters = {
   category: [],
 };
 
-// Sección colapsable con encabezado (estilo del catálogo de referencia).
+// Sección colapsable: el encabezado abierto se pinta como píldora ámbar
+// (estilo del mock); cerrado queda como fila discreta con icono.
 function Section({
   title,
+  icon,
   children,
 }: {
   title: string;
+  icon: string;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(true);
   return (
-    <div className="border-b border-gray-200 py-3">
+    <div>
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between text-xs font-semibold uppercase tracking-wider text-gray-500"
         aria-expanded={open}
+        className={`flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider transition-all ${
+          open
+            ? 'bg-secondary-container font-bold text-on-secondary-container'
+            : 'text-on-surface-variant hover:bg-surface-container-high'
+        }`}
       >
-        {title}
-        <span className="text-gray-400">{open ? '−' : '+'}</span>
+        <span aria-hidden="true" className="material-symbols-outlined text-sm">
+          {icon}
+        </span>
+        <span className="flex-1">{title}</span>
+        <span aria-hidden="true" className="material-symbols-outlined text-sm">
+          {open ? 'expand_less' : 'expand_more'}
+        </span>
       </button>
-      {open && <div className="mt-3 space-y-2">{children}</div>}
+      {open && <div className="mt-3 space-y-2 pl-2">{children}</div>}
     </div>
   );
 }
@@ -64,17 +76,19 @@ function Option({
   onToggle: () => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between text-sm text-gray-700">
-      <span className="flex items-center gap-2">
+    <label className="group flex cursor-pointer items-center justify-between text-sm text-on-surface-variant">
+      <span className="flex items-center gap-3">
         <input
           type="checkbox"
           checked={checked}
           onChange={onToggle}
-          className="h-4 w-4 rounded border-gray-300 accent-brand"
+          className="h-4 w-4 rounded border-outline accent-primary"
         />
-        {label}
+        <span className="transition-colors group-hover:text-primary">
+          {label}
+        </span>
       </span>
-      {count != null && <span className="text-xs text-gray-400">{count}</span>}
+      {count != null && <span className="text-xs text-outline">{count}</span>}
     </label>
   );
 }
@@ -169,11 +183,11 @@ function SalaryRange({
   }
 
   const thumbClass =
-    'absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50';
+    'absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand bg-surface-container-lowest shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50';
 
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between text-sm text-gray-700">
+      <div className="mb-2 flex items-center justify-between text-sm text-on-surface-variant">
         <span>Bs {lo.toLocaleString('es-BO')}</span>
         <span>Bs {hi.toLocaleString('es-BO')}</span>
       </div>
@@ -185,7 +199,7 @@ function SalaryRange({
         onPointerCancel={onPointerEnd}
         className="relative h-5 cursor-pointer touch-none"
       >
-        <div className="absolute top-1/2 h-1 w-full -translate-y-1/2 rounded bg-gray-200" />
+        <div className="absolute top-1/2 h-1 w-full -translate-y-1/2 rounded bg-surface-container-high" />
         <div
           className="absolute top-1/2 h-1 -translate-y-1/2 rounded bg-brand"
           style={{ left: `${pct(lo)}%`, right: `${100 - pct(hi)}%` }}
@@ -238,7 +252,7 @@ export function FiltersSidebar({
     return (
       <aside
         aria-hidden="true"
-        className="w-full shrink-0 rounded-lg border border-gray-200 bg-white p-4 md:w-64"
+        className="w-full shrink-0 rounded-xl border border-outline-variant bg-surface-container-low p-5 md:w-64"
       >
         <Skeleton className="h-4 w-16" />
         {[0, 1, 2].map((i) => (
@@ -263,21 +277,26 @@ export function FiltersSidebar({
   const departments = Object.keys(DEPARTMENT_LABEL) as Department[];
 
   return (
-    <aside className="w-full shrink-0 rounded-lg border border-gray-200 bg-white p-4 md:w-64">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-800">Filtros</h2>
+    <aside className="w-full shrink-0 space-y-5 rounded-xl border border-outline-variant bg-surface-container-low p-5 shadow-sm md:sticky md:top-24 md:w-64">
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="font-display text-lg font-semibold text-on-surface">
+            Filtros
+          </h2>
+          <p className="text-xs text-on-surface-variant">Refina tu búsqueda</p>
+        </div>
         {hasFilters ? (
           <button
             type="button"
             onClick={() => onChange(NO_FILTERS)}
-            className="text-xs text-gray-500 underline hover:text-brand"
+            className="text-xs font-bold text-primary hover:underline"
           >
             Limpiar
           </button>
         ) : null}
       </div>
 
-      <Section title="Tipo de jornada">
+      <Section title="Tipo de jornada" icon="schedule">
         {(Object.keys(JOB_TYPE_LABEL) as JobType[]).map((t) => (
           <Option
             key={t}
@@ -291,7 +310,7 @@ export function FiltersSidebar({
         ))}
       </Section>
 
-      <Section title="Categoría">
+      <Section title="Categoría" icon="category">
         {categories.map((c) => (
           <Option
             key={c}
@@ -305,7 +324,7 @@ export function FiltersSidebar({
         ))}
       </Section>
 
-      <Section title="Departamento">
+      <Section title="Departamento" icon="location_on">
         {departments.map((d) => (
           <Option
             key={d}
@@ -319,7 +338,7 @@ export function FiltersSidebar({
         ))}
       </Section>
 
-      <Section title="Salario (Bs)">
+      <Section title="Salario (Bs)" icon="payments">
         {facets.salaryMax > facets.salaryMin ? (
           <SalaryRange
             min={facets.salaryMin}
@@ -336,7 +355,7 @@ export function FiltersSidebar({
           />
         ) : (
           // Sin rango no hay nada que filtrar: se informa en vez de ocultar.
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-outline">
             {facets.salaryMax > 0
               ? `Todas las ofertas actuales pagan Bs ${facets.salaryMax.toLocaleString('es-BO')}.`
               : 'Sin ofertas con salario publicado.'}

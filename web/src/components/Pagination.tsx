@@ -21,7 +21,7 @@ export function Pagination({
       >
         Anterior
       </Button>
-      <span className="text-sm text-gray-600">
+      <span className="text-sm text-on-surface-variant">
         Página {page} de {totalPages}
       </span>
       <Button

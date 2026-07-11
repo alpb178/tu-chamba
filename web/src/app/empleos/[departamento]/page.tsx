@@ -44,7 +44,7 @@ export default async function DepartmentJobsPage({ params }: Params) {
 
   return (
     <div className="space-y-4">
-      <nav className="text-sm text-gray-500">
+      <nav className="text-sm text-on-surface-variant">
         <Link href="/" className="hover:text-brand">
           Inicio
         </Link>{' '}
@@ -53,7 +53,7 @@ export default async function DepartmentJobsPage({ params }: Params) {
 
       <header>
         <h1 className="text-2xl font-bold text-brand">Empleos en {departmentName}</h1>
-        <p className="mt-1 text-sm text-gray-600">
+        <p className="mt-1 text-sm text-on-surface-variant">
           {items.length > 0
             ? `${data?.total} ${data?.total === 1 ? 'oferta disponible' : 'ofertas disponibles'} en ${departmentName}, Bolivia.`
             : `Aún no hay ofertas activas en ${departmentName}. Vuelve pronto.`}

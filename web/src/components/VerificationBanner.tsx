@@ -48,7 +48,7 @@ export function VerificationBanner() {
           </button>
         )}
       </div>
-      {error && <p className="px-4 pb-2 text-xs text-red-600">{error}</p>}
+      {error && <p className="px-4 pb-2 text-xs text-error">{error}</p>}
     </div>
   );
 }

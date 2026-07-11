@@ -19,7 +19,7 @@ import { Button, FormField, Input, Select } from '@/components/ui';
 // Leaflet usa window: solo en cliente.
 const MapPicker = dynamic(
   () => import('@/components/MapPicker').then((m) => m.MapPicker),
-  { ssr: false, loading: () => <div className="h-64 rounded-md bg-gray-100" /> },
+  { ssr: false, loading: () => <div className="h-64 rounded-md bg-surface-container" /> },
 );
 
 function Form() {
@@ -119,8 +119,8 @@ function Form() {
   }
 
   return (
-    <div className="mx-auto max-w-xl rounded-lg border border-gray-200 bg-white p-6">
-      <h1 className="mb-4 text-xl font-semibold text-gray-800">
+    <div className="mx-auto max-w-xl rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+      <h1 className="mb-4 text-xl font-semibold text-on-surface">
         {editId ? 'Editar anuncio' : 'Publicar anuncio'}
       </h1>
       {notVerified && (
@@ -132,7 +132,7 @@ function Form() {
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label="Descripción del puesto">
           <textarea
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+            className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             rows={4}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -141,7 +141,7 @@ function Form() {
         </FormField>
         <FormField label="Requisitos del candidato (opcional)">
           <textarea
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+            className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             rows={3}
             placeholder="Experiencia, disponibilidad, documentación..."
             value={form.requirements}
@@ -256,7 +256,7 @@ function Form() {
             ))}
           </Select>
         </FormField>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-error">{error}</p>}
         <Button type="submit" className="w-full" disabled={saving || notVerified}>
           {saving ? 'Guardando...' : editId ? 'Guardar cambios' : 'Publicar'}
         </Button>
@@ -267,7 +267,7 @@ function Form() {
 
 export default function NewAdPage() {
   return (
-    <Suspense fallback={<p className="text-gray-500">Cargando...</p>}>
+    <Suspense fallback={<p className="text-on-surface-variant">Cargando...</p>}>
       <Form />
     </Suspense>
   );

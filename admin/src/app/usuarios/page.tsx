@@ -56,11 +56,11 @@ function CreateAdminDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <form
         onSubmit={submit}
-        className="w-full max-w-sm space-y-4 rounded-lg bg-white p-6 shadow-lg"
+        className="w-full max-w-sm space-y-4 rounded-lg bg-surface-container-lowest p-6 shadow-lg"
       >
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">Crear administrador</h3>
-          <p className="mt-1 text-sm text-gray-600">
+          <h3 className="text-lg font-semibold text-on-surface">Crear administrador</h3>
+          <p className="mt-1 text-sm text-on-surface-variant">
             Tendrá acceso completo a este panel.
           </p>
         </div>
@@ -82,7 +82,7 @@ function CreateAdminDialog({
             required
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-error">{error}</p>}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
@@ -133,22 +133,22 @@ export default function UsersPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-800">Usuarios</h1>
+        <h1 className="text-2xl font-semibold text-on-surface">Usuarios</h1>
         <Button onClick={() => setCreating(true)}>Crear admin</Button>
       </div>
       {loading ? (
         <TableSkeleton headers={HEADERS} />
       ) : error ? (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-error">{error}</p>
       ) : users.length === 0 ? (
-        <p className="text-gray-500">No hay usuarios.</p>
+        <p className="text-on-surface-variant">No hay usuarios.</p>
       ) : (
       <DataTable headers={HEADERS}>
         {users.map((u) => (
           <tr key={u.id}>
             <td className="px-4 py-3">{u.name}</td>
-            <td className="px-4 py-3 text-gray-600">{u.email}</td>
-            <td className="px-4 py-3 text-gray-600">{u.phone}</td>
+            <td className="px-4 py-3 text-on-surface-variant">{u.email}</td>
+            <td className="px-4 py-3 text-on-surface-variant">{u.phone}</td>
             <td className="px-4 py-3">
               <Select
                 value={u.isAdmin ? 'ADMIN' : 'USUARIO'}
@@ -158,7 +158,7 @@ export default function UsersPage() {
                 <option value="ADMIN">Admin</option>
               </Select>
             </td>
-            <td className="px-4 py-3 text-gray-600">{u._count?.ads ?? 0}</td>
+            <td className="px-4 py-3 text-on-surface-variant">{u._count?.ads ?? 0}</td>
             <td className="px-4 py-3 text-right">
               <Button variant="danger" onClick={() => setToDelete(u)}>
                 Eliminar
