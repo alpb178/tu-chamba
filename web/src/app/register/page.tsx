@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { safeNext } from '@/lib/types';
 import { Button, FormField, Input } from '@/components/ui';
 import { PasswordInput } from '@/components/PasswordInput';
+import { PhoneField } from '@/components/PhoneField';
 import { GoogleSignIn } from '@/components/GoogleSignIn';
 
 function RegisterForm() {
@@ -90,12 +91,7 @@ function RegisterForm() {
           />
         </FormField>
         <FormField label="Teléfono (opcional)">
-          <Input
-            type="tel"
-            autoComplete="tel"
-            value={form.phone}
-            onChange={(e) => set('phone', e.target.value)}
-          />
+          <PhoneField value={form.phone} onChange={(v) => set('phone', v)} />
         </FormField>
         {error && <p className="text-sm text-error">{error}</p>}
         <Button type="submit" className="w-full" disabled={loading}>

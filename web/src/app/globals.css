@@ -16,6 +16,22 @@
   }
 }
 
+/* Campo de teléfono internacional (react-phone-number-input) con la
+   apariencia de los inputs del sistema de diseño. */
+.PhoneInput {
+  @apply flex w-full items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 transition-colors;
+}
+.PhoneInput:focus-within {
+  @apply border-primary ring-1 ring-primary;
+}
+.PhoneInputInput {
+  @apply w-full border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-outline;
+}
+.PhoneInputInput:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 /* Iconos Material Symbols (la fuente la sirve Google Fonts). */
 .material-symbols-outlined {
   font-variation-settings:

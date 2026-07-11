@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { useRequireAuth } from '@/lib/useRequireAuth';
 import { Button, FormField, Input } from '@/components/ui';
 import { PasswordInput } from '@/components/PasswordInput';
+import { PhoneField } from '@/components/PhoneField';
 import { Skeleton } from '@/components/Skeleton';
 
 // Perfil único: datos personales y contraseña (sin tipos de cuenta).
@@ -97,11 +98,9 @@ export default function ProfilePage() {
           />
         </FormField>
         <FormField label="Teléfono (opcional, se precarga al publicar)">
-          <Input
-            type="tel"
-            autoComplete="tel"
+          <PhoneField
             value={form.phone}
-            onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+            onChange={(v) => setForm((f) => ({ ...f, phone: v }))}
           />
         </FormField>
 

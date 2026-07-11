@@ -16,6 +16,7 @@ import {
 import { useRequireAuth } from '@/lib/useRequireAuth';
 import { Button, FormField, Input } from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
+import { PhoneField } from '@/components/PhoneField';
 
 // Leaflet usa window: solo en cliente.
 const MapPicker = dynamic(
@@ -213,9 +214,9 @@ function Form() {
           />
         </FormField>
         <FormField label="Teléfono de contacto (WhatsApp)">
-          <Input
+          <PhoneField
             value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            onChange={(v) => setForm({ ...form, phone: v })}
             required
           />
         </FormField>
