@@ -16,6 +16,90 @@ const MapView = dynamic(() => import('./MapPicker').then((m) => m.MapView), {
   loading: () => <div className="h-56 rounded-md bg-gray-100" />,
 });
 
+// Mapa del anuncio con botón para ampliarlo (modal) y enlace a Google Maps.
+// Los panes de Leaflet usan z-index altos: el wrapper `relative z-0` los
+// encierra en su propio stacking context para que no tapen el modal.
+function LocationMap({
+  lat,
+  lng,
+  approximate = false,
+}: {
+  lat: number;
+  lng: number;
+  approximate?: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+
+  // Cerrar el modal con Escape.
+  useEffect(() => {
+    if (!expanded) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setExpanded(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [expanded]);
+
+  return (
+    <div className="space-y-1">
+      <div className="relative z-0">
+        <MapView lat={lat} lng={lng} zoom={approximate ? 13 : undefined} />
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="absolute right-2 top-2 z-[1001] rounded-md border border-gray-200 bg-white/95 px-2 py-1 text-xs font-medium text-gray-700 shadow-sm hover:text-brand"
+        >
+          ⤢ Ampliar
+        </button>
+      </div>
+      <div className="flex items-center justify-between gap-2">
+        {approximate ? (
+          <p className="text-xs text-gray-400">
+            Ubicación aproximada según la dirección del anuncio.
+          </p>
+        ) : (
+          <span />
+        )}
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 text-xs text-brand underline hover:text-brand-dark"
+        >
+          Abrir en Google Maps ↗
+        </a>
+      </div>
+
+      {expanded && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setExpanded(false)}
+          role="dialog"
+          aria-label="Mapa ampliado"
+        >
+          <div
+            className="relative z-0 h-[80vh] w-full max-w-4xl overflow-hidden rounded-lg bg-white"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <MapView
+              lat={lat}
+              lng={lng}
+              zoom={approximate ? 14 : 16}
+              className="h-full"
+            />
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              className="absolute right-3 top-3 z-[1001] rounded-md border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow hover:text-brand"
+            >
+              ✕ Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Coordenadas aproximadas de una dirección (Nominatim, best effort).
 // Para anuncios sin pin: así el detalle siempre muestra el lugar en el mapa.
 async function geocode(
@@ -83,16 +167,9 @@ export function AdActions({ ad }: { ad: Ad }) {
   return (
     <div className="space-y-4">
       {ad.latitude != null && ad.longitude != null ? (
-        <MapView lat={ad.latitude} lng={ad.longitude} />
+        <LocationMap lat={ad.latitude} lng={ad.longitude} />
       ) : (
-        approx && (
-          <div className="space-y-1">
-            <MapView lat={approx.lat} lng={approx.lng} zoom={13} />
-            <p className="text-xs text-gray-400">
-              Ubicación aproximada según la dirección del anuncio.
-            </p>
-          </div>
-        )
+        approx && <LocationMap lat={approx.lat} lng={approx.lng} approximate />
       )}
 
       {/* Contacto: con sesión muestra Chatear/Llamar; sin sesión, CTA. */}
