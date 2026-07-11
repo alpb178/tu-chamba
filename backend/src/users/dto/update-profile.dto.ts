@@ -1,5 +1,11 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, ValidateIf } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+  ValidateIf,
+} from 'class-validator';
 
 // Perfil propio: solo datos personales (el correo no se cambia).
 export class UpdateProfileDto {
@@ -14,4 +20,17 @@ export class UpdateProfileDto {
   @ValidateIf((o) => o.phone != null)
   @IsString()
   phone?: string;
+
+  // Cambiar (o definir, en cuentas Google) la contraseña.
+  @ApiPropertyOptional({ minLength: 6 })
+  @IsOptional()
+  @IsString()
+  @MinLength(6, { message: 'La contraseña debe tener al menos 6 caracteres' })
+  password?: string;
+
+  // Obligatoria para cambiarla cuando la cuenta ya tiene contraseña.
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  currentPassword?: string;
 }

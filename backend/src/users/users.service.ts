@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -35,14 +36,31 @@ export class UsersService {
     });
   }
 
-  // Perfil propio: solo datos personales del usuario autenticado.
+  // Perfil propio: datos personales y, opcionalmente, la contraseña.
+  // Con contraseña existente se exige la actual; las cuentas de Google
+  // (sin contraseña local) pueden definir una directamente.
   async updateProfile(userId: string, dto: UpdateProfileDto) {
-    await this.ensureExists(userId);
+    const user = await this.ensureExists(userId);
+
+    let hashed: string | undefined;
+    if (dto.password) {
+      if (user.password) {
+        const ok =
+          dto.currentPassword != null &&
+          (await bcrypt.compare(dto.currentPassword, user.password));
+        if (!ok) {
+          throw new BadRequestException('La contraseña actual no es correcta');
+        }
+      }
+      hashed = await bcrypt.hash(dto.password, 10);
+    }
+
     return this.prisma.user.update({
       where: { id: userId },
       data: {
         ...(dto.name != null ? { name: dto.name.trim() } : {}),
         ...(dto.phone != null ? { phone: dto.phone.trim() || null } : {}),
+        ...(hashed ? { password: hashed } : {}),
       },
       select: selectSafe,
     });

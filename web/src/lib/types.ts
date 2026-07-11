@@ -100,6 +100,8 @@ export interface User {
   phone: string | null;
   // Único distintivo entre usuarios: acceso al panel de administración.
   isAdmin: boolean;
+  // false en cuentas creadas con Google (sin contraseña local).
+  hasPassword?: boolean;
   createdAt: string;
   updatedAt: string;
 }

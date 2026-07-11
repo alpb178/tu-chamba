@@ -56,9 +56,11 @@ export class AuthService {
     );
   }
 
+  // hasPassword: el perfil distingue "cambiar" (cuentas con contraseña)
+  // de "definir" (cuentas creadas con Google, sin contraseña local).
   private sanitize(user: User) {
     const { password, ...rest } = user;
-    return rest;
+    return { ...rest, hasPassword: Boolean(password) };
   }
 
   private sign(user: User) {
