@@ -99,6 +99,13 @@ export default async function AdDetailPage({ params }: Params) {
         <p className="text-xs text-gray-400">
           Publicado: {new Date(ad.createdAt).toLocaleDateString('es-BO')} ·
           Vence: {new Date(ad.expiresAt).toLocaleDateString('es-BO')}
+          {ad._count != null && (
+            <>
+              {' '}
+              · 👁 {ad._count.visits}{' '}
+              {ad._count.visits === 1 ? 'visita' : 'visitas'}
+            </>
+          )}
         </p>
       </div>
 
