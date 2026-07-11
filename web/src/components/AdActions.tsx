@@ -212,6 +212,14 @@ export function AdActions({ ad }: { ad: Ad }) {
       ? { lat: ad.latitude, lng: ad.longitude }
       : approx;
 
+  // Métrica de contacto: avisa al backend que abrieron el chat.
+  function notifyChatClick() {
+    api('/notifications/chat-click', {
+      method: 'POST',
+      body: JSON.stringify({ adId: ad.id }),
+    }).catch(() => {});
+  }
+
   // wa.me sin número: WhatsApp deja elegir el contacto al que enviar.
   function shareByWhatsApp(text: string) {
     window.open(
@@ -280,34 +288,43 @@ export function AdActions({ ad }: { ad: Ad }) {
 
       {/* Contacto: con sesión muestra Chatear/Llamar; sin sesión, CTA. */}
       {phone ? (
-        <div className="space-y-1.5">
-          <div className="flex gap-2">
+        <>
+          {/* Escritorio: contacto en el flujo del detalle (tel: no sirve ahí,
+              el número se muestra como texto para marcarlo desde el teléfono). */}
+          <div className="hidden space-y-1.5 sm:block">
+            <a
+              href={waLink(phone, waMessage)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+              onClick={notifyChatClick}
+            >
+              <Button className="w-full">Chatear</Button>
+            </a>
+            <p className="text-center text-xs text-gray-500">
+              Teléfono: {phone}
+            </p>
+          </div>
+
+          {/* Móvil: barra fija al pie para que el contacto siempre esté a
+              mano aunque la descripción sea larga (safe-area por el notch). */}
+          <div className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-gray-200 bg-white p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-2px_8px_rgba(0,0,0,0.08)] sm:hidden">
             <a
               href={waLink(phone, waMessage)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1"
-              onClick={() => {
-                api('/notifications/chat-click', {
-                  method: 'POST',
-                  body: JSON.stringify({ adId: ad.id }),
-                }).catch(() => {});
-              }}
+              onClick={notifyChatClick}
             >
               <Button className="w-full">Chatear</Button>
             </a>
-            {/* Llamar solo tiene sentido en móvil (tel:); en escritorio el
-                número se muestra como texto para marcarlo desde el teléfono. */}
-            <a href={`tel:${phone}`} className="flex-1 sm:hidden">
+            <a href={`tel:${phone}`} className="flex-1">
               <Button variant="outline" className="w-full">
                 Llamar
               </Button>
             </a>
           </div>
-          <p className="hidden text-center text-xs text-gray-500 sm:block">
-            Teléfono: {phone}
-          </p>
-        </div>
+        </>
       ) : (
         !loading &&
         !user && (
