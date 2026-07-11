@@ -17,11 +17,13 @@ function Stars({ value }: { value: number }) {
 }
 
 // Reseñas del empleador dueño del anuncio. Los TRABAJADORES pueden
-// calificar (1-5 + comentario obligatorio); una reseña por empleador.
+// calificar (1-5 + comentario obligatorio); una reseña por anuncio.
 export function Reviews({
+  adId,
   employerId,
   employerName,
 }: {
+  adId: string;
   employerId: string;
   employerName: string;
 }) {
@@ -32,6 +34,8 @@ export function Reviews({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // El formulario pesa visualmente: colapsado hasta que quieran calificar.
+  const [formOpen, setFormOpen] = useState(false);
 
   const load = useCallback(() => {
     api<ReviewsResponse>(`/reviews?employerId=${employerId}`)
@@ -41,8 +45,9 @@ export function Reviews({
 
   useEffect(load, [load]);
 
+  // La reseña propia sobre ESTE anuncio (la lista trae las del empleador).
   const ownReview = user
-    ? data?.items.find((r) => r.authorId === user.id)
+    ? data?.items.find((r) => r.authorId === user.id && r.adId === adId)
     : undefined;
 
   async function onSubmit(e: React.FormEvent) {
@@ -52,7 +57,7 @@ export function Reviews({
     try {
       await api<Review>('/reviews', {
         method: 'POST',
-        body: JSON.stringify({ employerId, rating, comment }),
+        body: JSON.stringify({ adId, rating, comment }),
       });
       setSubmitted(true);
       load();
@@ -63,7 +68,7 @@ export function Reviews({
     }
   }
 
-  // Una reseña por empleador: con la propia ya enviada, no hay formulario.
+  // Una reseña por anuncio: con la propia ya enviada, no hay formulario.
   const canReview = user?.role === 'TRABAJADOR' && !ownReview;
 
   return (
@@ -113,15 +118,30 @@ export function Reviews({
         <p className="text-sm text-gray-500">
           {submitted
             ? '¡Gracias por tu reseña!'
-            : 'Ya calificaste a este empleador.'}
+            : 'Ya calificaste este anuncio.'}
         </p>
       )}
 
-      {canReview && (
+      {canReview && !formOpen && (
+        <Button variant="outline" onClick={() => setFormOpen(true)}>
+          Calificar este anuncio
+        </Button>
+      )}
+
+      {canReview && formOpen && (
         <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-gray-200 p-3">
-          <p className="text-sm font-medium text-gray-700">
-            Calificar a este empleador
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700">
+              Calificar este anuncio
+            </p>
+            <button
+              type="button"
+              onClick={() => setFormOpen(false)}
+              className="text-xs text-gray-500 underline hover:text-brand"
+            >
+              Cancelar
+            </button>
+          </div>
           <FormField label="Calificación">
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((n) => (

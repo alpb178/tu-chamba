@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
+import { safeNext } from '@/lib/types';
 import { Button, FormField, Input, Select } from '@/components/ui';
 import { GoogleSignIn } from '@/components/GoogleSignIn';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const { register } = useAuth();
   const router = useRouter();
+  const next = safeNext(useSearchParams().get('next'));
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -39,7 +41,7 @@ export default function RegisterPage() {
         // El teléfono solo es obligatorio para empleadores.
         phone: form.phone.trim() || undefined,
       });
-      router.push('/');
+      router.push(next);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -106,15 +108,26 @@ export default function RegisterPage() {
       </form>
 
       <div className="mt-4">
-        <GoogleSignIn />
+        <GoogleSignIn next={next} />
       </div>
 
       <p className="mt-4 text-center text-sm text-gray-600">
         ¿Ya tienes cuenta?{' '}
-        <Link href="/login" className="text-brand hover:underline">
+        <Link
+          href={next === '/' ? '/login' : `/login?next=${encodeURIComponent(next)}`}
+          className="text-brand hover:underline"
+        >
           Ingresa
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<p className="text-gray-500">Cargando...</p>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

@@ -25,7 +25,8 @@ declare global {
 // Botón "Continuar con Google" + paso de completar perfil para cuentas
 // nuevas (rol y, si es empleador, teléfono — coherente con el registro).
 // No se renderiza si NEXT_PUBLIC_GOOGLE_CLIENT_ID no está configurado.
-export function GoogleSignIn() {
+// `next`: ruta a la que volver tras entrar (p. ej. el anuncio compartido).
+export function GoogleSignIn({ next = '/' }: { next?: string }) {
   const { loginWithGoogle } = useAuth();
   const router = useRouter();
   const buttonRef = useRef<HTMLDivElement>(null);
@@ -48,7 +49,7 @@ export function GoogleSignIn() {
         setIdToken(token);
         setName(res.name);
       } else {
-        router.push('/');
+        router.push(next);
       }
     } catch (err) {
       setError((err as Error).message);
@@ -100,7 +101,7 @@ export function GoogleSignIn() {
         role,
         phone: phone.trim() || undefined,
       });
-      if (!res.needsProfile) router.push('/');
+      if (!res.needsProfile) router.push(next);
     } catch (err) {
       setError((err as Error).message);
     } finally {
