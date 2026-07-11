@@ -25,7 +25,7 @@ export function Hero({
   }
 
   return (
-    <section className="relative -mt-6 ml-[calc(50%-50vw)] flex h-[440px] w-screen items-center justify-center overflow-hidden sm:h-[540px]">
+    <section className="relative -mt-6 ml-[calc(50%-50vw)] flex min-h-[440px] w-screen items-center justify-center overflow-hidden sm:min-h-[540px]">
       <div className="absolute inset-0 z-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -43,7 +43,9 @@ export function Hero({
         />
       </div>
 
-      <div className="relative z-20 w-full max-w-4xl px-4 pt-10 text-center">
+      {/* py garantiza aire arriba y abajo del formulario aunque el
+          contenido supere la altura mínima (pantallas pequeñas). */}
+      <div className="relative z-20 w-full max-w-4xl px-4 py-12 text-center sm:py-16">
         <h1 className="mb-6 font-display text-4xl font-bold leading-tight tracking-tight text-on-primary sm:text-5xl">
           Encuentra trabajos diarios al instante
         </h1>
