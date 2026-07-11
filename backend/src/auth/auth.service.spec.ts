@@ -108,3 +108,71 @@ describe('AuthService.login', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });
+
+describe('AuthService.googleAuth', () => {
+  const OLD_ENV = process.env.GOOGLE_CLIENT_ID;
+
+  beforeEach(() => {
+    process.env.GOOGLE_CLIENT_ID = 'client-id-test';
+    // tokeninfo de Google: token válido para ana@test.com.
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        aud: 'client-id-test',
+        sub: 'google-sub-1',
+        email: 'ana@test.com',
+        email_verified: 'true',
+        name: 'Ana',
+      }),
+    }) as never;
+  });
+
+  afterAll(() => {
+    process.env.GOOGLE_CLIENT_ID = OLD_ENV;
+  });
+
+  it('la cuenta nueva se crea verificada automáticamente', async () => {
+    const { service, prisma } = buildService();
+    prisma.user.findFirst.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue({
+      ...baseUser,
+      googleId: 'google-sub-1',
+      emailVerified: true,
+    });
+
+    await service.googleAuth({ idToken: 'tok' });
+    expect(prisma.user.create.mock.calls[0][0].data.emailVerified).toBe(true);
+  });
+
+  it('al vincular Google a una cuenta sin verificar, queda verificada', async () => {
+    const { service, prisma } = buildService();
+    prisma.user.findFirst.mockResolvedValue({
+      ...baseUser,
+      emailVerified: false,
+      googleId: null,
+    });
+    prisma.user.update.mockResolvedValue({
+      ...baseUser,
+      googleId: 'google-sub-1',
+      emailVerified: true,
+    });
+
+    await service.googleAuth({ idToken: 'tok' });
+    expect(prisma.user.update.mock.calls[0][0].data).toEqual({
+      googleId: 'google-sub-1',
+      emailVerified: true,
+    });
+  });
+
+  it('una cuenta ya vinculada y verificada no se re-escribe', async () => {
+    const { service, prisma } = buildService();
+    prisma.user.findFirst.mockResolvedValue({
+      ...baseUser,
+      emailVerified: true,
+      googleId: 'google-sub-1',
+    });
+
+    await service.googleAuth({ idToken: 'tok' });
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+});
