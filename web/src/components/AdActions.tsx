@@ -100,6 +100,59 @@ function LocationMap({
   );
 }
 
+// Botón circular de acción secundaria (compartir): icono + tooltip nativo.
+function IconButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={label}
+      aria-label={label}
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm transition-colors hover:border-brand hover:text-brand"
+    >
+      {children}
+    </button>
+  );
+}
+
+const iconProps = {
+  className: 'h-4 w-4',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 2,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  viewBox: '0 0 24 24',
+} as const;
+
+function MapPinIcon() {
+  return (
+    <svg {...iconProps}>
+      <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg {...iconProps}>
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <path d="m8.59 13.51 6.83 3.98M15.41 6.51l-6.82 3.98" />
+    </svg>
+  );
+}
+
 // Coordenadas aproximadas de una dirección (Nominatim, best effort).
 // Para anuncios sin pin: así el detalle siempre muestra el lugar en el mapa.
 async function geocode(
@@ -198,32 +251,31 @@ export function AdActions({ ad }: { ad: Ad }) {
         approx && <LocationMap lat={approx.lat} lng={approx.lng} approximate />
       )}
 
-      {/* Compartir por WhatsApp: la ubicación (Google Maps) o el anuncio. */}
-      <div className="flex gap-2">
+      {/* Compartir por WhatsApp: iconos discretos, no compiten con el CTA. */}
+      <div className="flex items-center justify-end gap-2">
+        <span className="text-xs text-gray-400">Compartir:</span>
         {coords && (
-          <Button
-            variant="outline"
-            className="flex-1"
+          <IconButton
+            label="Compartir ubicación por WhatsApp"
             onClick={() =>
               shareByWhatsApp(
                 `Ubicación del anuncio Ref. ${adRef} en Tu Chamba: https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`,
               )
             }
           >
-            Compartir ubicación
-          </Button>
+            <MapPinIcon />
+          </IconButton>
         )}
-        <Button
-          variant="outline"
-          className="flex-1"
+        <IconButton
+          label="Compartir anuncio por WhatsApp"
           onClick={() =>
             shareByWhatsApp(
               `Mira este anuncio en Tu Chamba (Ref. ${adRef}): ${window.location.origin}${adPath}?shared=1`,
             )
           }
         >
-          Compartir anuncio
-        </Button>
+          <ShareIcon />
+        </IconButton>
       </div>
 
       {/* Contacto: con sesión muestra Chatear/Llamar; sin sesión, CTA. */}
