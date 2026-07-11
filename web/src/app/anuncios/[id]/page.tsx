@@ -109,6 +109,9 @@ export default async function AdDetailPage({ params }: Params) {
         employerId={ad.createdById}
         employerName={ad.createdBy?.name ?? 'este empleador'}
       />
+
+      {/* Holgura para la barra de contacto fija de AdActions en móvil. */}
+      <div aria-hidden className="h-14 sm:hidden" />
     </div>
   );
 }
