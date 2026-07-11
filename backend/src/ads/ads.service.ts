@@ -140,6 +140,11 @@ export class AdsService {
       ];
     }
 
+    // Filtro del campo "dónde" del buscador (ciudad o zona).
+    if (query.location) {
+      where.location = { contains: query.location, mode: 'insensitive' };
+    }
+
     const [items, total] = await Promise.all([
       this.prisma.ad.findMany({
         where,

@@ -4,7 +4,8 @@
 
 @layer base {
   body {
-    @apply bg-background font-sans text-on-surface;
+    /* overflow-x-clip: el hero a sangre completa usa w-screen. */
+    @apply overflow-x-clip bg-background font-sans text-on-surface;
   }
 
   /* Los titulares llevan la display (Hanken Grotesk); el cuerpo, Inter. */

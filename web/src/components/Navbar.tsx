@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
 import { NotificationsBell } from './NotificationsBell';
@@ -108,7 +108,6 @@ function TituloSeccion({ children }: { children: ReactNode }) {
 export function Navbar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
-  const router = useRouter();
   // El CTA de publicar se muestra siempre: sin sesión manda a registrarse
   // y, al crear la cuenta, vuelve directo al formulario de publicar.
   const publishHref = user
@@ -117,15 +116,7 @@ export function Navbar() {
 
   const [menuUsuario, setMenuUsuario] = useState(false);
   const [menuMovil, setMenuMovil] = useState(false);
-  // Buscador del header: navega a la portada con ?q= (la home lo lee).
-  const [query, setQuery] = useState('');
   const usuarioRef = useRef<HTMLDivElement>(null);
-
-  function onSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const q = query.trim();
-    router.push(q ? `/?q=${encodeURIComponent(q)}` : '/');
-  }
 
   // Cierra ambos menús al navegar.
   useEffect(() => {
@@ -165,35 +156,13 @@ export function Navbar() {
   );
 
   return (
-    <header className="sticky top-0 z-40 bg-surface shadow-md">
+    <header className="sticky top-0 z-40 bg-surface/90 shadow-md backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <div className="flex flex-1 items-center gap-8">
           <Link href="/" className="flex shrink-0 items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-full.svg" alt="Tu Chamba" className="h-9 w-auto" />
           </Link>
-
-          {/* Buscador del header (escritorio): navega a la portada con ?q= */}
-          <form
-            onSubmit={onSearch}
-            className="hidden max-w-xl flex-1 items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-2 transition-shadow focus-within:border-primary focus-within:shadow-md md:flex"
-          >
-            <span aria-hidden="true" className="material-symbols-outlined text-outline">
-              search
-            </span>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar empleos por descripción..."
-              className="w-full border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-outline focus:ring-0"
-            />
-            <button
-              type="submit"
-              className="shrink-0 rounded-lg bg-primary px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-on-primary transition-all hover:brightness-110 active:scale-95"
-            >
-              Buscar
-            </button>
-          </form>
         </div>
 
         {/* Navegación de escritorio: CTA + campana + menú de cuenta */}
