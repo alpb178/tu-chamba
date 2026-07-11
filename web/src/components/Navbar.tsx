@@ -157,7 +157,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 bg-surface/90 shadow-md backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
+      <div className="mx-auto flex max-w-7xl 2xl:max-w-screen-2xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-12">
         <div className="flex flex-1 items-center gap-8">
           <Link href="/" className="flex shrink-0 items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
