@@ -20,7 +20,7 @@ function BrandCard({ company }: { company: Company }) {
           alt=""
           loading="lazy"
           decoding="async"
-          className="h-full w-full object-cover object-top transition duration-300 group-hover:scale-105"
+          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <h3 className="absolute bottom-4 left-4 font-display text-lg font-semibold text-on-primary">

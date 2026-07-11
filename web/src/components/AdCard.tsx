@@ -45,26 +45,29 @@ export function AdCard({
   return (
     <Link
       href={`/anuncios/${ad.id}`}
-      className="group relative block overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:shadow-xl sm:p-6"
+      className="group relative block overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
     >
       {/* Detalle decorativo que crece al pasar el cursor. */}
       <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150" />
 
-      <div className="relative z-10 flex items-start justify-between gap-3">
+      <div className="relative z-10 flex items-start justify-between gap-4">
         <div className="flex min-w-0 gap-4">
-          <div className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container sm:flex">
+          <div className="hidden h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container sm:flex">
             <span className="material-symbols-outlined text-3xl text-primary">
               {CATEGORY_ICON[ad.category ?? 'OTRO']}
             </span>
           </div>
           <div className="min-w-0">
-            <p className="line-clamp-2 font-display text-base font-semibold text-on-surface transition-colors group-hover:text-primary">
+            <h3 className="line-clamp-2 font-display text-lg font-semibold text-on-surface transition-colors group-hover:text-primary">
               {ad.description}
-            </p>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-on-surface-variant">
+            </h3>
+            <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-on-surface-variant">
               {(ad.location || ad.department) && (
                 <span className="flex items-center gap-1">
-                  <span className="material-symbols-outlined text-sm">
+                  <span
+                    aria-hidden="true"
+                    className="material-symbols-outlined text-sm"
+                  >
                     location_on
                   </span>
                   {ad.location || DEPARTMENT_LABEL[ad.department!]}
@@ -79,7 +82,7 @@ export function AdCard({
         </div>
 
         <div className="shrink-0 text-right">
-          <div className="mb-1 flex flex-col items-end gap-1">
+          <div className="mb-2 flex flex-col items-end gap-1">
             <Badge jobType={ad.jobType} />
             {showStatus && (
               <span
@@ -89,23 +92,23 @@ export function AdCard({
               </span>
             )}
           </div>
-          <div className="font-display text-xl font-semibold text-primary sm:text-2xl">
+          <div className="font-display text-2xl font-bold text-primary">
             Bs {Number(ad.salary).toLocaleString('es-BO')}
           </div>
         </div>
       </div>
 
-      <div className="relative z-10 mt-4 flex items-center justify-between border-t border-outline-variant pt-3">
-        <div className="flex items-center gap-1 text-sm">
+      <div className="relative z-10 mt-6 flex items-center justify-between border-t border-outline-variant pt-4">
+        <div className="flex items-center gap-1">
           {ad.ownerRating && ad.ownerRating.count > 0 ? (
             <>
               <span
                 aria-hidden="true"
-                className="material-symbols-outlined icon-fill text-lg text-secondary-container"
+                className="material-symbols-outlined icon-fill text-secondary-container"
               >
                 star
               </span>
-              <span className="font-bold text-on-surface">
+              <span className="text-sm font-bold text-on-surface">
                 {Number(ad.ownerRating.average).toFixed(1)}
               </span>
               <span className="ml-1 text-xs text-outline">
@@ -121,7 +124,7 @@ export function AdCard({
             )
           )}
         </div>
-        <span className="rounded-lg bg-primary px-4 py-1.5 text-xs font-bold text-on-primary transition-all group-hover:brightness-110 sm:px-6 sm:py-2">
+        <span className="rounded-lg bg-primary px-6 py-2 text-xs font-bold text-on-primary transition-all group-hover:brightness-110">
           Ver detalles
         </span>
       </div>
