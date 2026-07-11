@@ -12,6 +12,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily' as const,
       priority: 0.8,
     })),
+    { url: `${SITE}/privacidad`, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${SITE}/cookies`, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
   // Anuncios vigentes (best-effort; si la API falla, se omiten).

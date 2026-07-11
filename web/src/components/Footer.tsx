@@ -54,11 +54,17 @@ export function Footer() {
               </a>
             </FooterCol>
             <FooterCol title="Legal">
-              <a href={`mailto:${SUPPORT_EMAIL}?subject=Términos de servicio`} className={linkClass}>
+              <Link href="/privacidad" className={linkClass}>
+                Política de privacidad
+              </Link>
+              <Link href="/cookies" className={linkClass}>
+                Política de cookies
+              </Link>
+              <a
+                href={`mailto:${SUPPORT_EMAIL}?subject=Términos de servicio`}
+                className={linkClass}
+              >
                 Términos de servicio
-              </a>
-              <a href={`mailto:${SUPPORT_EMAIL}?subject=Privacidad`} className={linkClass}>
-                Privacidad
               </a>
             </FooterCol>
             <FooterCol title="Empresas">
