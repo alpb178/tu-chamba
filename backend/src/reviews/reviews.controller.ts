@@ -23,7 +23,7 @@ import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator
 export class ReviewsController {
   constructor(private reviews: ReviewsService) {}
 
-  // Crear reseña: solo TRABAJADOR, una única vez por empleador.
+  // Crear reseña: solo TRABAJADOR, una única vez por anuncio.
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.TRABAJADOR)

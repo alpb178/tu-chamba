@@ -169,6 +169,7 @@ model Ad {
   reports      Report[]
   notifications Notification[]
   visits       Visit[]
+  reviews      Review[]
   createdBy    User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
   createdById  String
   createdAt    DateTime  @default(now())
@@ -177,7 +178,8 @@ model Ad {
   @@map("Anuncio")
 }
 
-// Reseña de un TRABAJADOR hacia un EMPLEADOR (máx. una por par).
+// Reseña de un TRABAJADOR sobre un anuncio (máx. una por anuncio). El
+// empleador se guarda desnormalizado para agregar su calificación global.
 model Review {
   id         String   @id @default(uuid())
   rating     Int
@@ -186,10 +188,12 @@ model Review {
   authorId   String   @map("autorId")
   employer   User     @relation("ReviewsRecibidas", fields: [employerId], references: [id], onDelete: Cascade)
   employerId String   @map("empleadorId")
+  ad         Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  adId       String   @map("anuncioId")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  @@unique([authorId, employerId])
+  @@unique([authorId, adId])
 }
 
 // Suscripción de un TRABAJADOR a nuevas ofertas por criterio. Un campo null

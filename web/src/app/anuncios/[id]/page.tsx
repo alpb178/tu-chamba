@@ -105,6 +105,7 @@ export default async function AdDetailPage({ params }: Params) {
       <AdActions ad={ad} />
 
       <Reviews
+        adId={ad.id}
         employerId={ad.createdById}
         employerName={ad.createdBy?.name ?? 'este empleador'}
       />

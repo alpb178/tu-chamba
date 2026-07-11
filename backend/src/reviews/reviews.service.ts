@@ -22,21 +22,25 @@ export class ReviewsService {
     private notifications: NotificationsService,
   ) {}
 
-  // Una única reseña por (trabajador, empleador): no se puede volver a
-  // calificar ni editar la existente.
+  // Una única reseña por (trabajador, anuncio): no se puede volver a
+  // calificar ni editar la existente. El empleador se deriva del anuncio.
   async create(dto: CreateReviewDto, authorId: string) {
-    const employer = await this.prisma.user.findUnique({
-      where: { id: dto.employerId },
+    const ad = await this.prisma.ad.findUnique({
+      where: { id: dto.adId },
+      include: { createdBy: true },
     });
-    if (!employer || employer.role !== Role.EMPLEADOR) {
-      throw new BadRequestException('Solo se puede reseñar a empleadores');
+    if (!ad || ad.createdBy.role !== Role.EMPLEADOR) {
+      throw new BadRequestException(
+        'Solo se pueden calificar anuncios de empleadores',
+      );
     }
 
     try {
       const review = await this.prisma.review.create({
         data: {
           authorId,
-          employerId: dto.employerId,
+          employerId: ad.createdById,
+          adId: ad.id,
           rating: dto.rating,
           comment: dto.comment,
         },
@@ -45,12 +49,12 @@ export class ReviewsService {
       await this.notifications.notifyReview(review, review.author.name);
       return review;
     } catch (e) {
-      // Violación del único (authorId, employerId): ya lo calificó antes.
+      // Violación del único (authorId, adId): ya calificó este anuncio.
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&
         e.code === 'P2002'
       ) {
-        throw new ConflictException('Ya calificaste a este empleador');
+        throw new ConflictException('Ya calificaste este anuncio');
       }
       throw e;
     }

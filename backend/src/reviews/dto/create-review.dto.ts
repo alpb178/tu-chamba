@@ -3,9 +3,9 @@ import { Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsString, IsUUID, Max, Min } from 'class-validator';
 
 export class CreateReviewDto {
-  @ApiProperty({ description: 'ID del empleador a reseñar' })
+  @ApiProperty({ description: 'ID del anuncio a calificar' })
   @IsUUID()
-  employerId: string;
+  adId: string;
 
   @ApiProperty({ example: 4, minimum: 1, maximum: 5 })
   @Type(() => Number)

@@ -135,6 +135,7 @@ export interface Review {
   comment: string;
   authorId: string;
   employerId: string;
+  adId: string;
   author?: { id: string; name: string };
   createdAt: string;
   updatedAt: string;
