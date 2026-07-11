@@ -40,6 +40,13 @@ export class QueryAdDto {
   @IsString()
   search?: string;
 
+  @ApiPropertyOptional({
+    description: 'Texto a buscar en la ubicación (ciudad o zona)',
+  })
+  @IsOptional()
+  @IsString()
+  location?: string;
+
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()
   @Type(() => Number)
