@@ -35,9 +35,11 @@ export function Hero({
     router.push(p.size ? `/?${p}` : '/');
   }
 
+  // z-30 (bajo el navbar z-40): el desplegable del select sobresale por
+  // encima del contenido siguiente. El clip vive en la capa de fondo.
   return (
-    <section className="relative -mt-6 ml-[calc(50%-50vw)] flex min-h-[440px] w-screen items-center justify-center overflow-hidden sm:min-h-[540px]">
-      <div className="absolute inset-0 z-0">
+    <section className="relative z-30 -mt-6 ml-[calc(50%-50vw)] flex min-h-[440px] w-screen items-center justify-center sm:min-h-[540px]">
+      <div className="absolute inset-0 z-0 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/hero.jpg"
