@@ -1,5 +1,3 @@
-export type Role = 'ADMIN' | 'TRABAJADOR' | 'EMPLEADOR';
-
 export type JobType = 'DIARIA' | 'TIEMPO_COMPLETO' | 'MEDIA_JORNADA';
 
 export const JOB_TYPE_LABEL: Record<JobType, string> = {
@@ -100,7 +98,8 @@ export interface User {
   emailVerified: boolean;
   name: string;
   phone: string | null;
-  role: Role;
+  // Único distintivo entre usuarios: acceso al panel de administración.
+  isAdmin: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -123,8 +122,10 @@ export interface Ad {
   expiresAt: string;
   createdById: string;
   createdBy?: { id: string; name: string; email: string };
-  // Calificación del empleador; el backend la adjunta en los listados.
-  employerRating?: { average: number | null; count: number };
+  // Calificación del publicante; el backend la adjunta en los listados.
+  ownerRating?: { average: number | null; count: number };
+  // Accesos e interesados; el backend los adjunta en detalle y /ads/mine.
+  _count?: { visits: number; interests: number };
   createdAt: string;
   updatedAt: string;
 }
@@ -134,11 +135,19 @@ export interface Review {
   rating: number;
   comment: string;
   authorId: string;
-  employerId: string;
+  ownerId: string;
   adId: string;
   author?: { id: string; name: string };
   createdAt: string;
   updatedAt: string;
+}
+
+// Interés propio en un anuncio ajeno (se registra al contactar).
+export interface Interest {
+  id: string;
+  adId: string;
+  createdAt: string;
+  ad: Ad;
 }
 
 export interface ReviewsResponse extends Paginated<Review> {

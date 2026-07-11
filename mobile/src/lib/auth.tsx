@@ -6,14 +6,13 @@ import React, {
   ReactNode,
 } from 'react';
 import { api, setToken, clearToken, getToken } from './api';
-import { Role, User } from './types';
+import { User } from './types';
 
 interface RegisterData {
   email: string;
   password: string;
   name: string;
-  phone: string;
-  role: Extract<Role, 'TRABAJADOR' | 'EMPLEADOR'>;
+  phone?: string;
 }
 
 interface AuthContextValue {

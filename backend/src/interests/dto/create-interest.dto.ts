@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID } from 'class-validator';
 
-export class ChatClickDto {
-  @ApiProperty({ description: 'ID del anuncio cuyo botón Chatear se pulsó' })
+export class CreateInterestDto {
+  @ApiProperty({ description: 'ID del anuncio que interesa' })
   @IsUUID()
   adId: string;
 }

@@ -20,11 +20,11 @@ export function AdCard({ ad, onPress }: { ad: Ad; onPress: () => void }) {
         <Text className="text-lg font-bold text-brand">
           Bs {Number(ad.salary).toLocaleString('es-BO')}
         </Text>
-        {ad.employerRating && ad.employerRating.count > 0 && (
+        {ad.ownerRating && ad.ownerRating.count > 0 && (
           <Text className="text-xs text-gray-600">
             <Text className="text-amber-500">★</Text>{' '}
-            {Number(ad.employerRating.average).toFixed(1)} (
-            {ad.employerRating.count})
+            {Number(ad.ownerRating.average).toFixed(1)} (
+            {ad.ownerRating.count})
           </Text>
         )}
       </View>

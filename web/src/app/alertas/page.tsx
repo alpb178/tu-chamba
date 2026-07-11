@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import {
   JobAlert,
@@ -10,13 +9,12 @@ import {
   Department,
   DEPARTMENT_LABEL,
 } from '@/lib/types';
-import { useAuth } from '@/lib/auth';
+import { useRequireAuth } from '@/lib/useRequireAuth';
 import { Button, FormField, Select } from '@/components/ui';
 import { Skeleton } from '@/components/Skeleton';
 
 export default function JobAlertsPage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
+  const { user, loading: authLoading } = useRequireAuth();
   const [items, setItems] = useState<JobAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [department, setDepartment] = useState<Department | ''>('');
@@ -30,19 +28,9 @@ export default function JobAlertsPage() {
       .finally(() => setLoading(false));
   }
 
-  // Solo TRABAJADOR gestiona alertas de empleo.
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-    if (user.role !== 'TRABAJADOR') {
-      router.push('/');
-      return;
-    }
-    load();
-  }, [authLoading, user, router]);
+    if (!authLoading && user) load();
+  }, [authLoading, user]);
 
   async function create(e: React.FormEvent) {
     e.preventDefault();

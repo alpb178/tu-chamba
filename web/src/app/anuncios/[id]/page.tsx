@@ -99,6 +99,13 @@ export default async function AdDetailPage({ params }: Params) {
         <p className="text-xs text-gray-400">
           Publicado: {new Date(ad.createdAt).toLocaleDateString('es-BO')} ·
           Vence: {new Date(ad.expiresAt).toLocaleDateString('es-BO')}
+          {ad._count != null && (
+            <>
+              {' '}
+              · 👁 {ad._count.visits}{' '}
+              {ad._count.visits === 1 ? 'visita' : 'visitas'}
+            </>
+          )}
         </p>
       </div>
 
@@ -106,8 +113,8 @@ export default async function AdDetailPage({ params }: Params) {
 
       <Reviews
         adId={ad.id}
-        employerId={ad.createdById}
-        employerName={ad.createdBy?.name ?? 'este empleador'}
+        ownerId={ad.createdById}
+        ownerName={ad.createdBy?.name ?? 'este publicante'}
       />
 
       {/* Holgura para la barra de contacto fija de AdActions en móvil. */}

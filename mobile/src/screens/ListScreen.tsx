@@ -25,7 +25,8 @@ const PAGE_SIZE = 10;
 
 export function ListScreen({ navigation }: Props) {
   const { user } = useAuth();
-  const canPublish = user?.role === 'EMPLEADOR' || user?.role === 'ADMIN';
+  // Cualquier usuario con sesión puede publicar.
+  const canPublish = Boolean(user);
   const [items, setItems] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);

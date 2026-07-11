@@ -50,27 +50,21 @@ export class NotificationsService {
     });
   }
 
-  // Alguien pulsó "Chatear": avisa al dueño del anuncio (salvo que sea él mismo).
-  async chatClick(adId: string, clicker: AuthUser) {
-    const ad = await this.prisma.ad.findUnique({
-      where: { id: adId },
-    });
-    if (!ad) throw new NotFoundException('Anuncio no encontrado');
-    if (ad.createdById === clicker.id) return { ok: true };
-
+  // Alguien mostró interés en un anuncio (la llama InterestsService la
+  // primera vez que ese usuario contacta): avisa al dueño.
+  async notifyInterest(ad: Ad, interestedUserId: string) {
     const who = await this.prisma.user.findUnique({
-      where: { id: clicker.id },
+      where: { id: interestedUserId },
       select: { name: true },
     });
     await this.prisma.notification.create({
       data: {
         type: NotificationType.CHAT_INICIADO,
-        message: `${who?.name ?? 'Alguien'} quiere chatear contigo por tu anuncio «${summary(ad.description)}»`,
+        message: `${who?.name ?? 'Alguien'} se interesó en tu anuncio «${summary(ad.description)}» y quiere contactarte`,
         userId: ad.createdById,
         adId: ad.id,
       },
     });
-    return { ok: true };
   }
 
   // Nueva calificación recibida (la llama ReviewsService).
@@ -79,12 +73,12 @@ export class NotificationsService {
       data: {
         type: NotificationType.NUEVA_REVIEW,
         message: `${authorName} te calificó con ${review.rating}★: «${summary(review.comment)}»`,
-        userId: review.employerId,
+        userId: review.ownerId,
       },
     });
   }
 
-  // Anuncio nuevo publicado: avisa solo a los trabajadores con una alerta
+  // Anuncio nuevo publicado: avisa solo a los usuarios con una alerta
   // que coincide (departamento y categoría; null = cualquiera). Un usuario
   // con varias alertas coincidentes recibe una sola notificación.
   async notifyNewAd(ad: Ad) {

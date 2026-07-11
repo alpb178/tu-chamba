@@ -9,7 +9,6 @@ import {
   Department,
   JobType,
   Prisma,
-  Role,
   TraceType,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -27,6 +26,11 @@ import { TracesService } from '../traces/traces.service';
 
 const includeAuthor = {
   createdBy: { select: { id: true, name: true, email: true } },
+};
+
+// Conteos de actividad del anuncio (accesos e interesados).
+const includeCounts = {
+  _count: { select: { visits: true, interests: true } },
 };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -148,7 +152,7 @@ export class AdsService {
     ]);
 
     return {
-      items: await this.attachEmployerRatings(items),
+      items: await this.attachOwnerRatings(items),
       total,
       page,
       limit,
@@ -156,30 +160,30 @@ export class AdsService {
     };
   }
 
-  // Calificación del empleador (promedio y conteo de reviews) para mostrar
+  // Calificación del publicante (promedio y conteo de reseñas) para mostrar
   // en las tarjetas del listado, con una sola consulta agrupada por página.
-  private async attachEmployerRatings<T extends { createdById: string }>(
+  private async attachOwnerRatings<T extends { createdById: string }>(
     items: T[],
   ) {
-    const employerIds = [...new Set(items.map((i) => i.createdById))];
-    if (!employerIds.length) return [];
+    const ownerIds = [...new Set(items.map((i) => i.createdById))];
+    if (!ownerIds.length) return [];
 
     const grouped = await this.prisma.review.groupBy({
-      by: ['employerId'],
-      where: { employerId: { in: employerIds } },
+      by: ['ownerId'],
+      where: { ownerId: { in: ownerIds } },
       _avg: { rating: true },
       _count: true,
     });
-    const byEmployer = new Map(
+    const byOwner = new Map(
       grouped.map((g) => [
-        g.employerId,
+        g.ownerId,
         { average: g._avg.rating, count: g._count },
       ]),
     );
 
     return items.map((item) => ({
       ...item,
-      employerRating: byEmployer.get(item.createdById) ?? {
+      ownerRating: byOwner.get(item.createdById) ?? {
         average: null,
         count: 0,
       },
@@ -189,7 +193,7 @@ export class AdsService {
   async findOne(id: string) {
     const ad = await this.prisma.ad.findUnique({
       where: { id },
-      include: includeAuthor,
+      include: { ...includeAuthor, ...includeCounts },
     });
     if (!ad) throw new NotFoundException('Anuncio no encontrado');
     return ad;
@@ -214,16 +218,18 @@ export class AdsService {
     return { phone: ad.phone };
   }
 
-  async create(dto: CreateAdDto, userId: string) {
-    // Un empleador debe verificar su correo antes de publicar (anti-spam).
-    const author = await this.prisma.user.findUnique({
-      where: { id: userId },
-      select: { role: true, emailVerified: true },
-    });
-    if (author?.role === Role.EMPLEADOR && !author.emailVerified) {
-      throw new ForbiddenException(
-        'Verifica tu correo para poder publicar anuncios',
-      );
+  async create(dto: CreateAdDto, user: AuthUser) {
+    // Anti-spam: hay que verificar el correo antes de publicar (admin exento).
+    if (!user.isAdmin) {
+      const author = await this.prisma.user.findUnique({
+        where: { id: user.id },
+        select: { emailVerified: true },
+      });
+      if (!author?.emailVerified) {
+        throw new ForbiddenException(
+          'Verifica tu correo para poder publicar anuncios',
+        );
+      }
     }
 
     const durationDays = dto.durationDays ?? 3;
@@ -232,7 +238,7 @@ export class AdsService {
         ...dto,
         durationDays,
         expiresAt: expiryDate(durationDays),
-        createdById: userId,
+        createdById: user.id,
       },
       include: includeAuthor,
     });
@@ -306,9 +312,10 @@ export class AdsService {
     return updated;
   }
 
-  // Borrado físico: reservado al ADMIN (los dueños usan la baja).
+  // Borrado físico: dueño del anuncio o admin.
   async remove(id: string, user: AuthUser) {
     const ad = await this.findOne(id);
+    this.assertCanModify(ad.createdById, user);
     await this.prisma.ad.delete({ where: { id } });
     await this.traces.record(
       TraceType.AD_DELETED,
@@ -318,17 +325,18 @@ export class AdsService {
     return { deleted: true };
   }
 
+  // Anuncios propios, con accesos e interesados para ver su actividad.
   async findMine(userId: string) {
     return this.prisma.ad.findMany({
       where: { createdById: userId },
-      include: includeAuthor,
+      include: { ...includeAuthor, ...includeCounts },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  // Solo el dueño del anuncio o un ADMIN pueden modificar/dar de baja.
+  // Solo el dueño del anuncio o un admin pueden modificarlo o borrarlo.
   private assertCanModify(ownerId: string, user: AuthUser) {
-    if (user.role !== Role.ADMIN && user.id !== ownerId) {
+    if (!user.isAdmin && user.id !== ownerId) {
       throw new ForbiddenException('No puedes modificar este anuncio');
     }
   }

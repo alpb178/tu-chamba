@@ -3,9 +3,9 @@ import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsUUID, Min } from 'class-validator';
 
 export class QueryReviewDto {
-  @ApiProperty({ description: 'ID del empleador' })
+  @ApiProperty({ description: 'ID del publicante (dueño de los anuncios)' })
   @IsUUID()
-  employerId: string;
+  ownerId: string;
 
   @ApiPropertyOptional({
     description:

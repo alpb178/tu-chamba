@@ -192,7 +192,7 @@ export function AdActions({ ad }: { ad: Ad }) {
 
   const status = adEffectiveStatus(ad);
   const isOwner = user?.id === ad.createdById;
-  const canEdit = user?.role === 'ADMIN' || isOwner;
+  const canEdit = Boolean(user?.isAdmin) || isOwner;
   const adRef = ad.id.slice(0, 8);
   const adPath = `/anuncios/${ad.id}`;
   const waMessage = `Hola, vi tu anuncio en Tu Chamba (Ref. ${adRef}) y me interesa.`;
@@ -212,9 +212,10 @@ export function AdActions({ ad }: { ad: Ad }) {
       ? { lat: ad.latitude, lng: ad.longitude }
       : approx;
 
-  // Métrica de contacto: avisa al backend que abrieron el chat.
-  function notifyChatClick() {
-    api('/notifications/chat-click', {
+  // Contactar registra el interés en el anuncio: alimenta "anuncios de tu
+  // interés" y avisa al dueño la primera vez (best effort).
+  function registerInterest() {
+    api('/interests', {
       method: 'POST',
       body: JSON.stringify({ adId: ad.id }),
     }).catch(() => {});
@@ -297,7 +298,7 @@ export function AdActions({ ad }: { ad: Ad }) {
               target="_blank"
               rel="noopener noreferrer"
               className="block"
-              onClick={notifyChatClick}
+              onClick={registerInterest}
             >
               <Button className="w-full">Chatear</Button>
             </a>
@@ -314,7 +315,7 @@ export function AdActions({ ad }: { ad: Ad }) {
               target="_blank"
               rel="noopener noreferrer"
               className="flex-1"
-              onClick={notifyChatClick}
+              onClick={registerInterest}
             >
               <Button className="w-full">Chatear</Button>
             </a>

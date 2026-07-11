@@ -8,6 +8,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { ReportsModule } from './reports/reports.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AlertsModule } from './alerts/alerts.module';
+import { InterestsModule } from './interests/interests.module';
 import { MailModule } from './mail/mail.module';
 import { HealthModule } from './health/health.module';
 import { TracesModule } from './traces/traces.module';
@@ -27,6 +28,7 @@ import { AdminModule } from './admin/admin.module';
     ReportsModule,
     NotificationsModule,
     AlertsModule,
+    InterestsModule,
     VisitsModule,
     AdminModule,
     HealthModule,

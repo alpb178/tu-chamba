@@ -79,12 +79,14 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <ChartCard title="Usuarios registrados por rol">
+            <ChartCard title="Usuarios registrados">
               <HorizontalBars
                 data={[
-                  { label: 'Trabajadores', total: stats.users.byRole.TRABAJADOR },
-                  { label: 'Empleadores', total: stats.users.byRole.EMPLEADOR },
-                  { label: 'Admins', total: stats.users.byRole.ADMIN },
+                  {
+                    label: 'Usuarios',
+                    total: stats.users.total - stats.users.admins,
+                  },
+                  { label: 'Administradores', total: stats.users.admins },
                 ]}
                 color={ADS_COLOR}
               />

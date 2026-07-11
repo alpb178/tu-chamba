@@ -1,5 +1,3 @@
-export type Role = 'ADMIN' | 'TRABAJADOR' | 'EMPLEADOR';
-
 export type JobType = 'DIARIA' | 'TIEMPO_COMPLETO' | 'MEDIA_JORNADA';
 
 export const JOB_TYPE_LABEL: Record<JobType, string> = {
@@ -93,7 +91,8 @@ export interface User {
   email: string;
   name: string;
   phone: string | null;
-  role: Role;
+  // Único distintivo entre usuarios: acceso a este panel.
+  isAdmin: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -179,7 +178,7 @@ export interface DayPoint {
 }
 
 export interface AdminStats {
-  users: { total: number; byRole: Record<Role, number> };
+  users: { total: number; admins: number };
   ads: { total: number; byDay: DayPoint[] };
   visits: {
     total: number;

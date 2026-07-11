@@ -35,8 +35,7 @@ export function DetailScreen({ route, navigation }: Props) {
       </View>
     );
 
-  const canEdit =
-    user && (user.role === 'ADMIN' || user.id === ad.createdById);
+  const canEdit = user && (user.isAdmin || user.id === ad.createdById);
 
   async function remove() {
     Alert.alert('Eliminar', '¿Eliminar este anuncio?', [

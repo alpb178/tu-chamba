@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Get,
   Param,
@@ -9,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
-import { ChatClickDto } from './dto/chat-click.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator';
 
@@ -23,12 +21,6 @@ export class NotificationsController {
   @Get()
   findMine(@CurrentUser() user: AuthUser) {
     return this.notifications.findMine(user);
-  }
-
-  // Registra el clic en "Chatear" para avisar al dueño del anuncio.
-  @Post('chat-click')
-  chatClick(@Body() dto: ChatClickDto, @CurrentUser() user: AuthUser) {
-    return this.notifications.chatClick(dto.adId, user);
   }
 
   @Post('read-all')
