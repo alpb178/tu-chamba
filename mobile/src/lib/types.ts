@@ -1,5 +1,3 @@
-export type Role = 'ADMIN' | 'TRABAJADOR' | 'EMPLEADOR';
-
 export type JobType = 'DIARIA' | 'TIEMPO_COMPLETO' | 'MEDIA_JORNADA';
 
 export const JOB_TYPE_LABEL: Record<JobType, string> = {
@@ -13,8 +11,9 @@ export interface User {
   email: string;
   emailVerified: boolean;
   name: string;
-  phone: string;
-  role: Role;
+  phone: string | null;
+  // Único distintivo entre usuarios: acceso al panel de administración.
+  isAdmin: boolean;
 }
 
 export interface Ad {
@@ -25,8 +24,8 @@ export interface Ad {
   jobType: JobType;
   createdById: string;
   createdBy?: { id: string; name: string; email: string };
-  // Calificación del empleador; el backend la adjunta en los listados.
-  employerRating?: { average: number | null; count: number };
+  // Calificación del publicante; el backend la adjunta en los listados.
+  ownerRating?: { average: number | null; count: number };
   createdAt: string;
 }
 

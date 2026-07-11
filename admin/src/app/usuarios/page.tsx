@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import { Role, User } from '@/lib/types';
+import { User } from '@/lib/types';
 import {
   Button,
   ConfirmDialog,
@@ -12,11 +12,9 @@ import {
   TableSkeleton,
 } from '@/components/ui';
 
-const HEADERS = ['Nombre', 'Correo', 'Teléfono', 'Rol', 'Anuncios', ''];
+const HEADERS = ['Nombre', 'Correo', 'Teléfono', 'Acceso', 'Anuncios', ''];
 
 type UserRow = User & { _count?: { ads: number } };
-
-const ROLES: Role[] = ['ADMIN', 'EMPLEADOR', 'TRABAJADOR'];
 
 // Alta de un administrador: el backend solo pide correo y contraseña.
 function CreateAdminDialog({
@@ -116,10 +114,11 @@ export default function UsersPage() {
 
   useEffect(load, []);
 
-  async function changeRole(id: string, role: Role) {
-    await api(`/users/${id}/role`, {
+  // Concede o revoca el acceso a este panel (único distintivo entre usuarios).
+  async function setAdmin(id: string, isAdmin: boolean) {
+    await api(`/users/${id}/admin`, {
       method: 'PATCH',
-      body: JSON.stringify({ role }),
+      body: JSON.stringify({ isAdmin }),
     });
     load();
   }
@@ -152,14 +151,11 @@ export default function UsersPage() {
             <td className="px-4 py-3 text-gray-600">{u.phone}</td>
             <td className="px-4 py-3">
               <Select
-                value={u.role}
-                onChange={(e) => changeRole(u.id, e.target.value as Role)}
+                value={u.isAdmin ? 'ADMIN' : 'USUARIO'}
+                onChange={(e) => setAdmin(u.id, e.target.value === 'ADMIN')}
               >
-                {ROLES.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
+                <option value="USUARIO">Usuario</option>
+                <option value="ADMIN">Admin</option>
               </Select>
             </td>
             <td className="px-4 py-3 text-gray-600">{u._count?.ads ?? 0}</td>

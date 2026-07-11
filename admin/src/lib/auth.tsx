@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     api<User>('/auth/me')
       .then((u) => {
         // Solo administradores pueden usar este panel.
-        if (u.role === 'ADMIN') setUser(u);
+        if (u.isAdmin) setUser(u);
         else clearToken();
       })
       .catch(() => clearToken())
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
-    if (res.user.role !== 'ADMIN') {
+    if (!res.user.isAdmin) {
       throw new Error('Acceso restringido: solo administradores');
     }
     setToken(res.accessToken);
