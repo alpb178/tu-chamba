@@ -108,6 +108,11 @@ function TituloSeccion({ children }: { children: ReactNode }) {
 export function Navbar() {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  // El CTA de publicar se muestra siempre: sin sesión manda a registrarse
+  // y, al crear la cuenta, vuelve directo al formulario de publicar.
+  const publishHref = user
+    ? '/anuncios/nuevo'
+    : `/register?next=${encodeURIComponent('/anuncios/nuevo')}`;
 
   const [menuUsuario, setMenuUsuario] = useState(false);
   const [menuMovil, setMenuMovil] = useState(false);
@@ -162,11 +167,9 @@ export function Navbar() {
 
         {/* Navegación de escritorio: solo el CTA queda fuera; el resto vive en el menú de cuenta */}
         <nav className="hidden items-center gap-3 md:flex">
-          {user && (
-            <Link href="/anuncios/nuevo">
-              <Button variant="accent">Publicar anuncio</Button>
-            </Link>
-          )}
+          <Link href={publishHref}>
+            <Button variant="accent">Publicar anuncio</Button>
+          </Link>
 
           {user && <NotificationsBell />}
 
@@ -324,11 +327,11 @@ export function Navbar() {
           )}
 
           <div className="flex flex-col gap-1">
+            <Link href={publishHref} className="rounded-md bg-accent px-3 py-2 text-center text-sm font-medium text-brand">
+              Publicar anuncio
+            </Link>
             {user && (
               <>
-                <Link href="/anuncios/nuevo" className="rounded-md bg-accent px-3 py-2 text-center text-sm font-medium text-brand">
-                  Publicar anuncio
-                </Link>
                 <Link href="/mis-anuncios" className={`rounded-md px-3 py-2 text-sm hover:bg-gray-50 ${linkActivo('/mis-anuncios')}`}>
                   Mis anuncios
                 </Link>
