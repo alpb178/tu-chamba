@@ -169,15 +169,8 @@ export function Navbar() {
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <div className="flex flex-1 items-center gap-8">
           <Link href="/" className="flex shrink-0 items-center gap-2">
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined icon-fill text-3xl text-primary"
-            >
-              work
-            </span>
-            <span className="font-display text-lg font-bold tracking-tight text-on-surface">
-              TuChamba
-            </span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo-full.svg" alt="Tu Chamba" className="h-9 w-auto" />
           </Link>
 
           {/* Buscador del header (escritorio): navega a la portada con ?q= */}

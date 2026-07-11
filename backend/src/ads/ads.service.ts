@@ -199,23 +199,30 @@ export class AdsService {
     return ad;
   }
 
-  // Detalle público: el teléfono de contacto solo se expone a usuarios con
-  // sesión (regla de negocio). Los anónimos ven todo lo demás (para SEO).
+  // Detalle público: el teléfono y la ubicación solo se exponen a usuarios
+  // con sesión (regla de negocio). Los anónimos ven el resto (para SEO); el
+  // departamento sí queda visible como zona general.
   async findOnePublic(id: string, user: AuthUser | null) {
     const ad = await this.findOne(id);
     if (user) return ad;
-    const { phone: _hidden, ...publicAd } = ad;
+    const {
+      phone: _phone,
+      location: _location,
+      latitude: _lat,
+      longitude: _lng,
+      ...publicAd
+    } = ad;
     return publicAd;
   }
 
-  // Teléfono de contacto: requiere sesión.
+  // Contacto y ubicación del anuncio: requieren sesión.
   async getContact(id: string) {
     const ad = await this.prisma.ad.findUnique({
       where: { id },
-      select: { phone: true },
+      select: { phone: true, location: true, latitude: true, longitude: true },
     });
     if (!ad) throw new NotFoundException('Anuncio no encontrado');
-    return { phone: ad.phone };
+    return ad;
   }
 
   async create(dto: CreateAdDto, user: AuthUser) {

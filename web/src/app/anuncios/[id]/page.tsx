@@ -87,9 +87,13 @@ export default async function AdDetailPage({ params }: Params) {
         <p className="text-2xl font-bold text-brand">
           Bs {Number(ad.salary).toLocaleString('es-BO')}
         </p>
-        <p className="text-sm text-on-surface-variant">
-          📍 Ubicación: {ad.location || 'No especificada'}
-        </p>
+        {/* La ubicación exacta solo se muestra con sesión (en AdActions);
+            aquí queda el departamento como zona general. */}
+        {ad.department && (
+          <p className="text-sm text-on-surface-variant">
+            📍 Zona: {DEPARTMENT_LABEL[ad.department]}
+          </p>
+        )}
         {ad.schedule && (
           <p className="text-sm text-on-surface-variant">🕐 Horario: {ad.schedule}</p>
         )}

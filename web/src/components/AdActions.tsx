@@ -177,18 +177,26 @@ export function AdActions({ ad }: { ad: Ad }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [phone, setPhone] = useState<string | null>(ad.phone ?? null);
+  // Ubicación del anuncio: solo viaja con sesión (vía /contact).
+  const [location, setLocation] = useState<string | null>(ad.location ?? null);
+  const [exact, setExact] = useState<{ lat: number; lng: number } | null>(
+    ad.latitude != null && ad.longitude != null
+      ? { lat: ad.latitude, lng: ad.longitude }
+      : null,
+  );
   const [approx, setApprox] = useState<{ lat: number; lng: number } | null>(
     null,
   );
 
-  // Sin pin exacto: geocodifica la dirección del anuncio para ubicarlo.
+  // Sin pin exacto: geocodifica la dirección del anuncio para ubicarlo
+  // (solo con sesión, que es cuando conocemos la dirección).
   useEffect(() => {
-    if (ad.latitude != null || !ad.location) return;
+    if (!user || exact || !location) return;
     const department = ad.department ? DEPARTMENT_LABEL[ad.department] : '';
-    geocode([ad.location, department, 'Bolivia'].filter(Boolean).join(', ')).then(
+    geocode([location, department, 'Bolivia'].filter(Boolean).join(', ')).then(
       setApprox,
     );
-  }, [ad.latitude, ad.location, ad.department]);
+  }, [user, exact, location, ad.department]);
 
   const status = adEffectiveStatus(ad);
   const isOwner = user?.id === ad.createdById;
@@ -206,11 +214,8 @@ export function AdActions({ ad }: { ad: Ad }) {
     }
   }, [loading, user, adPath, router]);
 
-  // Coordenadas a compartir: el pin exacto o la ubicación geocodificada.
-  const coords =
-    ad.latitude != null && ad.longitude != null
-      ? { lat: ad.latitude, lng: ad.longitude }
-      : approx;
+  // Coordenadas a mostrar/compartir: el pin exacto o la geocodificada.
+  const coords = exact ?? approx;
 
   // Contactar registra el interés en el anuncio: alimenta "anuncios de tu
   // interés" y avisa al dueño la primera vez (best effort).
@@ -230,14 +235,26 @@ export function AdActions({ ad }: { ad: Ad }) {
     );
   }
 
-  // El teléfono no viaja en el detalle público: se pide aparte con sesión.
+  // Teléfono y ubicación no viajan en el detalle público: se piden con sesión.
   useEffect(() => {
-    if (user && !phone) {
-      api<{ phone: string }>(`/ads/${ad.id}/contact`)
-        .then((r) => setPhone(r.phone))
+    if (user && (!phone || !location)) {
+      api<{
+        phone: string;
+        location: string | null;
+        latitude: number | null;
+        longitude: number | null;
+      }>(`/ads/${ad.id}/contact`)
+        .then((r) => {
+          setPhone(r.phone);
+          setLocation(r.location);
+          if (r.latitude != null && r.longitude != null) {
+            setExact({ lat: r.latitude, lng: r.longitude });
+          }
+        })
         .catch(() => {});
     }
-  }, [user, ad.id, phone]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, ad.id]);
 
   async function unpublish() {
     if (!confirm('¿Dar de baja este anuncio? Dejará de mostrarse en el portal.'))
@@ -249,16 +266,25 @@ export function AdActions({ ad }: { ad: Ad }) {
   async function republish() {
     await api(`/ads/${ad.id}/republish`, { method: 'POST' });
     router.refresh();
-    location.reload();
+    window.location.reload();
   }
 
   return (
     <div className="space-y-4">
-      {ad.latitude != null && ad.longitude != null ? (
-        <LocationMap lat={ad.latitude} lng={ad.longitude} />
-      ) : (
-        approx && <LocationMap lat={approx.lat} lng={approx.lng} approximate />
+      {/* Ubicación exacta y mapa: solo con sesión. */}
+      {user && location && (
+        <p className="text-sm text-on-surface-variant">
+          📍 Ubicación: {location}
+        </p>
       )}
+      {user &&
+        (exact ? (
+          <LocationMap lat={exact.lat} lng={exact.lng} />
+        ) : (
+          approx && (
+            <LocationMap lat={approx.lat} lng={approx.lng} approximate />
+          )
+        ))}
 
       {/* Compartir por WhatsApp: iconos discretos, no compiten con el CTA. */}
       <div className="flex items-center justify-end gap-2">
@@ -331,7 +357,8 @@ export function AdActions({ ad }: { ad: Ad }) {
         !user && (
           <div className="rounded-md border border-outline-variant bg-surface-container-low p-4 text-center">
             <p className="text-sm text-on-surface-variant">
-              Inicia sesión para ver el teléfono y contactar por WhatsApp.
+              Inicia sesión para ver la ubicación y el teléfono, y contactar
+              por WhatsApp.
             </p>
             <div className="mt-3 flex justify-center gap-2">
               <Link href={`/login?next=${encodeURIComponent(adPath)}`}>
