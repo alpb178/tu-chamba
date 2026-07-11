@@ -201,6 +201,12 @@ export const STATUS_LABEL: Record<EffectiveStatus, string> = {
   DADO_DE_BAJA: 'Dado de baja',
 };
 
+// Destino tras iniciar sesión o registrarse (?next=): solo rutas internas,
+// para no servir de redirección abierta.
+export function safeNext(next: string | null): string {
+  return next && next.startsWith('/') && !next.startsWith('//') ? next : '/';
+}
+
 // Enlace de WhatsApp: wa.me exige el número con código de país (Bolivia 591).
 export function waLink(phone: string, message?: string) {
   const digits = phone.replace(/\D/g, '');

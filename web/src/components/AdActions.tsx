@@ -140,7 +140,33 @@ export function AdActions({ ad }: { ad: Ad }) {
   const status = adEffectiveStatus(ad);
   const isOwner = user?.id === ad.createdById;
   const canEdit = user?.role === 'ADMIN' || isOwner;
-  const waMessage = `Hola, vi tu anuncio en Tu Chamba (Ref. ${ad.id.slice(0, 8)}) y me interesa.`;
+  const adRef = ad.id.slice(0, 8);
+  const adPath = `/anuncios/${ad.id}`;
+  const waMessage = `Hola, vi tu anuncio en Tu Chamba (Ref. ${adRef}) y me interesa.`;
+
+  // Enlace compartido (?shared=1): sin sesión se exige crear cuenta y,
+  // al terminar el registro, se vuelve a este anuncio (next=).
+  useEffect(() => {
+    if (loading || user) return;
+    if (new URLSearchParams(window.location.search).has('shared')) {
+      router.replace(`/register?next=${encodeURIComponent(adPath)}`);
+    }
+  }, [loading, user, adPath, router]);
+
+  // Coordenadas a compartir: el pin exacto o la ubicación geocodificada.
+  const coords =
+    ad.latitude != null && ad.longitude != null
+      ? { lat: ad.latitude, lng: ad.longitude }
+      : approx;
+
+  // wa.me sin número: WhatsApp deja elegir el contacto al que enviar.
+  function shareByWhatsApp(text: string) {
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(text)}`,
+      '_blank',
+      'noopener,noreferrer',
+    );
+  }
 
   // El teléfono no viaja en el detalle público: se pide aparte con sesión.
   useEffect(() => {
@@ -171,6 +197,34 @@ export function AdActions({ ad }: { ad: Ad }) {
       ) : (
         approx && <LocationMap lat={approx.lat} lng={approx.lng} approximate />
       )}
+
+      {/* Compartir por WhatsApp: la ubicación (Google Maps) o el anuncio. */}
+      <div className="flex gap-2">
+        {coords && (
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() =>
+              shareByWhatsApp(
+                `Ubicación del anuncio Ref. ${adRef} en Tu Chamba: https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`,
+              )
+            }
+          >
+            Compartir ubicación
+          </Button>
+        )}
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={() =>
+            shareByWhatsApp(
+              `Mira este anuncio en Tu Chamba (Ref. ${adRef}): ${window.location.origin}${adPath}?shared=1`,
+            )
+          }
+        >
+          Compartir anuncio
+        </Button>
+      </div>
 
       {/* Contacto: con sesión muestra Chatear/Llamar; sin sesión, CTA. */}
       {phone ? (
@@ -203,10 +257,10 @@ export function AdActions({ ad }: { ad: Ad }) {
               Inicia sesión para ver el teléfono y contactar por WhatsApp.
             </p>
             <div className="mt-3 flex justify-center gap-2">
-              <Link href="/login">
+              <Link href={`/login?next=${encodeURIComponent(adPath)}`}>
                 <Button>Ingresar</Button>
               </Link>
-              <Link href="/register">
+              <Link href={`/register?next=${encodeURIComponent(adPath)}`}>
                 <Button variant="outline">Registrarse</Button>
               </Link>
             </div>
