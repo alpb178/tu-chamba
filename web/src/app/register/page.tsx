@@ -50,6 +50,7 @@ function RegisterForm() {
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label="Nombre">
           <Input
+            autoComplete="name"
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
             required
@@ -58,24 +59,28 @@ function RegisterForm() {
         <FormField label="Correo">
           <Input
             type="email"
+            autoComplete="email"
             value={form.email}
             onChange={(e) => set('email', e.target.value)}
             required
           />
         </FormField>
-        <FormField label="Teléfono (opcional)">
-          <Input
-            value={form.phone}
-            onChange={(e) => set('phone', e.target.value)}
-          />
-        </FormField>
         <FormField label="Contraseña (mín. 6)">
           <Input
             type="password"
+            autoComplete="new-password"
             value={form.password}
             onChange={(e) => set('password', e.target.value)}
             minLength={6}
             required
+          />
+        </FormField>
+        <FormField label="Teléfono (opcional)">
+          <Input
+            type="tel"
+            autoComplete="tel"
+            value={form.phone}
+            onChange={(e) => set('phone', e.target.value)}
           />
         </FormField>
         {error && <p className="text-sm text-error">{error}</p>}
