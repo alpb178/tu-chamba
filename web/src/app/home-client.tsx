@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import { Ad, Facets, Paginated } from '@/lib/types';
+import {
+  Ad,
+  DEPARTMENT_LABEL,
+  Department,
+  Facets,
+  Paginated,
+} from '@/lib/types';
 import { Hero } from '@/components/Hero';
 import { FiltersSidebar, Filters, NO_FILTERS } from '@/components/FiltersSidebar';
 import { AdCard } from '@/components/AdCard';
@@ -10,9 +16,15 @@ import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
 import { Pagination } from '@/components/Pagination';
 import { FeaturedBrands } from '@/components/FeaturedBrands';
 
-// Portada. La búsqueda (?q= y ?loc=) llega resuelta desde el server
+// Portada. La búsqueda (?q= y ?dep=) llega resuelta desde el server
 // component (page.tsx), así el hero viaja en el HTML inicial.
-export function HomeClient({ search, loc }: { search: string; loc: string }) {
+export function HomeClient({
+  search,
+  dep,
+}: {
+  search: string;
+  dep: Department | '';
+}) {
   const [data, setData] = useState<Paginated<Ad> | null>(null);
   const [facets, setFacets] = useState<Facets | null>(null);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
@@ -20,10 +32,17 @@ export function HomeClient({ search, loc }: { search: string; loc: string }) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // El departamento del hero inicializa el filtro del sidebar (una sola
+  // fuente de verdad: filters.department). Al cambiar, primera página.
+  useEffect(() => {
+    setFilters((f) => ({ ...f, department: dep ? [dep] : [] }));
+    setPage(1);
+  }, [dep]);
+
   // Al cambiar la búsqueda, volvemos a la primera página.
   useEffect(() => {
     setPage(1);
-  }, [search, loc]);
+  }, [search]);
 
   // Conteos para la barra de filtros (una vez).
   useEffect(() => {
@@ -43,7 +62,6 @@ export function HomeClient({ search, loc }: { search: string; loc: string }) {
       if (filters.salaryMin != null) p.set('salaryMin', String(filters.salaryMin));
       if (filters.salaryMax != null) p.set('salaryMax', String(filters.salaryMax));
       if (search) p.set('search', search);
-      if (loc) p.set('location', loc);
       // Páginas de 10 (mismo tamaño que mobile).
       p.set('page', String(page));
       p.set('limit', '10');
@@ -53,7 +71,7 @@ export function HomeClient({ search, loc }: { search: string; loc: string }) {
     } finally {
       setLoading(false);
     }
-  }, [filters, search, loc, page]);
+  }, [filters, search, page]);
 
   useEffect(() => {
     load();
@@ -61,7 +79,7 @@ export function HomeClient({ search, loc }: { search: string; loc: string }) {
 
   return (
     <div className="space-y-8">
-      <Hero initialQuery={search} initialLocation={loc} />
+      <Hero initialQuery={search} initialDep={dep} />
 
       <div className="flex flex-col gap-6 md:flex-row md:items-start">
         <FiltersSidebar
@@ -95,9 +113,9 @@ export function HomeClient({ search, loc }: { search: string; loc: string }) {
                       ? 'oferta encontrada'
                       : 'ofertas encontradas'}
                   </h1>
-                  {loc && (
+                  {dep && (
                     <span className="text-sm text-on-surface-variant">
-                      en {loc}
+                      en {DEPARTMENT_LABEL[dep]}
                     </span>
                   )}
                 </div>

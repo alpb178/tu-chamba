@@ -1,9 +1,4 @@
-import {
-  ButtonHTMLAttributes,
-  InputHTMLAttributes,
-  SelectHTMLAttributes,
-  ReactNode,
-} from 'react';
+import { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
 import { JobType, JOB_TYPE_LABEL } from '@/lib/types';
 
 export function Button({
@@ -33,17 +28,6 @@ export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInpu
       className={`w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
       {...props}
     />
-  );
-}
-
-export function Select({ className = '', children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <select
-      className={`rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1 text-sm text-on-surface outline-none focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
-      {...props}
-    >
-      {children}
-    </select>
   );
 }
 

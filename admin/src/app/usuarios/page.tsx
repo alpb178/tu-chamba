@@ -8,9 +8,9 @@ import {
   ConfirmDialog,
   DataTable,
   Input,
-  Select,
   TableSkeleton,
 } from '@/components/ui';
+import { CustomSelect } from '@/components/CustomSelect';
 
 const HEADERS = ['Nombre', 'Correo', 'Teléfono', 'Acceso', 'Anuncios', ''];
 
@@ -150,13 +150,16 @@ export default function UsersPage() {
             <td className="px-4 py-3 text-on-surface-variant">{u.email}</td>
             <td className="px-4 py-3 text-on-surface-variant">{u.phone}</td>
             <td className="px-4 py-3">
-              <Select
-                value={u.isAdmin ? 'ADMIN' : 'USUARIO'}
-                onChange={(e) => setAdmin(u.id, e.target.value === 'ADMIN')}
-              >
-                <option value="USUARIO">Usuario</option>
-                <option value="ADMIN">Admin</option>
-              </Select>
+              <div className="w-36">
+                <CustomSelect
+                  value={u.isAdmin ? 'ADMIN' : 'USUARIO'}
+                  onChange={(v) => setAdmin(u.id, v === 'ADMIN')}
+                  options={[
+                    { value: 'USUARIO', label: 'Usuario' },
+                    { value: 'ADMIN', label: 'Admin' },
+                  ]}
+                />
+              </div>
             </td>
             <td className="px-4 py-3 text-on-surface-variant">{u._count?.ads ?? 0}</td>
             <td className="px-4 py-3 text-right">

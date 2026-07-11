@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { Paginated, Trace, TraceType, TRACE_TYPE_LABEL } from '@/lib/types';
-import { Button, DataTable, Select, TableSkeleton } from '@/components/ui';
+import { Button, DataTable, TableSkeleton } from '@/components/ui';
+import { CustomSelect } from '@/components/CustomSelect';
 
 const HEADERS = ['Fecha', 'Evento', 'Descripción', 'Actor'];
 
@@ -48,20 +49,19 @@ export default function TracesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-on-surface">Trazas del sistema</h1>
-        <Select
-          value={type}
-          onChange={(e) => {
-            setType(e.target.value as TraceType | '');
-            setPage(1);
-          }}
-        >
-          <option value="">Todos los eventos</option>
-          {TYPES.map((t) => (
-            <option key={t} value={t}>
-              {TRACE_TYPE_LABEL[t]}
-            </option>
-          ))}
-        </Select>
+        <div className="w-56">
+          <CustomSelect
+            value={type}
+            onChange={(v) => {
+              setType(v as TraceType | '');
+              setPage(1);
+            }}
+            options={[
+              { value: '', label: 'Todos los eventos' },
+              ...TYPES.map((t) => ({ value: t, label: TRACE_TYPE_LABEL[t] })),
+            ]}
+          />
+        </div>
       </div>
 
       {loading ? (
