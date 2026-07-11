@@ -259,13 +259,8 @@ export function FiltersSidebar({
     value.salaryMin != null ||
     value.salaryMax != null;
 
-  // Categorías/departamentos a mostrar: los que tienen anuncios o están elegidos.
-  const categories = (Object.keys(CATEGORY_LABEL) as Category[]).filter(
-    (c) => facets?.category[c] || value.category.includes(c),
-  );
-  const departments = (Object.keys(DEPARTMENT_LABEL) as Department[]).filter(
-    (d) => facets?.department[d] || value.department.includes(d),
-  );
+  const categories = Object.keys(CATEGORY_LABEL) as Category[];
+  const departments = Object.keys(DEPARTMENT_LABEL) as Department[];
 
   return (
     <aside className="w-full shrink-0 rounded-lg border border-gray-200 bg-white p-4 md:w-64">
@@ -296,40 +291,36 @@ export function FiltersSidebar({
         ))}
       </Section>
 
-      {categories.length > 0 && (
-        <Section title="Categoría">
-          {categories.map((c) => (
-            <Option
-              key={c}
-              label={CATEGORY_LABEL[c]}
-              count={facets?.category[c] ?? 0}
-              checked={value.category.includes(c)}
-              onToggle={() =>
-                onChange({ ...value, category: toggle(value.category, c) })
-              }
-            />
-          ))}
-        </Section>
-      )}
+      <Section title="Categoría">
+        {categories.map((c) => (
+          <Option
+            key={c}
+            label={CATEGORY_LABEL[c]}
+            count={facets?.category[c] ?? 0}
+            checked={value.category.includes(c)}
+            onToggle={() =>
+              onChange({ ...value, category: toggle(value.category, c) })
+            }
+          />
+        ))}
+      </Section>
 
-      {departments.length > 0 && (
-        <Section title="Departamento">
-          {departments.map((d) => (
-            <Option
-              key={d}
-              label={DEPARTMENT_LABEL[d]}
-              count={facets?.department[d] ?? 0}
-              checked={value.department.includes(d)}
-              onToggle={() =>
-                onChange({ ...value, department: toggle(value.department, d) })
-              }
-            />
-          ))}
-        </Section>
-      )}
+      <Section title="Departamento">
+        {departments.map((d) => (
+          <Option
+            key={d}
+            label={DEPARTMENT_LABEL[d]}
+            count={facets?.department[d] ?? 0}
+            checked={value.department.includes(d)}
+            onToggle={() =>
+              onChange({ ...value, department: toggle(value.department, d) })
+            }
+          />
+        ))}
+      </Section>
 
-      {facets && facets.salaryMax > facets.salaryMin && (
-        <Section title="Salario (Bs)">
+      <Section title="Salario (Bs)">
+        {facets.salaryMax > facets.salaryMin ? (
           <SalaryRange
             min={facets.salaryMin}
             max={facets.salaryMax}
@@ -343,8 +334,15 @@ export function FiltersSidebar({
               })
             }
           />
-        </Section>
-      )}
+        ) : (
+          // Sin rango no hay nada que filtrar: se informa en vez de ocultar.
+          <p className="text-xs text-gray-400">
+            {facets.salaryMax > 0
+              ? `Todas las ofertas actuales pagan Bs ${facets.salaryMax.toLocaleString('es-BO')}.`
+              : 'Sin ofertas con salario publicado.'}
+          </p>
+        )}
+      </Section>
     </aside>
   );
 }
