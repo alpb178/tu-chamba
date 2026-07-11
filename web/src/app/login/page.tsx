@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { safeNext } from '@/lib/types';
 import { Button, FormField, Input } from '@/components/ui';
+import { PasswordInput } from '@/components/PasswordInput';
 import { GoogleSignIn } from '@/components/GoogleSignIn';
 
 function LoginForm() {
@@ -45,8 +46,7 @@ function LoginForm() {
           />
         </FormField>
         <FormField label="Contraseña">
-          <Input
-            type="password"
+          <PasswordInput
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}

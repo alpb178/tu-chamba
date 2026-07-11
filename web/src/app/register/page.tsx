@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { safeNext } from '@/lib/types';
 import { Button, FormField, Input } from '@/components/ui';
+import { PasswordInput } from '@/components/PasswordInput';
 import { GoogleSignIn } from '@/components/GoogleSignIn';
 
 function RegisterForm() {
@@ -17,6 +18,7 @@ function RegisterForm() {
     email: '',
     phone: '',
     password: '',
+    confirm: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -28,6 +30,10 @@ function RegisterForm() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (form.password !== form.confirm) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
     setLoading(true);
     try {
       await register({
@@ -66,11 +72,19 @@ function RegisterForm() {
           />
         </FormField>
         <FormField label="Contraseña (mín. 6)">
-          <Input
-            type="password"
+          <PasswordInput
             autoComplete="new-password"
             value={form.password}
             onChange={(e) => set('password', e.target.value)}
+            minLength={6}
+            required
+          />
+        </FormField>
+        <FormField label="Confirmar contraseña">
+          <PasswordInput
+            autoComplete="new-password"
+            value={form.confirm}
+            onChange={(e) => set('confirm', e.target.value)}
             minLength={6}
             required
           />
