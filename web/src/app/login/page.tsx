@@ -38,6 +38,7 @@ function LoginForm() {
         <FormField label="Correo">
           <Input
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -46,6 +47,7 @@ function LoginForm() {
         <FormField label="Contraseña">
           <Input
             type="password"
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
