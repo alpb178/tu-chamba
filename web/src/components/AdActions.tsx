@@ -280,26 +280,33 @@ export function AdActions({ ad }: { ad: Ad }) {
 
       {/* Contacto: con sesión muestra Chatear/Llamar; sin sesión, CTA. */}
       {phone ? (
-        <div className="flex gap-2">
-          <a
-            href={waLink(phone, waMessage)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1"
-            onClick={() => {
-              api('/notifications/chat-click', {
-                method: 'POST',
-                body: JSON.stringify({ adId: ad.id }),
-              }).catch(() => {});
-            }}
-          >
-            <Button className="w-full">Chatear</Button>
-          </a>
-          <a href={`tel:${phone}`} className="flex-1">
-            <Button variant="outline" className="w-full">
-              Llamar: {phone}
-            </Button>
-          </a>
+        <div className="space-y-1.5">
+          <div className="flex gap-2">
+            <a
+              href={waLink(phone, waMessage)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1"
+              onClick={() => {
+                api('/notifications/chat-click', {
+                  method: 'POST',
+                  body: JSON.stringify({ adId: ad.id }),
+                }).catch(() => {});
+              }}
+            >
+              <Button className="w-full">Chatear</Button>
+            </a>
+            {/* Llamar solo tiene sentido en móvil (tel:); en escritorio el
+                número se muestra como texto para marcarlo desde el teléfono. */}
+            <a href={`tel:${phone}`} className="flex-1 sm:hidden">
+              <Button variant="outline" className="w-full">
+                Llamar
+              </Button>
+            </a>
+          </div>
+          <p className="hidden text-center text-xs text-gray-500 sm:block">
+            Teléfono: {phone}
+          </p>
         </div>
       ) : (
         !loading &&

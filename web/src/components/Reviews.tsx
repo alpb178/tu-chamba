@@ -32,6 +32,8 @@ export function Reviews({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // El formulario pesa visualmente: colapsado hasta que quieran calificar.
+  const [formOpen, setFormOpen] = useState(false);
 
   const load = useCallback(() => {
     api<ReviewsResponse>(`/reviews?employerId=${employerId}`)
@@ -117,11 +119,26 @@ export function Reviews({
         </p>
       )}
 
-      {canReview && (
+      {canReview && !formOpen && (
+        <Button variant="outline" onClick={() => setFormOpen(true)}>
+          Calificar a este empleador
+        </Button>
+      )}
+
+      {canReview && formOpen && (
         <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-gray-200 p-3">
-          <p className="text-sm font-medium text-gray-700">
-            Calificar a este empleador
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-gray-700">
+              Calificar a este empleador
+            </p>
+            <button
+              type="button"
+              onClick={() => setFormOpen(false)}
+              className="text-xs text-gray-500 underline hover:text-brand"
+            >
+              Cancelar
+            </button>
+          </div>
           <FormField label="Calificación">
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((n) => (
