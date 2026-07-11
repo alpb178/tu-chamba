@@ -8,8 +8,8 @@ import { ChartCard, DailyColumns, HorizontalBars } from '@/components/charts';
 import { FeaturedBrands } from '@/components/FeaturedBrands';
 
 // Tonos de la rama azul de la marca (uno por entidad, validados en claro).
-const ADS_COLOR = '#102136';
-const VISITS_COLOR = '#33517a';
+const ADS_COLOR = '#004ac6';
+const VISITS_COLOR = '#2563eb';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);

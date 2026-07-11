@@ -16,7 +16,7 @@ function dayLabel(date: string) {
 // el resto de valores vive en el tooltip.
 export function DailyColumns({
   data,
-  color = '#102136',
+  color = '#004ac6',
   unit,
 }: {
   data: DayPoint[];
@@ -83,7 +83,7 @@ export function DailyColumns({
 // Barras horizontales con el valor en la punta (una sola serie/tono).
 export function HorizontalBars({
   data,
-  color = '#102136',
+  color = '#004ac6',
 }: {
   data: { label: string; total: number }[];
   color?: string;
@@ -120,7 +120,7 @@ export function ChartCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-5">
+    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm">
       <h2 className="mb-4 text-sm font-medium text-on-surface-variant">{title}</h2>
       {children}
     </div>
