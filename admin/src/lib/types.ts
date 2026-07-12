@@ -188,6 +188,12 @@ export interface AdminStats {
   };
 }
 
+// Fila del ranking de anuncios más clickeados (visitas al detalle).
+export interface TopAd extends Ad {
+  visitsTotal: number;
+  visitsLast7Days: number;
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;

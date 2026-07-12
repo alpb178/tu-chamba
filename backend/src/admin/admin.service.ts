@@ -79,4 +79,50 @@ export class AdminService {
       },
     };
   }
+
+  // Anuncios más clickeados: ranking por visitas al detalle. Las visitas
+  // de anuncios borrados quedan con adId null y no entran al ranking.
+  async topAds(limit = 20) {
+    const totals = await this.prisma.visit.groupBy({
+      by: ['adId'],
+      where: { adId: { not: null } },
+      _count: { _all: true },
+      orderBy: { _count: { adId: 'desc' } },
+      take: limit,
+    });
+    const ids = totals.map((t) => t.adId as string);
+
+    const [ads, recent] = await Promise.all([
+      this.prisma.ad.findMany({
+        where: { id: { in: ids } },
+        include: {
+          createdBy: { select: { id: true, name: true, email: true } },
+        },
+      }),
+      this.prisma.visit.groupBy({
+        by: ['adId'],
+        where: {
+          adId: { in: ids },
+          createdAt: { gte: new Date(Date.now() - 7 * DAY_MS) },
+        },
+        _count: { _all: true },
+      }),
+    ]);
+
+    const adById = new Map(ads.map((a) => [a.id, a]));
+    const last7ByAd = new Map(recent.map((r) => [r.adId, r._count._all]));
+
+    // Se conserva el orden del groupBy (más visitados primero).
+    return totals.flatMap((t) => {
+      const ad = adById.get(t.adId as string);
+      if (!ad) return [];
+      return [
+        {
+          ...ad,
+          visitsTotal: t._count._all,
+          visitsLast7Days: last7ByAd.get(t.adId) ?? 0,
+        },
+      ];
+    });
+  }
 }
