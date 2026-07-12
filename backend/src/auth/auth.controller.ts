@@ -31,6 +31,13 @@ export class AuthController {
     return this.auth.googleAuth(dto);
   }
 
+  // El Client ID de Google no es secreto: el frontend lo pide en runtime
+  // para configurarlo en un solo lugar (el API) sin rebuilds del web.
+  @Get('google-client')
+  googleClient() {
+    return { clientId: process.env.GOOGLE_CLIENT_ID || null };
+  }
+
   // Verifica el correo con el token del enlace (público).
   @Post('verify-email')
   verifyEmail(@Body() dto: VerifyEmailDto) {

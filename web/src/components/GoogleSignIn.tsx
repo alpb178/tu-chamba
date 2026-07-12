@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
-const CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 const SCRIPT_ID = 'google-gsi-client';
 
 declare global {
@@ -23,12 +23,14 @@ declare global {
 
 // Botón "Continuar con Google". Si la cuenta no existe se crea al momento
 // (sin más datos: el teléfono se completa después desde el perfil).
-// No se renderiza si NEXT_PUBLIC_GOOGLE_CLIENT_ID no está configurado.
+// El Client ID vive solo en el API (GET /auth/google-client): se consulta
+// en runtime, sin variable de entorno en el frontend.
 // `next`: ruta a la que volver tras entrar (p. ej. el anuncio compartido).
 export function GoogleSignIn({ next = '/' }: { next?: string }) {
   const { loginWithGoogle } = useAuth();
   const router = useRouter();
   const buttonRef = useRef<HTMLDivElement>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Referencia estable para el callback de GIS (se inicializa una sola vez).
@@ -43,13 +45,20 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
     }
   };
 
+  // El Client ID se pide al API: una sola configuración para todo.
   useEffect(() => {
-    if (!CLIENT_ID) return;
+    api<{ clientId: string | null }>('/auth/google-client')
+      .then((r) => setClientId(r.clientId))
+      .catch(() => setClientId(null));
+  }, []);
+
+  useEffect(() => {
+    if (!clientId) return;
 
     function init() {
       if (!window.google?.accounts?.id || !buttonRef.current) return false;
       window.google.accounts.id.initialize({
-        client_id: CLIENT_ID,
+        client_id: clientId,
         callback: (resp: { credential: string }) =>
           onCredentialRef.current(resp.credential),
       });
@@ -75,7 +84,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
     }
     script.addEventListener('load', init);
     return () => script?.removeEventListener('load', init);
-  }, []);
+  }, [clientId]);
 
   return (
     <div className="space-y-3">
@@ -92,7 +101,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
         <button
           type="button"
           onClick={() =>
-            !CLIENT_ID &&
+            !clientId &&
             setError(
               'El inicio con Google aún no está disponible. Usa tu correo y contraseña.',
             )
@@ -119,7 +128,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
           </svg>
           Continuar con Google
         </button>
-        {CLIENT_ID && (
+        {clientId && (
           <div
             ref={buttonRef}
             aria-hidden="true"
