@@ -50,7 +50,7 @@ export default function AdsAdminPage() {
     setLoading(true);
     setError(null);
     // Vista admin: incluye vencidos y dados de baja, paginada.
-    api<Paginated<Ad>>(`/ads/all?page=${page}&limit=${LIMIT}`)
+    api<Paginated<Ad>>(`/listings/all?page=${page}&limit=${LIMIT}`)
       .then(setData)
       .catch((e) => setError((e as Error).message))
       .finally(() => setLoading(false));
@@ -63,18 +63,18 @@ export default function AdsAdminPage() {
 
   async function remove() {
     if (!toDelete) return;
-    await api(`/ads/${toDelete.id}`, { method: 'DELETE' });
+    await api(`/listings/${toDelete.id}`, { method: 'DELETE' });
     setToDelete(null);
     load();
   }
 
   async function unpublish(ad: Ad) {
-    await api(`/ads/${ad.id}/unpublish`, { method: 'POST' });
+    await api(`/listings/${ad.id}/unpublish`, { method: 'POST' });
     load();
   }
 
   async function republish(ad: Ad) {
-    await api(`/ads/${ad.id}/republish`, { method: 'POST' });
+    await api(`/listings/${ad.id}/republish`, { method: 'POST' });
     load();
   }
 

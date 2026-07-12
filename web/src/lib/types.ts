@@ -126,7 +126,7 @@ export interface Ad {
   createdBy?: { id: string; name: string; email: string };
   // Calificación del publicante; el backend la adjunta en los listados.
   ownerRating?: { average: number | null; count: number };
-  // Accesos e interesados; el backend los adjunta en detalle y /ads/mine.
+  // Accesos e interesados; el backend los adjunta en detalle y /listings/mine.
   _count?: { visits: number; interests: number };
   createdAt: string;
   updatedAt: string;
@@ -193,7 +193,7 @@ export interface Paginated<T> {
   totalPages: number;
 }
 
-// Conteos por opción para la barra de filtros (endpoint /ads/facets).
+// Conteos por opción para la barra de filtros (endpoint /listings/facets).
 export interface Facets {
   total: number;
   jobType: Partial<Record<JobType, number>>;

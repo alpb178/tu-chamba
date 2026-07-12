@@ -22,7 +22,7 @@ export function NewAdScreen({ route, navigation }: Props) {
 
   useEffect(() => {
     if (editId) {
-      api<Ad>(`/ads/${editId}`).then((a) =>
+      api<Ad>(`/listings/${editId}`).then((a) =>
         setForm({
           description: a.description,
           salary: String(a.salary),
@@ -44,12 +44,12 @@ export function NewAdScreen({ route, navigation }: Props) {
         jobType: form.jobType,
       };
       if (editId) {
-        await api(`/ads/${editId}`, {
+        await api(`/listings/${editId}`, {
           method: 'PATCH',
           body: JSON.stringify(payload),
         });
       } else {
-        await api('/ads', { method: 'POST', body: JSON.stringify(payload) });
+        await api('/listings', { method: 'POST', body: JSON.stringify(payload) });
       }
       navigation.goBack();
     } catch (e) {

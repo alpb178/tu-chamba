@@ -53,7 +53,7 @@ function Form() {
 
   useEffect(() => {
     if (editId) {
-      api<Ad>(`/ads/${editId}`).then((a) => {
+      api<Ad>(`/listings/${editId}`).then((a) => {
         setForm({
           description: a.description,
           requirements: a.requirements ?? '',
@@ -102,12 +102,12 @@ function Form() {
         durationDays: form.durationDays,
       };
       if (editId) {
-        await api(`/ads/${editId}`, {
+        await api(`/listings/${editId}`, {
           method: 'PATCH',
           body: JSON.stringify(payload),
         });
       } else {
-        await api('/ads', {
+        await api('/listings', {
           method: 'POST',
           body: JSON.stringify(payload),
         });
