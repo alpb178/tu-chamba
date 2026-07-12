@@ -18,6 +18,7 @@ import { GoogleAuthDto } from './dto/google-auth.dto';
 import { TraceType, User } from '@prisma/client';
 
 const VERIF_TTL_MS = 24 * 60 * 60 * 1000;
+const RESET_TTL_MS = 60 * 60 * 1000;
 
 // Payload relevante del ID token de Google (endpoint tokeninfo).
 interface GoogleTokenInfo {
@@ -230,6 +231,57 @@ export class AuthService {
       throw new BadRequestException('El correo de Google no está verificado');
     }
     return payload;
+  }
+
+  // Restablecimiento de contraseña: siempre responde {sent:true} para no
+  // revelar qué correos están registrados.
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) return { sent: true };
+
+    await this.prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id },
+    });
+    const token = randomBytes(32).toString('hex');
+    await this.prisma.passwordResetToken.create({
+      data: {
+        token,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + RESET_TTL_MS),
+      },
+    });
+    const base = process.env.WEB_URL ?? 'http://localhost:3000';
+    await this.mail.sendPasswordReset(
+      user.email,
+      user.name,
+      `${base}/restablecer?token=${token}`,
+    );
+    return { sent: true };
+  }
+
+  // Cambia la contraseña con el token del correo. Probar la propiedad del
+  // correo también verifica la cuenta.
+  async resetPassword(token: string, password: string) {
+    const rt = await this.prisma.passwordResetToken.findUnique({
+      where: { token },
+    });
+    if (!rt || rt.expiresAt < new Date()) {
+      throw new BadRequestException(
+        'El enlace de restablecimiento no es válido o expiró',
+      );
+    }
+
+    const hashed = await bcrypt.hash(password, 10);
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: rt.userId },
+        data: { password: hashed, emailVerified: true },
+      }),
+      this.prisma.passwordResetToken.deleteMany({
+        where: { userId: rt.userId },
+      }),
+    ]);
+    return { reset: true };
   }
 
   async me(userId: string) {

@@ -53,6 +53,14 @@ function LoginForm() {
             required
           />
         </FormField>
+        <p className="text-right">
+          <Link
+            href="/recuperar"
+            className="text-sm text-brand hover:underline"
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </p>
         {error && <p className="text-sm text-error">{error}</p>}
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Ingresando...' : 'Ingresar'}
