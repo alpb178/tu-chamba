@@ -253,7 +253,7 @@ export function AdActions({ ad }: { ad: Ad }) {
         location: string | null;
         latitude: number | null;
         longitude: number | null;
-      }>(`/ads/${ad.id}/contact`)
+      }>(`/listings/${ad.id}/contact`)
         .then((r) => {
           setPhone(r.phone);
           setLocation(r.location);
@@ -269,12 +269,12 @@ export function AdActions({ ad }: { ad: Ad }) {
   async function unpublish() {
     if (!confirm('¿Dar de baja este anuncio? Dejará de mostrarse en el portal.'))
       return;
-    await api(`/ads/${ad.id}/unpublish`, { method: 'POST' });
+    await api(`/listings/${ad.id}/unpublish`, { method: 'POST' });
     router.push('/mis-anuncios');
   }
 
   async function republish() {
-    await api(`/ads/${ad.id}/republish`, { method: 'POST' });
+    await api(`/listings/${ad.id}/republish`, { method: 'POST' });
     router.refresh();
     window.location.reload();
   }

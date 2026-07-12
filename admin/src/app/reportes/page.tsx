@@ -47,7 +47,7 @@ export default function ReportsAdminPage() {
 
   // Atiende el reporte dando de baja el anuncio reportado.
   async function unpublishAd(r: Report) {
-    await api(`/ads/${r.adId}/unpublish`, { method: 'POST' });
+    await api(`/listings/${r.adId}/unpublish`, { method: 'POST' });
     await resolve(r, 'ATENDIDO');
   }
 

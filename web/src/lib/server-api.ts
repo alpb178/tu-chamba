@@ -6,7 +6,7 @@ const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
 
 export async function fetchAd(id: string): Promise<Ad | null> {
   try {
-    const res = await fetch(`${API}/ads/${id}`, { cache: 'no-store' });
+    const res = await fetch(`${API}/listings/${id}`, { cache: 'no-store' });
     if (!res.ok) return null;
     return (await res.json()) as Ad;
   } catch {
@@ -22,7 +22,7 @@ export async function fetchAds(params: {
     const qs = new URLSearchParams();
     if (params.department) qs.set('department', params.department);
     qs.set('limit', String(params.limit ?? 50));
-    const res = await fetch(`${API}/ads?${qs}`, { cache: 'no-store' });
+    const res = await fetch(`${API}/listings?${qs}`, { cache: 'no-store' });
     if (!res.ok) return null;
     return (await res.json()) as Paginated<Ad>;
   } catch {

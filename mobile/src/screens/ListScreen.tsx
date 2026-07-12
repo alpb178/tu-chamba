@@ -43,7 +43,7 @@ export function ListScreen({ navigation }: Props) {
       if (search) params.set('search', search);
       params.set('page', String(page));
       params.set('limit', String(PAGE_SIZE));
-      return api<Paginated<Ad>>(`/ads?${params}`);
+      return api<Paginated<Ad>>(`/listings?${params}`);
     },
     [jobType, search],
   );

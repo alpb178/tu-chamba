@@ -46,7 +46,7 @@ export function HomeClient({
 
   // Conteos para la barra de filtros (una vez).
   useEffect(() => {
-    api<Facets>('/ads/facets')
+    api<Facets>('/listings/facets')
       .then(setFacets)
       .catch(() => {});
   }, []);
@@ -65,7 +65,7 @@ export function HomeClient({
       // Páginas de 10 (mismo tamaño que mobile).
       p.set('page', String(page));
       p.set('limit', '10');
-      setData(await api<Paginated<Ad>>(`/ads?${p}`));
+      setData(await api<Paginated<Ad>>(`/listings?${p}`));
     } catch (e) {
       setError((e as Error).message);
     } finally {

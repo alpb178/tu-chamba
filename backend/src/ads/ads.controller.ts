@@ -20,7 +20,10 @@ import { AdminGuard } from '../auth/guards/admin.guard';
 import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('ads')
-@Controller('ads')
+// 'listings' es la ruta canónica: los bloqueadores de anuncios (EasyList)
+// bloquean cualquier URL con /ads/. 'ads' queda como alias para las apps
+// móviles ya instaladas.
+@Controller(['listings', 'ads'])
 export class AdsController {
   constructor(private ads: AdsService) {}
 

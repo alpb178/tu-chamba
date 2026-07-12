@@ -15,7 +15,7 @@ export default function MyAdsPage() {
   const [loading, setLoading] = useState(true);
 
   function load() {
-    api<Ad[]>('/ads/mine')
+    api<Ad[]>('/listings/mine')
       .then(setItems)
       .finally(() => setLoading(false));
   }
@@ -27,12 +27,12 @@ export default function MyAdsPage() {
   async function unpublish(a: Ad) {
     if (!confirm('¿Dar de baja este anuncio? Dejará de mostrarse en el portal.'))
       return;
-    await api(`/ads/${a.id}/unpublish`, { method: 'POST' });
+    await api(`/listings/${a.id}/unpublish`, { method: 'POST' });
     load();
   }
 
   async function republish(a: Ad) {
-    await api(`/ads/${a.id}/republish`, { method: 'POST' });
+    await api(`/listings/${a.id}/republish`, { method: 'POST' });
     load();
   }
 
@@ -43,7 +43,7 @@ export default function MyAdsPage() {
       )
     )
       return;
-    await api(`/ads/${a.id}`, { method: 'DELETE' });
+    await api(`/listings/${a.id}`, { method: 'DELETE' });
     load();
   }
 

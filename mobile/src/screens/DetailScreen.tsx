@@ -16,7 +16,7 @@ export function DetailScreen({ route, navigation }: Props) {
   const [ad, setAd] = useState<Ad | null>(null);
 
   useEffect(() => {
-    api<Ad>(`/ads/${id}`).then(setAd).catch(() => {});
+    api<Ad>(`/listings/${id}`).then(setAd).catch(() => {});
   }, [id]);
 
   if (!ad)
@@ -44,7 +44,7 @@ export function DetailScreen({ route, navigation }: Props) {
         text: 'Eliminar',
         style: 'destructive',
         onPress: async () => {
-          await api(`/ads/${id}`, { method: 'DELETE' });
+          await api(`/listings/${id}`, { method: 'DELETE' });
           navigation.goBack();
         },
       },
