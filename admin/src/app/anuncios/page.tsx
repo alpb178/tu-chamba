@@ -37,23 +37,29 @@ const STATUS_STYLE: Record<EffectiveStatus, string> = {
   DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
 };
 
+const LIMIT = 20;
+
 export default function AdsAdminPage() {
-  const [items, setItems] = useState<Ad[]>([]);
+  const [data, setData] = useState<Paginated<Ad> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<Ad | null>(null);
+  const [page, setPage] = useState(1);
 
   function load() {
     setLoading(true);
     setError(null);
-    // Vista admin: incluye vencidos y dados de baja.
-    api<Paginated<Ad>>('/ads/all?limit=100')
-      .then((res) => setItems(res.items))
+    // Vista admin: incluye vencidos y dados de baja, paginada.
+    api<Paginated<Ad>>(`/ads/all?page=${page}&limit=${LIMIT}`)
+      .then(setData)
       .catch((e) => setError((e as Error).message))
       .finally(() => setLoading(false));
   }
 
-  useEffect(load, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(load, [page]);
+
+  const items = data?.items ?? [];
 
   async function remove() {
     if (!toDelete) return;
@@ -82,6 +88,7 @@ export default function AdsAdminPage() {
       ) : items.length === 0 ? (
         <p className="text-on-surface-variant">No hay anuncios.</p>
       ) : (
+      <>
       <DataTable headers={HEADERS}>
         {items.map((ad) => {
           const status = adEffectiveStatus(ad);
@@ -132,6 +139,31 @@ export default function AdsAdminPage() {
           );
         })}
       </DataTable>
+
+      {data && data.totalPages > 1 && (
+        <div className="flex items-center justify-between text-sm text-on-surface-variant">
+          <span>
+            Página {data.page} de {data.totalPages} · {data.total} anuncios
+          </span>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              Anterior
+            </Button>
+            <Button
+              variant="outline"
+              disabled={page >= data.totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Siguiente
+            </Button>
+          </div>
+        </div>
+      )}
+      </>
       )}
 
       <ConfirmDialog
