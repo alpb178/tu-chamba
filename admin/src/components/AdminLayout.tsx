@@ -11,6 +11,7 @@ const NAV = [
   { href: '/', label: 'Dashboard', icon: 'monitoring' },
   { href: '/usuarios', label: 'Usuarios', icon: 'group' },
   { href: '/anuncios', label: 'Anuncios', icon: 'work' },
+  { href: '/top-anuncios', label: 'Top anuncios', icon: 'trending_up' },
   { href: '/reportes', label: 'Reportes', icon: 'flag' },
   { href: '/trazas', label: 'Trazas', icon: 'receipt_long' },
 ];

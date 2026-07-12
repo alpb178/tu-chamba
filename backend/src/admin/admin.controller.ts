@@ -22,6 +22,12 @@ export class AdminController {
     return this.admin.stats();
   }
 
+  // Ranking de anuncios más clickeados (visitas al detalle).
+  @Get('top-ads')
+  topAds() {
+    return this.admin.topAds();
+  }
+
   // Trazas del sistema, paginadas y filtrables por tipo.
   @Get('traces')
   findTraces(@Query() query: QueryTraceDto) {
