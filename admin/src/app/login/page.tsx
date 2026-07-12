@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { Button, Input } from '@/components/ui';
+import { PasswordInput } from '@/components/PasswordInput';
 
 export default function AdminLoginPage() {
   const { login } = useAuth();
@@ -38,13 +39,14 @@ export default function AdminLoginPage() {
         <form onSubmit={onSubmit} className="space-y-3">
           <Input
             type="email"
+            autoComplete="email"
             placeholder="Correo"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <Input
-            type="password"
+          <PasswordInput
+            autoComplete="current-password"
             placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
