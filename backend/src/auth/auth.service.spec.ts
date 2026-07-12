@@ -1,4 +1,8 @@
-import { ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { AuthService } from './auth.service';
 
@@ -16,10 +20,15 @@ function buildService() {
       create: jest.fn(),
       findUnique: jest.fn(),
     },
-    $transaction: jest.fn(),
+    passwordResetToken: {
+      deleteMany: jest.fn(),
+      create: jest.fn(),
+      findUnique: jest.fn(),
+    },
+    $transaction: jest.fn().mockResolvedValue([]),
   };
   const jwt = { sign: jest.fn().mockReturnValue('token') };
-  const mail = { sendVerification: jest.fn() };
+  const mail = { sendVerification: jest.fn(), sendPasswordReset: jest.fn() };
   const traces = { record: jest.fn() };
   const service = new AuthService(
     prisma as never,
@@ -174,5 +183,67 @@ describe('AuthService.googleAuth', () => {
 
     await service.googleAuth({ idToken: 'tok' });
     expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('AuthService.forgotPassword / resetPassword', () => {
+  it('con correo no registrado responde sent sin enviar nada', async () => {
+    const { service, prisma, mail } = buildService();
+    prisma.user.findUnique.mockResolvedValue(null);
+
+    const res = await service.forgotPassword('nadie@test.com');
+    expect(res).toEqual({ sent: true });
+    expect(mail.sendPasswordReset).not.toHaveBeenCalled();
+  });
+
+  it('con correo registrado crea el token y envía el enlace', async () => {
+    const { service, prisma, mail } = buildService();
+    prisma.user.findUnique.mockResolvedValue(baseUser);
+    prisma.passwordResetToken.create.mockResolvedValue({ id: 't1' });
+
+    const res = await service.forgotPassword('ana@test.com');
+    expect(res).toEqual({ sent: true });
+    expect(prisma.passwordResetToken.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'u1' },
+    });
+    expect(prisma.passwordResetToken.create).toHaveBeenCalled();
+    expect(mail.sendPasswordReset).toHaveBeenCalledWith(
+      'ana@test.com',
+      'Ana',
+      expect.stringContaining('/restablecer?token='),
+    );
+  });
+
+  it('token inválido o vencido → 400', async () => {
+    const { service, prisma } = buildService();
+    prisma.passwordResetToken.findUnique.mockResolvedValue(null);
+    await expect(
+      service.resetPassword('nope', 'nueva123'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+
+    prisma.passwordResetToken.findUnique.mockResolvedValue({
+      userId: 'u1',
+      expiresAt: new Date(Date.now() - 1000),
+    });
+    await expect(
+      service.resetPassword('viejo', 'nueva123'),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('token válido cambia la contraseña y verifica la cuenta', async () => {
+    const { service, prisma } = buildService();
+    prisma.passwordResetToken.findUnique.mockResolvedValue({
+      userId: 'u1',
+      expiresAt: new Date(Date.now() + 1000),
+    });
+
+    const res = await service.resetPassword('tok', 'nueva123');
+    expect(res).toEqual({ reset: true });
+    const data = prisma.user.update.mock.calls[0][0].data;
+    expect(data.emailVerified).toBe(true);
+    expect(await bcrypt.compare('nueva123', data.password)).toBe(true);
+    expect(prisma.passwordResetToken.deleteMany).toHaveBeenCalledWith({
+      where: { userId: 'u1' },
+    });
   });
 });

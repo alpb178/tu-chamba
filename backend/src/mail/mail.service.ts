@@ -35,6 +35,16 @@ export class MailService {
     await this.transporter.sendMail({ from: this.from, to, subject, html });
   }
 
+  async sendPasswordReset(to: string, name: string, link: string) {
+    const html = `
+      <p>Hola ${name},</p>
+      <p>Recibimos un pedido para restablecer tu contraseña de <strong>Tu Chamba</strong>:</p>
+      <p><a href="${link}" style="background:#004ac6;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none">Restablecer mi contraseña</a></p>
+      <p>O copia este enlace: ${link}</p>
+      <p>El enlace vence en 1 hora. Si no fuiste tú, ignora este correo.</p>`;
+    await this.send(to, 'Restablece tu contraseña — Tu Chamba', html);
+  }
+
   async sendVerification(to: string, name: string, link: string) {
     const html = `
       <p>Hola ${name},</p>

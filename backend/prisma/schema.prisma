@@ -123,6 +123,7 @@ model User {
   notifications      Notification[]
   alerts             JobAlert[]
   verificationTokens VerificationToken[]
+  passwordResetTokens PasswordResetToken[]
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 }
@@ -137,6 +138,19 @@ model VerificationToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// Token para restablecer la contraseña (un solo uso, con expiración).
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("TokenRestablecimiento")
 }
 
 model Ad {
