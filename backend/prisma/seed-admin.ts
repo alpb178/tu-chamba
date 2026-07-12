@@ -1,4 +1,4 @@
-import { PrismaClient, Role } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 // Seed mínimo: crea (o deja igual) SOLO el usuario admin.
@@ -14,13 +14,14 @@ async function main() {
     create: {
       email: 'admin@tuchamba.com',
       password: passwordHash,
-      nombre: 'Administrador',
-      telefono: '70000000',
-      role: Role.ADMIN,
+      name: 'Administrador',
+      phone: '70000000',
+      isAdmin: true,
+      emailVerified: true,
     },
   });
 
-  console.log('Admin listo:', { id: admin.id, email: admin.email, role: admin.role });
+  console.log('Admin listo:', { id: admin.id, email: admin.email });
 }
 
 main()

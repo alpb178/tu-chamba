@@ -8,22 +8,23 @@ import {
   ReactNode,
 } from 'react';
 import { api, setToken, clearToken, getToken } from './api';
-import { Role, User } from './types';
+import { User } from './types';
+
+interface RegisterData {
+  email: string;
+  password: string;
+  name: string;
+  phone?: string;
+}
 
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
   register: (data: RegisterData) => Promise<User>;
+  loginWithGoogle: (idToken: string) => Promise<User>;
+  refresh: () => Promise<void>;
   logout: () => void;
-}
-
-interface RegisterData {
-  email: string;
-  password: string;
-  nombre: string;
-  telefono: string;
-  role: Extract<Role, 'TRABAJADOR' | 'EMPLEADOR'>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -64,13 +65,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.user;
   }
 
+  // Con Google la cuenta se crea directamente si no existe (correo ya
+  // verificado); el teléfono se completa después desde el perfil.
+  async function loginWithGoogle(idToken: string) {
+    const res = await api<{ accessToken: string; user: User }>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ idToken }),
+    });
+    setToken(res.accessToken);
+    setUser(res.user);
+    return res.user;
+  }
+
+  // Recarga el usuario desde el backend (p. ej. tras verificar el correo).
+  async function refresh() {
+    try {
+      setUser(await api<User>('/auth/me'));
+    } catch {
+      /* sin sesión válida: no hacemos nada */
+    }
+  }
+
   function logout() {
     clearToken();
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, loginWithGoogle, refresh, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

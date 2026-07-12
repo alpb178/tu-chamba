@@ -1,45 +1,129 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
-import { Role } from '@prisma/client';
+import { TraceType } from '@prisma/client';
+import { TracesService } from '../traces/traces.service';
+import { CreateAdminDto } from './dto/create-admin.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { AuthUser } from '../auth/decorators/current-user.decorator';
 
 const selectSafe = {
   id: true,
   email: true,
-  nombre: true,
-  telefono: true,
-  role: true,
+  name: true,
+  phone: true,
+  isAdmin: true,
   createdAt: true,
   updatedAt: true,
 };
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private traces: TracesService,
+  ) {}
 
   findAll() {
     return this.prisma.user.findMany({
-      select: { ...selectSafe, _count: { select: { anuncios: true } } },
+      select: { ...selectSafe, _count: { select: { ads: true } } },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  async updateRole(id: string, role: Role) {
-    await this.ensureExists(id);
+  // Perfil propio: datos personales y, opcionalmente, la contraseña.
+  // Con contraseña existente se exige la actual; las cuentas de Google
+  // (sin contraseña local) pueden definir una directamente.
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const user = await this.ensureExists(userId);
+
+    let hashed: string | undefined;
+    if (dto.password) {
+      if (user.password) {
+        const ok =
+          dto.currentPassword != null &&
+          (await bcrypt.compare(dto.currentPassword, user.password));
+        if (!ok) {
+          throw new BadRequestException('La contraseña actual no es correcta');
+        }
+      }
+      hashed = await bcrypt.hash(dto.password, 10);
+    }
+
     return this.prisma.user.update({
-      where: { id },
-      data: { role },
+      where: { id: userId },
+      data: {
+        ...(dto.name != null ? { name: dto.name.trim() } : {}),
+        ...(dto.phone != null ? { phone: dto.phone.trim() || null } : {}),
+        ...(hashed ? { password: hashed } : {}),
+      },
       select: selectSafe,
     });
   }
 
-  async remove(id: string) {
-    await this.ensureExists(id);
+  // Alta de un administrador desde el panel (solo correo y contraseña).
+  async createAdmin(dto: CreateAdminDto, actor: AuthUser) {
+    const exists = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (exists) throw new ConflictException('El correo ya está registrado');
+
+    const admin = await this.prisma.user.create({
+      data: {
+        email: dto.email,
+        password: await bcrypt.hash(dto.password, 10),
+        // Solo se pide correo y contraseña: el nombre sale del correo.
+        name: dto.email.split('@')[0],
+        isAdmin: true,
+        // Cuenta creada por un admin de confianza: no exige verificación.
+        emailVerified: true,
+      },
+      select: selectSafe,
+    });
+
+    await this.traces.record(
+      TraceType.ADMIN_CREATED,
+      `Admin ${admin.email} creado por ${actor.email}`,
+      actor,
+    );
+    return admin;
+  }
+
+  // Concede o revoca el acceso al panel de administración.
+  async setAdmin(id: string, isAdmin: boolean, actor: AuthUser) {
+    const user = await this.ensureExists(id);
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: { isAdmin },
+      select: selectSafe,
+    });
+    await this.traces.record(
+      TraceType.ROLE_UPDATED,
+      `Acceso admin de ${user.email} ${isAdmin ? 'concedido' : 'revocado'} por ${actor.email}`,
+      actor,
+    );
+    return updated;
+  }
+
+  async remove(id: string, actor: AuthUser) {
+    const user = await this.ensureExists(id);
     await this.prisma.user.delete({ where: { id } });
+    await this.traces.record(
+      TraceType.USER_DELETED,
+      `Usuario ${user.email} eliminado por ${actor.email}`,
+      actor,
+    );
     return { deleted: true };
   }
 
   private async ensureExists(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('Usuario no encontrado');
+    return user;
   }
 }

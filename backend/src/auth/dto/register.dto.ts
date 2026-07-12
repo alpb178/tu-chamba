@@ -1,18 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsEmail,
-  IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
-import { Role } from '@prisma/client';
-
-// Solo se permite registro público como TRABAJADOR o EMPLEADOR.
-export enum RegisterRole {
-  TRABAJADOR = 'TRABAJADOR',
-  EMPLEADOR = 'EMPLEADOR',
-}
 
 export class RegisterDto {
   @ApiProperty({ example: 'usuario@correo.com' })
@@ -27,16 +20,11 @@ export class RegisterDto {
   @ApiProperty({ example: 'Juan Pérez' })
   @IsString()
   @IsNotEmpty()
-  nombre: string;
+  name: string;
 
-  @ApiProperty({ example: '70000000' })
+  // Opcional: cada anuncio lleva su propio teléfono de contacto.
+  @ApiPropertyOptional({ example: '70000000' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  telefono: string;
-
-  @ApiProperty({ enum: RegisterRole, example: RegisterRole.EMPLEADOR })
-  @IsEnum(RegisterRole, {
-    message: 'role debe ser TRABAJADOR o EMPLEADOR',
-  })
-  role: Role;
+  phone?: string;
 }

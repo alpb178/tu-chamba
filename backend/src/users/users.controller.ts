@@ -5,36 +5,60 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Role } from '@prisma/client';
 import { UsersService } from './users.service';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { SetAdminDto } from './dto/set-admin.dto';
+import { CreateAdminDto } from './dto/create-admin.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { AdminGuard } from '../auth/guards/admin.guard';
+import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('users')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN)
+@UseGuards(JwtAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private users: UsersService) {}
 
+  // Perfil propio: cualquier usuario autenticado edita sus datos personales.
+  @Patch('me')
+  updateProfile(@CurrentUser() user: AuthUser, @Body() dto: UpdateProfileDto) {
+    return this.users.updateProfile(user.id, dto);
+  }
+
+  // ——— Panel de administración ———
+
+  @UseGuards(AdminGuard)
   @Get()
   findAll() {
     return this.users.findAll();
   }
 
-  @Patch(':id/role')
-  updateRole(@Param('id') id: string, @Body() dto: UpdateRoleDto) {
-    return this.users.updateRole(id, dto.role);
+  // Alta de otro administrador (solo correo y contraseña).
+  @UseGuards(AdminGuard)
+  @Post('admin')
+  createAdmin(@Body() dto: CreateAdminDto, @CurrentUser() actor: AuthUser) {
+    return this.users.createAdmin(dto, actor);
   }
 
+  // Concede o revoca acceso al panel de administración.
+  @UseGuards(AdminGuard)
+  @Patch(':id/admin')
+  setAdmin(
+    @Param('id') id: string,
+    @Body() dto: SetAdminDto,
+    @CurrentUser() actor: AuthUser,
+  ) {
+    return this.users.setAdmin(id, dto.isAdmin, actor);
+  }
+
+  @UseGuards(AdminGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.users.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() actor: AuthUser) {
+    return this.users.remove(id, actor);
   }
 }

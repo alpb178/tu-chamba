@@ -1,6 +1,8 @@
 # Dependencies
 node_modules/
 **/node_modules/
+package-lock.json
+**/package-lock.json
 
 # Builds / outputs
 **/dist/
@@ -20,3 +22,6 @@ node_modules/
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Build artifacts
+*.tsbuildinfo

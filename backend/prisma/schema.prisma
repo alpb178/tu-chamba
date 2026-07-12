@@ -7,38 +7,296 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  TRABAJADOR
-  EMPLEADOR
-}
+// Los @map/@@map apuntan a los nombres originales en español de la BD:
+// el código va en inglés pero la base de datos no cambia (ver
+// docs/MIGRACION-CODIGO-INGLES.md). Los VALORES de los enums tampoco se
+// migran: son códigos de dominio persistidos y visibles en URLs del portal.
 
-enum TipoJornada {
+enum JobType {
   DIARIA
   TIEMPO_COMPLETO
   MEDIA_JORNADA
+
+  @@map("TipoJornada")
+}
+
+// Los 9 departamentos de Bolivia (para filtrar por zona).
+enum Department {
+  LA_PAZ
+  SANTA_CRUZ
+  COCHABAMBA
+  ORURO
+  POTOSI
+  CHUQUISACA
+  TARIJA
+  BENI
+  PANDO
+
+  @@map("Departamento")
+}
+
+// Rubros frecuentes en el mercado de "chamba" boliviano.
+enum Category {
+  VENTAS
+  GASTRONOMIA
+  CONSTRUCCION
+  LIMPIEZA
+  CUIDADO_PERSONAS
+  TRANSPORTE
+  ADMINISTRACION
+  TECNOLOGIA
+  EDUCACION
+  SALUD
+  BELLEZA
+  SEGURIDAD
+  OTRO
+
+  @@map("Categoria")
+}
+
+// VENCIDO no se persiste: un anuncio ACTIVO con expiresAt en el pasado
+// se considera vencido al leer (no dependemos de cron jobs).
+enum AdStatus {
+  ACTIVO
+  DADO_DE_BAJA
+
+  @@map("EstadoAnuncio")
+}
+
+enum ReportReason {
+  SPAM
+  FRAUDE
+  CONTENIDO_INAPROPIADO
+  OTRO
+
+  @@map("MotivoReporte")
+}
+
+enum ReportStatus {
+  PENDIENTE
+  ATENDIDO
+  DESCARTADO
+
+  @@map("EstadoReporte")
+}
+
+enum NotificationType {
+  CHAT_INICIADO
+  NUEVA_REVIEW
+  ANUNCIO_VENCIDO
+  NUEVO_ANUNCIO
+
+  @@map("TipoNotificacion")
+}
+
+// Eventos que registra la traza del sistema (auditoría, solo lectura).
+enum TraceType {
+  LOGIN
+  REGISTER
+  EMAIL_VERIFIED
+  ADMIN_CREATED
+  ROLE_UPDATED
+  USER_DELETED
+  AD_CREATED
+  AD_UNPUBLISHED
+  AD_REPUBLISHED
+  AD_DELETED
+  REPORT_RESOLVED
 }
 
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  password  String
-  nombre    String
-  telefono  String
-  role      Role
-  anuncios  Anuncio[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  emailVerified      Boolean   @default(false)
+  // Nullable: las cuentas creadas con Google no tienen contraseña local.
+  password           String?
+  name               String    @map("nombre")
+  phone              String?   @map("telefono")
+  googleId           String?   @unique
+  // Único distintivo entre usuarios: acceso al panel de administración.
+  isAdmin            Boolean   @default(false) @map("esAdmin")
+  ads                Ad[]
+  interests          Interest[]
+  reviewsWritten     Review[]  @relation("ReviewsEscritas")
+  reviewsReceived    Review[]  @relation("ReviewsRecibidas")
+  reports            Report[]
+  notifications      Notification[]
+  alerts             JobAlert[]
+  verificationTokens VerificationToken[]
+  passwordResetTokens PasswordResetToken[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 }
 
-model Anuncio {
-  id          String      @id @default(uuid())
-  descripcion String
-  salario     Decimal     @db.Decimal(12, 2)
-  telefono    String
-  tipoJornada TipoJornada
-  createdBy   User        @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  createdById String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+// Token de verificación de correo (un solo uso, con expiración).
+model VerificationToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Token para restablecer la contraseña (un solo uso, con expiración).
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("TokenRestablecimiento")
+}
+
+model Ad {
+  id           String    @id @default(uuid())
+  description  String    @map("descripcion")
+  // Requisitos del candidato, separados de la descripción del puesto.
+  requirements String?   @map("requisitos")
+  // Nullable solo por anuncios previos a la migración; la API lo exige al crear.
+  location     String?   @map("ubicacion")
+  // Departamento y rubro para filtrar (nullable por datos previos a la migración).
+  department   Department? @map("departamento")
+  category     Category?   @map("categoria")
+  // Coordenadas del pin elegido en el mapa (opcional).
+  latitude     Float?    @map("latitud")
+  longitude    Float?    @map("longitud")
+  schedule     String?   @map("horario")
+  salary       Decimal   @map("salario") @db.Decimal(12, 2)
+  phone        String    @map("telefono")
+  jobType      JobType   @map("tipoJornada")
+  status       AdStatus  @default(ACTIVO) @map("estado")
+  durationDays Int       @default(3) @map("duracionDias")
+  expiresAt    DateTime  @map("expiraEn")
+  // Evita duplicar la notificación de vencimiento (se resetea al republicar).
+  expiryNotified Boolean @default(false) @map("vencimientoNotificado")
+  reports      Report[]
+  notifications Notification[]
+  visits       Visit[]
+  reviews      Review[]
+  interests    Interest[]
+  createdBy    User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  createdById  String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@map("Anuncio")
+}
+
+// Reseña de un usuario sobre un anuncio ajeno (máx. una por anuncio). El
+// dueño del anuncio se guarda desnormalizado para su calificación global.
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String   @map("comentario")
+  author    User     @relation("ReviewsEscritas", fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String   @map("autorId")
+  owner     User     @relation("ReviewsRecibidas", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId   String   @map("duenoId")
+  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  adId      String   @map("anuncioId")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([authorId, adId])
+}
+
+// Interés de un usuario en un anuncio ajeno: se registra al contactar
+// (Chatear/Llamar) y alimenta "anuncios de tu interés" y los conteos
+// que ve el dueño.
+model Interest {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @map("usuarioId")
+  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
+  adId      String   @map("anuncioId")
+  // true cuando además contactó (Chatear/Llamar); dispara el aviso al dueño.
+  contacted Boolean  @default(false) @map("contacto")
+  createdAt DateTime @default(now())
+
+  @@unique([userId, adId])
+  @@index([adId])
+  @@map("Interes")
+}
+
+// Suscripción de un TRABAJADOR a nuevas ofertas por criterio. Un campo null
+// significa "cualquiera". Reemplaza el aviso masivo: solo se notifica a los
+// trabajadores cuya alerta coincide con el anuncio recién publicado.
+model JobAlert {
+  id         String      @id @default(uuid())
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  department Department? @map("departamento")
+  category   Category?   @map("categoria")
+  createdAt  DateTime    @default(now())
+
+  @@index([department, category])
+  @@index([userId])
+  @@map("AlertaEmpleo")
+}
+
+// Notificación in-app para usuarios autenticados. El vencimiento de anuncios
+// se genera al leer (lazy, sin cron); el resto en el momento del evento.
+model Notification {
+  id        String           @id @default(uuid())
+  type      NotificationType @map("tipo")
+  message   String           @map("mensaje")
+  read      Boolean          @default(false) @map("leida")
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  ad        Ad?              @relation(fields: [adId], references: [id], onDelete: Cascade)
+  adId      String?          @map("anuncioId")
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read])
+  @@map("Notificacion")
+}
+
+// Reporte de spam/abuso sobre un anuncio. La visibilidad del anuncio
+// solo cambia por decisión del ADMIN (no hay auto-ocultado).
+model Report {
+  id         String       @id @default(uuid())
+  reason     ReportReason @map("motivo")
+  comment    String?      @map("comentario")
+  status     ReportStatus @default(PENDIENTE) @map("estado")
+  ad         Ad           @relation(fields: [adId], references: [id], onDelete: Cascade)
+  adId       String       @map("anuncioId")
+  reporter   User         @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  reporterId String
+  createdAt  DateTime     @default(now())
+
+  @@unique([adId, reporterId])
+  @@map("Reporte")
+}
+
+// Visita a la página de detalle de un anuncio (registrada desde el portal).
+// La relación es opcional (SetNull) para que las métricas de visitas
+// sobrevivan al borrado físico del anuncio.
+model Visit {
+  id        String   @id @default(uuid())
+  ad        Ad?      @relation(fields: [adId], references: [id], onDelete: SetNull)
+  adId      String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([adId])
+}
+
+// Traza del sistema: eventos relevantes para auditoría. El actor se
+// denormaliza (email) para que la traza sobreviva al borrado del usuario.
+model Trace {
+  id          String    @id @default(uuid())
+  type        TraceType
+  description String
+  actorId     String?
+  actorEmail  String?
+  createdAt   DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([type])
 }

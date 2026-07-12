@@ -1,20 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
-import { Button, FormField, Input, Select } from '@/components/ui';
+import { safeNext } from '@/lib/types';
+import { Button, FormField, Input } from '@/components/ui';
+import { PasswordInput } from '@/components/PasswordInput';
+import { PhoneField } from '@/components/PhoneField';
+import { GoogleSignIn } from '@/components/GoogleSignIn';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const { register } = useAuth();
   const router = useRouter();
+  const next = safeNext(useSearchParams().get('next'));
   const [form, setForm] = useState({
-    nombre: '',
+    name: '',
     email: '',
-    telefono: '',
+    phone: '',
     password: '',
-    role: 'TRABAJADOR' as 'TRABAJADOR' | 'EMPLEADOR',
+    confirm: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,10 +31,19 @@ export default function RegisterPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (form.password !== form.confirm) {
+      setError('Las contraseñas no coinciden.');
+      return;
+    }
     setLoading(true);
     try {
-      await register(form);
-      router.push('/');
+      await register({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        phone: form.phone.trim() || undefined,
+      });
+      router.push(next);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -38,62 +52,74 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-white p-6">
-      <h1 className="mb-4 text-xl font-semibold text-gray-800">Crear cuenta</h1>
+    <div className="mx-auto max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+      <h1 className="mb-4 text-xl font-semibold text-on-surface">Crear cuenta</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label="Nombre">
           <Input
-            value={form.nombre}
-            onChange={(e) => set('nombre', e.target.value)}
+            autoComplete="name"
+            value={form.name}
+            onChange={(e) => set('name', e.target.value)}
             required
           />
         </FormField>
         <FormField label="Correo">
           <Input
             type="email"
+            autoComplete="email"
             value={form.email}
             onChange={(e) => set('email', e.target.value)}
             required
           />
         </FormField>
-        <FormField label="Teléfono">
-          <Input
-            value={form.telefono}
-            onChange={(e) => set('telefono', e.target.value)}
-            required
-          />
-        </FormField>
         <FormField label="Contraseña (mín. 6)">
-          <Input
-            type="password"
+          <PasswordInput
+            autoComplete="new-password"
             value={form.password}
             onChange={(e) => set('password', e.target.value)}
             minLength={6}
             required
           />
         </FormField>
-        <FormField label="Quiero registrarme como">
-          <Select
-            value={form.role}
-            onChange={(e) =>
-              set('role', e.target.value as 'TRABAJADOR' | 'EMPLEADOR')
-            }
-          >
-            <option value="TRABAJADOR">Trabajador (busco empleo)</option>
-            <option value="EMPLEADOR">Empleador (publico empleos)</option>
-          </Select>
+        <FormField label="Confirmar contraseña">
+          <PasswordInput
+            autoComplete="new-password"
+            value={form.confirm}
+            onChange={(e) => set('confirm', e.target.value)}
+            minLength={6}
+            required
+          />
         </FormField>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <FormField label="Teléfono (opcional)">
+          <PhoneField value={form.phone} onChange={(v) => set('phone', v)} />
+        </FormField>
+        {error && <p className="text-sm text-error">{error}</p>}
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Creando...' : 'Crear cuenta'}
         </Button>
       </form>
-      <p className="mt-4 text-center text-sm text-gray-600">
+
+      <div className="mt-4">
+        <GoogleSignIn next={next} />
+      </div>
+
+      <p className="mt-4 text-center text-sm text-on-surface-variant">
         ¿Ya tienes cuenta?{' '}
-        <Link href="/login" className="text-brand hover:underline">
+        <Link
+          href={next === '/' ? '/login' : `/login?next=${encodeURIComponent(next)}`}
+          className="text-brand hover:underline"
+        >
           Ingresa
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<p className="text-on-surface-variant">Cargando...</p>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

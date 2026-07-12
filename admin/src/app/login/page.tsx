@@ -28,11 +28,11 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-6">
+    <div className="flex min-h-screen items-center justify-center bg-surface-container-low">
+      <div className="w-full max-w-sm rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/logo-full.svg" alt="Tu Chamba" className="mx-auto h-9 w-auto" />
-        <p className="mb-4 mt-2 text-center text-sm text-gray-500">
+        <p className="mb-4 mt-2 text-center text-sm text-on-surface-variant">
           Panel de administración
         </p>
         <form onSubmit={onSubmit} className="space-y-3">
@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-error">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Ingresando...' : 'Ingresar'}
           </Button>

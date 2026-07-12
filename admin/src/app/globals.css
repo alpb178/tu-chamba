@@ -2,7 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background-color: #f9fafb;
-  color: #1f2937;
+@layer base {
+  body {
+    @apply bg-background font-sans text-on-surface;
+  }
+
+  /* Los titulares llevan la display (Hanken Grotesk); el cuerpo, Inter. */
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+}
+
+/* Iconos Material Symbols (la fuente la sirve Google Fonts). */
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
 }

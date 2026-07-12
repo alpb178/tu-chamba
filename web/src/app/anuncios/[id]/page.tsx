@@ -1,102 +1,128 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { api } from '@/lib/api';
-import { Anuncio } from '@/lib/types';
-import { useAuth } from '@/lib/auth';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import { fetchAd } from '@/lib/server-api';
+import {
+  CATEGORY_LABEL,
+  DEPARTMENT_LABEL,
+  STATUS_LABEL,
+  adEffectiveStatus,
+} from '@/lib/types';
 import { Badge } from '@/components/Badge';
-import { Button } from '@/components/ui';
+import { Reviews } from '@/components/Reviews';
+import { AdActions } from '@/components/AdActions';
+import { TrackVisit } from '@/components/TrackVisit';
 
-export default function AnuncioDetallePage() {
-  const { id } = useParams<{ id: string }>();
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-  const [anuncio, setAnuncio] = useState<Anuncio | null>(null);
-  const [error, setError] = useState<string | null>(null);
+type Params = { params: Promise<{ id: string }> };
 
-  useEffect(() => {
-    // El detalle solo se consulta con sesión iniciada.
-    if (authLoading || !user) return;
-    api<Anuncio>(`/anuncios/${id}`)
-      .then(setAnuncio)
-      .catch((e) => setError((e as Error).message));
-  }, [id, user, authLoading]);
+// Metadata por anuncio (indexable en buscadores).
+export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  const { id } = await params;
+  const ad = await fetchAd(id);
+  if (!ad) return { title: 'Oferta no encontrada — Tu Chamba' };
 
-  if (authLoading) return <p className="text-gray-500">Cargando...</p>;
+  const parts = [
+    ad.category && CATEGORY_LABEL[ad.category],
+    ad.department && `en ${DEPARTMENT_LABEL[ad.department]}`,
+  ].filter(Boolean);
+  const title = `${parts.join(' ') || 'Oferta de empleo'} — Tu Chamba`;
+  const description = ad.description.slice(0, 155);
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: 'article' },
+  };
+}
 
-  // Visitante sin sesión: pedimos registro/login para ver el detalle y el contacto.
-  if (!user) {
-    return (
-      <div className="mx-auto max-w-md rounded-lg border border-gray-200 bg-white p-8 text-center">
-        <h1 className="text-xl font-semibold text-gray-800">
-          Regístrate para ver esta oferta
-        </h1>
-        <p className="mt-2 text-gray-600">
-          Crea una cuenta gratis o inicia sesión para ver la descripción
-          completa y el teléfono de contacto.
-        </p>
-        <div className="mt-4 flex justify-center gap-3">
-          <Link href="/register">
-            <Button>Registrarse</Button>
-          </Link>
-          <Link href="/login">
-            <Button variant="outline">Ya tengo cuenta</Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
+export default async function AdDetailPage({ params }: Params) {
+  const { id } = await params;
+  const ad = await fetchAd(id);
+  if (!ad) notFound();
 
-  if (error) return <p className="text-red-600">{error}</p>;
-  if (!anuncio) return <p className="text-gray-500">Cargando...</p>;
-
-  const puedeEditar =
-    user && (user.role === 'ADMIN' || user.id === anuncio.createdById);
+  const status = adEffectiveStatus(ad);
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4 rounded-lg border border-gray-200 bg-white p-6">
-      <div className="flex items-start justify-between">
-        <Badge tipo={anuncio.tipoJornada} />
-        <span className="text-xs text-gray-400">Ref. {anuncio.id.slice(0, 8)}</span>
-      </div>
-
-      <p className="whitespace-pre-line text-gray-800">{anuncio.descripcion}</p>
-
-      <div className="space-y-1 border-t border-gray-100 pt-4">
-        <p className="text-2xl font-bold text-brand">
-          Bs {Number(anuncio.salario).toLocaleString('es-BO')}
-        </p>
-        <p className="text-sm text-gray-600">
-          Publicado por: {anuncio.createdBy?.nombre ?? '—'}
-        </p>
-      </div>
-
-      <a href={`tel:${anuncio.telefono}`}>
-        <Button className="w-full">Llamar: {anuncio.telefono}</Button>
-      </a>
-
-      {puedeEditar && (
-        <div className="flex gap-2 border-t border-gray-100 pt-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push(`/anuncios/nuevo?id=${anuncio.id}`)}
-          >
-            Editar
-          </Button>
-          <Button
-            variant="danger"
-            onClick={async () => {
-              if (!confirm('¿Eliminar este anuncio?')) return;
-              await api(`/anuncios/${anuncio.id}`, { method: 'DELETE' });
-              router.push('/mis-anuncios');
-            }}
-          >
-            Eliminar
-          </Button>
+    <div className="mx-auto max-w-2xl space-y-4 rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+      <TrackVisit adId={ad.id} />
+      {status !== 'ACTIVO' && (
+        <div className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Este anuncio está {STATUS_LABEL[status].toLowerCase()} y ya no se
+          muestra en el portal.
         </div>
       )}
+
+      <div className="flex items-start justify-between">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Badge jobType={ad.jobType} />
+          {ad.category && (
+            <span className="rounded-full bg-brand-light px-2 py-0.5 text-xs font-medium text-brand">
+              {CATEGORY_LABEL[ad.category]}
+            </span>
+          )}
+          {ad.department && (
+            <span className="rounded-full bg-surface-container px-2 py-0.5 text-xs text-on-surface-variant">
+              {DEPARTMENT_LABEL[ad.department]}
+            </span>
+          )}
+        </div>
+        <span className="text-xs text-outline">Ref. {ad.id.slice(0, 8)}</span>
+      </div>
+
+      <div>
+        <h1 className="mb-1 text-sm font-semibold text-on-surface-variant">
+          Descripción del puesto
+        </h1>
+        <p className="whitespace-pre-line text-on-surface">{ad.description}</p>
+      </div>
+
+      {ad.requirements && (
+        <div>
+          <h2 className="mb-1 text-sm font-semibold text-on-surface-variant">
+            Requisitos del candidato
+          </h2>
+          <p className="whitespace-pre-line text-on-surface">{ad.requirements}</p>
+        </div>
+      )}
+
+      <div className="space-y-1 border-t border-outline-variant/60 pt-4">
+        <p className="text-2xl font-bold text-brand">
+          Bs {Number(ad.salary).toLocaleString('es-BO')}
+        </p>
+        {/* La ubicación exacta solo se muestra con sesión (en AdActions);
+            aquí queda el departamento como zona general. */}
+        {ad.department && (
+          <p className="text-sm text-on-surface-variant">
+            📍 Zona: {DEPARTMENT_LABEL[ad.department]}
+          </p>
+        )}
+        {ad.schedule && (
+          <p className="text-sm text-on-surface-variant">🕐 Horario: {ad.schedule}</p>
+        )}
+        <p className="text-sm text-on-surface-variant">
+          Publicado por: {ad.createdBy?.name ?? '—'}
+        </p>
+        <p className="text-xs text-outline">
+          Publicado: {new Date(ad.createdAt).toLocaleDateString('es-BO')} ·
+          Vence: {new Date(ad.expiresAt).toLocaleDateString('es-BO')}
+          {ad._count != null && (
+            <>
+              {' '}
+              · 👁 {ad._count.visits}{' '}
+              {ad._count.visits === 1 ? 'visita' : 'visitas'}
+            </>
+          )}
+        </p>
+      </div>
+
+      <AdActions ad={ad} />
+
+      <Reviews
+        adId={ad.id}
+        ownerId={ad.createdById}
+        ownerName={ad.createdBy?.name ?? 'este publicante'}
+      />
+
+      {/* Holgura para la barra de contacto fija de AdActions en móvil. */}
+      <div aria-hidden className="h-14 sm:hidden" />
     </div>
   );
 }

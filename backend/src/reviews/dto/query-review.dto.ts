@@ -1,0 +1,31 @@
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsInt, IsOptional, IsUUID, Min } from 'class-validator';
+
+export class QueryReviewDto {
+  @ApiProperty({ description: 'ID del publicante (dueño de los anuncios)' })
+  @IsUUID()
+  ownerId: string;
+
+  @ApiPropertyOptional({
+    description:
+      'ID del anuncio: con sesión, la respuesta incluye alreadyReviewed',
+  })
+  @IsOptional()
+  @IsUUID()
+  adId?: string;
+
+  @ApiPropertyOptional({ default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @ApiPropertyOptional({ default: 20 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  limit?: number = 20;
+}
