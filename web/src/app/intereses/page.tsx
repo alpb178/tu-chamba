@@ -9,8 +9,8 @@ import { AdCard } from '@/components/AdCard';
 import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui';
 
-// Anuncios en los que el usuario mostró interés (registrado al contactar
-// por Chatear o Llamar desde el detalle del anuncio).
+// Anuncios en los que el usuario mostró interés: todos aquellos cuyos
+// detalles abrió con sesión (y los que contactó por Chatear/Llamar).
 export default function InterestsPage() {
   const { user, loading: authLoading } = useRequireAuth();
   const [items, setItems] = useState<Interest[]>([]);
@@ -46,8 +46,8 @@ export default function InterestsPage() {
       </h1>
       {items.length === 0 ? (
         <p className="text-on-surface-variant">
-          Aún no tienes anuncios de interés. Cuando contactes a un publicante
-          desde un anuncio (Chatear o Llamar), aparecerá aquí.{' '}
+          Aún no tienes anuncios de interés. Los anuncios cuyos detalles abras
+          aparecerán aquí automáticamente.{' '}
           <Link href="/" className="text-brand underline hover:text-brand-dark">
             Explora las ofertas
           </Link>

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Ad, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -19,37 +19,55 @@ export class InterestsService {
     private notifications: NotificationsService,
   ) {}
 
-  // Registra el interés en un anuncio ajeno (al contactar por Chatear o
-  // Llamar). Idempotente: la primera vez notifica al dueño; repetir no
-  // duplica ni el registro ni el aviso.
-  async register(adId: string, user: AuthUser) {
+  // Registra el interés en un anuncio ajeno. Se dispara al abrir el detalle
+  // (silencioso) y al contactar (contact=true, que además avisa al dueño la
+  // primera vez). Idempotente: no duplica registros ni avisos.
+  async register(adId: string, user: AuthUser, contact = false) {
     const ad = await this.prisma.ad.findUnique({ where: { id: adId } });
     if (!ad) throw new NotFoundException('Anuncio no encontrado');
     // El interés en el anuncio propio no aporta nada: se ignora.
     if (ad.createdById === user.id) return { interested: false };
 
-    try {
-      await this.prisma.interest.create({
-        data: { userId: user.id, adId: ad.id },
-      });
-    } catch (e) {
-      // Único (userId, adId): ya estaba registrado; no se re-notifica.
-      if (
-        e instanceof Prisma.PrismaClientKnownRequestError &&
-        e.code === 'P2002'
-      ) {
+    const key = { userId_adId: { userId: user.id, adId: ad.id } };
+    let existing = await this.prisma.interest.findUnique({ where: key });
+
+    if (!existing) {
+      try {
+        await this.prisma.interest.create({
+          data: { userId: user.id, adId: ad.id, contacted: contact },
+        });
+        if (contact) await this.notifyOwner(ad, user.id);
         return { interested: true };
+      } catch (e) {
+        // Carrera sobre el único (userId, adId): sigue como ya existente.
+        if (
+          !(e instanceof Prisma.PrismaClientKnownRequestError) ||
+          e.code !== 'P2002'
+        ) {
+          throw e;
+        }
+        existing = await this.prisma.interest.findUnique({ where: key });
       }
-      throw e;
     }
 
-    // El aviso al dueño es best-effort: no rompe el registro si falla.
+    // Transición a "contactado": una sola vez, con su aviso.
+    if (contact && existing && !existing.contacted) {
+      await this.prisma.interest.update({
+        where: { id: existing.id },
+        data: { contacted: true },
+      });
+      await this.notifyOwner(ad, user.id);
+    }
+    return { interested: true };
+  }
+
+  // El aviso al dueño es best-effort: no rompe el registro si falla.
+  private async notifyOwner(ad: Ad, userId: string) {
     try {
-      await this.notifications.notifyInterest(ad, user.id);
+      await this.notifications.notifyInterest(ad, userId);
     } catch {
       /* noop */
     }
-    return { interested: true };
   }
 
   // Anuncios en los que el usuario mostró interés, el más reciente primero.

@@ -215,6 +215,8 @@ model Interest {
   userId    String   @map("usuarioId")
   ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
   adId      String   @map("anuncioId")
+  // true cuando además contactó (Chatear/Llamar); dispara el aviso al dueño.
+  contacted Boolean  @default(false) @map("contacto")
   createdAt DateTime @default(now())
 
   @@unique([userId, adId])

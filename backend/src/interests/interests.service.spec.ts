@@ -8,6 +8,7 @@ function buildService() {
     ad: { findUnique: jest.fn() },
     interest: {
       create: jest.fn(),
+      update: jest.fn(),
       findUnique: jest.fn(),
       findMany: jest.fn(),
       deleteMany: jest.fn(),
@@ -25,19 +26,66 @@ const user: AuthUser = { id: 'u2', email: 'b@t.com', isAdmin: false };
 const ad = { id: 'a1', createdById: 'owner1', description: 'Prueba' };
 
 describe('InterestsService.register', () => {
-  it('registra el interés y notifica al dueño la primera vez', async () => {
+  it('ver el detalle registra el interés SIN notificar', async () => {
     const { service, prisma, notifications } = buildService();
     prisma.ad.findUnique.mockResolvedValue(ad);
+    prisma.interest.findUnique.mockResolvedValue(null);
     prisma.interest.create.mockResolvedValue({ id: 'i1' });
 
     const res = await service.register('a1', user);
     expect(res.interested).toBe(true);
+    expect(prisma.interest.create.mock.calls[0][0].data.contacted).toBe(false);
+    expect(notifications.notifyInterest).not.toHaveBeenCalled();
+  });
+
+  it('contactar de primeras crea el interés contactado y notifica', async () => {
+    const { service, prisma, notifications } = buildService();
+    prisma.ad.findUnique.mockResolvedValue(ad);
+    prisma.interest.findUnique.mockResolvedValue(null);
+    prisma.interest.create.mockResolvedValue({ id: 'i1' });
+
+    const res = await service.register('a1', user, true);
+    expect(res.interested).toBe(true);
+    expect(prisma.interest.create.mock.calls[0][0].data.contacted).toBe(true);
     expect(notifications.notifyInterest).toHaveBeenCalledWith(ad, 'u2');
   });
 
-  it('repetir no duplica ni re-notifica (P2002)', async () => {
+  it('contactar tras haber visto notifica una sola vez (transición)', async () => {
     const { service, prisma, notifications } = buildService();
     prisma.ad.findUnique.mockResolvedValue(ad);
+    prisma.interest.findUnique.mockResolvedValue({
+      id: 'i1',
+      contacted: false,
+    });
+
+    await service.register('a1', user, true);
+    expect(prisma.interest.update).toHaveBeenCalledWith({
+      where: { id: 'i1' },
+      data: { contacted: true },
+    });
+    expect(notifications.notifyInterest).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-contactar no vuelve a notificar', async () => {
+    const { service, prisma, notifications } = buildService();
+    prisma.ad.findUnique.mockResolvedValue(ad);
+    prisma.interest.findUnique.mockResolvedValue({
+      id: 'i1',
+      contacted: true,
+    });
+
+    const res = await service.register('a1', user, true);
+    expect(res.interested).toBe(true);
+    expect(prisma.interest.update).not.toHaveBeenCalled();
+    expect(notifications.notifyInterest).not.toHaveBeenCalled();
+  });
+
+  it('re-visitar no duplica (carrera P2002 tolerada)', async () => {
+    const { service, prisma, notifications } = buildService();
+    prisma.ad.findUnique.mockResolvedValue(ad);
+    prisma.interest.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: 'i1', contacted: false });
     prisma.interest.create.mockRejectedValue(
       new Prisma.PrismaClientKnownRequestError('dup', {
         code: 'P2002',
