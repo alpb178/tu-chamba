@@ -81,60 +81,62 @@ export function HomeClient({
     <div className="space-y-8">
       <Hero initialQuery={search} initialDep={dep} />
 
-      <div className="flex flex-col gap-6 md:flex-row md:items-start">
-        <FiltersSidebar
-          value={filters}
-          facets={facets}
-          onChange={(f) => {
-            setFilters(f);
-            setPage(1);
-          }}
-        />
+      {/* Si el listado no carga (p. ej. servidor caído), ocultamos filtros y
+          resultados: la portada queda solo con el hero y los destacados. */}
+      {!error && (
+        <div className="flex flex-col gap-6 md:flex-row md:items-start">
+          <FiltersSidebar
+            value={filters}
+            facets={facets}
+            onChange={(f) => {
+              setFilters(f);
+              setPage(1);
+            }}
+          />
 
-        <section className="flex-1">
-          {loading ? (
-            <>
-              <Skeleton className="mb-3 h-4 w-44" />
-              <AdListSkeleton />
-            </>
-          ) : error ? (
-            <p className="text-error">{error}</p>
-          ) : data && data.items.length === 0 ? (
-            <p className="text-on-surface-variant">
-              No se encontraron anuncios con estos filtros.
-            </p>
-          ) : (
-            data && (
+          <section className="flex-1">
+            {loading ? (
               <>
-                <div className="mb-4 flex flex-wrap items-baseline gap-2">
-                  <h1 className="font-display text-2xl font-semibold text-on-surface">
-                    {data.total}{' '}
-                    {data.total === 1
-                      ? 'oferta encontrada'
-                      : 'ofertas encontradas'}
-                  </h1>
-                  {dep && (
-                    <span className="text-sm text-on-surface-variant">
-                      en {DEPARTMENT_LABEL[dep]}
-                    </span>
-                  )}
-                </div>
-                {/* Tarjetas una debajo de otra. */}
-                <div className="grid grid-cols-1 gap-4">
-                  {data.items.map((a) => (
-                    <AdCard key={a.id} ad={a} />
-                  ))}
-                </div>
-                <Pagination
-                  page={data.page}
-                  totalPages={data.totalPages}
-                  onPage={setPage}
-                />
+                <Skeleton className="mb-3 h-4 w-44" />
+                <AdListSkeleton />
               </>
-            )
-          )}
-        </section>
-      </div>
+            ) : data && data.items.length === 0 ? (
+              <p className="text-on-surface-variant">
+                No se encontraron anuncios con estos filtros.
+              </p>
+            ) : (
+              data && (
+                <>
+                  <div className="mb-4 flex flex-wrap items-baseline gap-2">
+                    <h1 className="font-display text-2xl font-semibold text-on-surface">
+                      {data.total}{' '}
+                      {data.total === 1
+                        ? 'oferta encontrada'
+                        : 'ofertas encontradas'}
+                    </h1>
+                    {dep && (
+                      <span className="text-sm text-on-surface-variant">
+                        en {DEPARTMENT_LABEL[dep]}
+                      </span>
+                    )}
+                  </div>
+                  {/* Tarjetas una debajo de otra. */}
+                  <div className="grid grid-cols-1 gap-4">
+                    {data.items.map((a) => (
+                      <AdCard key={a.id} ad={a} />
+                    ))}
+                  </div>
+                  <Pagination
+                    page={data.page}
+                    totalPages={data.totalPages}
+                    onPage={setPage}
+                  />
+                </>
+              )
+            )}
+          </section>
+        </div>
+      )}
 
       <FeaturedBrands />
     </div>
