@@ -3,7 +3,7 @@
 // Mapa Leaflet + OpenStreetMap. Este módulo toca `window` al cargar Leaflet,
 // así que impórtalo siempre con next/dynamic y ssr: false.
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -26,6 +26,9 @@ function createMap(el: HTMLElement, center: [number, number], zoom: number) {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap',
   }).addTo(map);
+  // El contenedor puede terminar de medirse después del init (p. ej. al
+  // montarse dentro del modal): recalcula el tamaño en el siguiente tick.
+  setTimeout(() => map.invalidateSize(), 0);
   return map;
 }
 
@@ -51,18 +54,21 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   }
 }
 
-// Selector de ubicación: clic o arrastre del pin. Reporta lat/lng y,
-// si se puede resolver, un nombre legible del lugar.
-export function MapPicker({
+// Lienzo del selector: clic o arrastre del pin, botón "mi ubicación" y
+// sincronización con las props (así el mapa chico refleja lo elegido en el
+// ampliado y viceversa). Lo montan MapPicker y su modal a distinto tamaño.
+function PickerMap({
   lat,
   lng,
   onChange,
   onPlace,
+  className,
 }: {
   lat: number | null;
   lng: number | null;
   onChange: (lat: number, lng: number) => void;
   onPlace?: (name: string) => void;
+  className: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -116,9 +122,27 @@ export function MapPicker({
       mapRef.current = null;
       markerRef.current = null;
     };
-    // Solo inicialización: el pin posterior lo mueve el usuario.
+    // Solo inicialización: los cambios posteriores llegan por el efecto de abajo.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Pin movido desde otra instancia (modal ↔ mapa chico): sincroniza.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || lat == null || lng == null) return;
+    const current = markerRef.current?.getLatLng();
+    if (
+      current &&
+      Math.abs(current.lat - lat) < 1e-9 &&
+      Math.abs(current.lng - lng) < 1e-9
+    ) {
+      return;
+    }
+    const point = L.latLng(lat, lng);
+    placePin(map, point);
+    map.setView(point, Math.max(map.getZoom(), PIN_ZOOM));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lat, lng]);
 
   function useMyLocation() {
     navigator.geolocation?.getCurrentPosition((pos) => {
@@ -132,23 +156,93 @@ export function MapPicker({
   }
 
   return (
+    <div className="relative z-0 h-full w-full">
+      <div ref={containerRef} className={className} />
+      <button
+        type="button"
+        onClick={useMyLocation}
+        className="absolute bottom-2 left-2 z-[1001] rounded-md border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-sm hover:text-primary"
+      >
+        📍 Usar mi ubicación
+      </button>
+    </div>
+  );
+}
+
+// Selector de ubicación con vista ampliable (modal), como en el detalle.
+// Los panes de Leaflet usan z-index altos: el wrapper `relative z-0` los
+// encierra en su propio stacking context para que no tapen el modal.
+export function MapPicker({
+  lat,
+  lng,
+  onChange,
+  onPlace,
+}: {
+  lat: number | null;
+  lng: number | null;
+  onChange: (lat: number, lng: number) => void;
+  onPlace?: (name: string) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  // Cerrar el modal con Escape.
+  useEffect(() => {
+    if (!expanded) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setExpanded(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [expanded]);
+
+  return (
     <div className="space-y-1">
-      <div
-        ref={containerRef}
-        className="h-64 w-full rounded-md border border-outline-variant"
-      />
-      <div className="flex items-center justify-between">
-        <p className="text-xs text-on-surface-variant">
-          Haz clic en el mapa o arrastra el pin para marcar el lugar de trabajo.
-        </p>
+      <div className="relative z-0">
+        <PickerMap
+          lat={lat}
+          lng={lng}
+          onChange={onChange}
+          onPlace={onPlace}
+          className="h-64 w-full rounded-md border border-outline-variant"
+        />
         <button
           type="button"
-          onClick={useMyLocation}
-          className="text-xs text-brand underline hover:text-brand-dark"
+          onClick={() => setExpanded(true)}
+          className="absolute right-2 top-2 z-[1001] rounded-md border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-sm hover:text-primary"
         >
-          Usar mi ubicación
+          ⤢ Ampliar
         </button>
       </div>
+      <p className="text-xs text-on-surface-variant">
+        Haz clic en el mapa o arrastra el pin para marcar el lugar de trabajo.
+      </p>
+
+      {expanded && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setExpanded(false)}
+          role="dialog"
+          aria-label="Mapa ampliado"
+        >
+          <div
+            className="relative z-0 h-[85vh] w-full max-w-5xl overflow-hidden rounded-lg bg-surface-container-lowest"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <PickerMap
+              lat={lat}
+              lng={lng}
+              onChange={onChange}
+              onPlace={onPlace}
+              className="h-full w-full"
+            />
+            <button
+              type="button"
+              onClick={() => setExpanded(false)}
+              className="absolute right-3 top-3 z-[1001] rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow hover:text-primary"
+            >
+              ✕ Cerrar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
