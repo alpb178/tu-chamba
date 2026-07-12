@@ -217,12 +217,22 @@ export function AdActions({ ad }: { ad: Ad }) {
   // Coordenadas a mostrar/compartir: el pin exacto o la geocodificada.
   const coords = exact ?? approx;
 
-  // Contactar registra el interés en el anuncio: alimenta "anuncios de tu
-  // interés" y avisa al dueño la primera vez (best effort).
-  function registerInterest() {
+  // Abrir el detalle ya registra el interés (silencioso): alimenta
+  // "anuncios de tu interés" y el conteo de interesados del dueño.
+  useEffect(() => {
+    if (loading || !user || user.id === ad.createdById) return;
     api('/interests', {
       method: 'POST',
       body: JSON.stringify({ adId: ad.id }),
+    }).catch(() => {});
+  }, [loading, user, ad.id, ad.createdById]);
+
+  // Contactar (Chatear/Llamar) marca el interés como contacto: avisa al
+  // dueño la primera vez (best effort).
+  function registerInterest() {
+    api('/interests', {
+      method: 'POST',
+      body: JSON.stringify({ adId: ad.id, contact: true }),
     }).catch(() => {});
   }
 

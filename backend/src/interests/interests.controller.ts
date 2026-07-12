@@ -20,10 +20,11 @@ import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator
 export class InterestsController {
   constructor(private interests: InterestsService) {}
 
-  // Registra interés en un anuncio (se dispara al contactar al publicante).
+  // Registra interés en un anuncio: al abrir el detalle (silencioso) o al
+  // contactar (contact=true, avisa al dueño la primera vez).
   @Post()
   register(@Body() dto: CreateInterestDto, @CurrentUser() user: AuthUser) {
-    return this.interests.register(dto.adId, user);
+    return this.interests.register(dto.adId, user, dto.contact ?? false);
   }
 
   // Anuncios en los que el usuario mostró interés.
