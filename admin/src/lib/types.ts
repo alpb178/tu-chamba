@@ -177,15 +177,20 @@ export interface DayPoint {
   total: number;
 }
 
+export interface VisitStats {
+  total: number;
+  last24h: number;
+  last7Days: number;
+  byDay: DayPoint[];
+}
+
 export interface AdminStats {
   users: { total: number; admins: number };
   ads: { total: number; byDay: DayPoint[] };
-  visits: {
-    total: number;
-    last24h: number;
-    last7Days: number;
-    byDay: DayPoint[];
-  };
+  // Visitas al detalle de anuncios.
+  visits: VisitStats;
+  // Páginas vistas del portal (visitas generales al sitio).
+  siteVisits: VisitStats;
 }
 
 // Fila del ranking de anuncios más clickeados (visitas al detalle).

@@ -287,6 +287,16 @@ model Visit {
   @@index([adId])
 }
 
+// Página vista en el portal (visita general al sitio, no solo a anuncios).
+// Sin relación a usuario a propósito: la métrica es agregada y anónima.
+model PageView {
+  id        String   @id @default(uuid())
+  path      String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 // Traza del sistema: eventos relevantes para auditoría. El actor se
 // denormaliza (email) para que la traza sobreviva al borrado del usuario.
 model Trace {

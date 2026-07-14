@@ -34,10 +34,12 @@ function countByDay(rows: { createdAt: Date }[]) {
 export class AdminService {
   constructor(private prisma: PrismaService) {}
 
-  // KPIs del dashboard: usuarios, anuncios por día y visitas.
+  // KPIs del dashboard: usuarios, anuncios por día, visitas a anuncios
+  // y visitas al sitio (páginas vistas del portal).
   async stats() {
     // Margen de un día extra para no perder el inicio del primer día local.
     const since = new Date(Date.now() - SERIES_DAYS * DAY_MS);
+    const dayAgo = new Date(Date.now() - DAY_MS);
 
     const [
       totalUsers,
@@ -47,6 +49,9 @@ export class AdminService {
       totalVisits,
       visits24h,
       recentVisits,
+      totalPageViews,
+      pageViews24h,
+      recentPageViews,
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.user.count({ where: { isAdmin: true } }),
@@ -56,10 +61,14 @@ export class AdminService {
         select: { createdAt: true },
       }),
       this.prisma.visit.count(),
-      this.prisma.visit.count({
-        where: { createdAt: { gte: new Date(Date.now() - DAY_MS) } },
-      }),
+      this.prisma.visit.count({ where: { createdAt: { gte: dayAgo } } }),
       this.prisma.visit.findMany({
+        where: { createdAt: { gte: since } },
+        select: { createdAt: true },
+      }),
+      this.prisma.pageView.count(),
+      this.prisma.pageView.count({ where: { createdAt: { gte: dayAgo } } }),
+      this.prisma.pageView.findMany({
         where: { createdAt: { gte: since } },
         select: { createdAt: true },
       }),
@@ -67,6 +76,10 @@ export class AdminService {
 
     const visitsByDay = countByDay(recentVisits);
     const last7Days = visitsByDay.slice(-7).reduce((sum, d) => sum + d.total, 0);
+    const pageViewsByDay = countByDay(recentPageViews);
+    const pageViewsLast7Days = pageViewsByDay
+      .slice(-7)
+      .reduce((sum, d) => sum + d.total, 0);
 
     return {
       users: { total: totalUsers, admins: totalAdmins },
@@ -76,6 +89,12 @@ export class AdminService {
         last24h: visits24h,
         last7Days,
         byDay: visitsByDay,
+      },
+      siteVisits: {
+        total: totalPageViews,
+        last24h: pageViews24h,
+        last7Days: pageViewsLast7Days,
+        byDay: pageViewsByDay,
       },
     };
   }

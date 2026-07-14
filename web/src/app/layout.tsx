@@ -5,6 +5,7 @@ import { AuthProvider } from '@/lib/auth';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { VerificationBanner } from '@/components/VerificationBanner';
+import { TrackPageView } from '@/components/TrackPageView';
 
 // Tipografías del sistema de diseño: Inter (cuerpo) + Hanken Grotesk
 // (titulares), expuestas como variables CSS para Tailwind.
@@ -48,6 +49,7 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
+          <TrackPageView />
           <div className="flex min-h-screen flex-col">
             <Navbar />
             <VerificationBanner />
