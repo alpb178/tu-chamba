@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { api } from '@/lib/api';
 import {
   Ad,
@@ -137,6 +138,19 @@ export function HomeClient({
           </section>
         </div>
       )}
+
+      {/* Banner promocional de la marca: lleva a publicar una oferta. */}
+      <section className="mx-auto mt-10 max-w-7xl 2xl:max-w-screen-2xl">
+        <Link href="/listings/new" aria-label="Publica o busca trabajo en Tu Chamba">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/banner.jpeg"
+            alt="Ofrece o busca trabajo — conexión directa, sin CV"
+            className="w-full rounded-2xl shadow-md transition-transform hover:scale-[1.01]"
+            loading="lazy"
+          />
+        </Link>
+      </section>
 
       <FeaturedBrands />
     </div>

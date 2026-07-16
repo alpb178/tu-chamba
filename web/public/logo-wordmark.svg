@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 650 160" font-family="Arial, Helvetica, sans-serif" role="img" aria-label="Tu Chamba">
-  <text x="6" y="120" font-size="120" font-weight="800" letter-spacing="-3" fill="#102136">Tu</text>
-  <!-- la "C" estilizada como check amarillo -->
-  <path d="M150 84 l30 36 l72 -84" fill="none" stroke="#fdc101" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="250" y="120" font-size="120" font-weight="800" letter-spacing="-3" fill="#102136">hamba</text>
-</svg>

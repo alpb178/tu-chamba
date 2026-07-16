@@ -161,7 +161,7 @@ export function Navbar() {
         <div className="flex flex-1 items-center gap-8">
           <Link href="/" className="flex shrink-0 items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-full.svg" alt="Tu Chamba" className="h-9 w-auto" />
+            <img src="/logo-full.png" alt="Tu Chamba" className="h-9 w-auto" />
           </Link>
         </div>
 

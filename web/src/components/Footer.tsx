@@ -32,7 +32,7 @@ export function Footer() {
           <div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/logo-full.svg"
+              src="/logo-full.png"
               alt="Tu Chamba"
               className="mb-4 h-10 w-auto"
             />

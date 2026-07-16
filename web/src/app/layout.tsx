@@ -30,6 +30,8 @@ export const metadata: Metadata = {
     siteName: 'Tu Chamba',
     locale: 'es_BO',
     type: 'website',
+    // Banner de marca al compartir enlaces en redes/WhatsApp.
+    images: ['/banner.jpeg'],
   },
 };
 
