@@ -36,36 +36,33 @@ export function Hero({
   }
 
   // z-30 (bajo el navbar z-40): el desplegable del select sobresale por
-  // encima del contenido siguiente. El clip vive en la capa de fondo.
+  // encima del contenido siguiente.
   return (
-    <section className="relative z-30 -mt-6 ml-[calc(50%-50vw)] flex min-h-[440px] w-screen items-center justify-center sm:min-h-[540px]">
-      <div className="absolute inset-0 z-0 overflow-hidden">
+    <section
+      className="relative z-30 -mt-6 ml-[calc(50%-50vw)] w-screen"
+      style={{
+        background:
+          'linear-gradient(rgba(0, 74, 198, 0.95), rgba(0, 23, 75, 0.98))',
+      }}
+    >
+      {/* Banner de marca como cabecera: centrado y sin recortes (tiene su
+          propio texto), sobre el mismo azul del arte para que se funda. */}
+      <div className="mx-auto max-w-6xl px-4 pt-6 sm:pt-8">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/hero.jpg"
-          alt=""
-          className="h-full w-full object-cover"
+          src="/banner.jpeg"
+          alt="Ofrece o busca trabajo — conexión directa, sin CV"
+          className="w-full rounded-2xl shadow-xl"
           fetchPriority="high"
-        />
-        <div
-          className="absolute inset-0 z-10"
-          style={{
-            background:
-              'linear-gradient(rgba(0, 74, 198, 0.85), rgba(0, 23, 75, 0.95))',
-          }}
         />
       </div>
 
-      {/* py garantiza aire arriba y abajo del formulario aunque el
-          contenido supere la altura mínima (pantallas pequeñas). */}
-      <div className="relative z-20 w-full max-w-4xl px-4 py-12 text-center sm:py-16">
-        <h1 className="mb-6 font-display text-4xl font-bold leading-tight tracking-tight text-on-primary sm:text-5xl">
-          Encuentra trabajos diarios al instante
+      <div className="relative z-20 mx-auto w-full max-w-4xl px-4 pb-10 pt-6 text-center sm:pb-12">
+        {/* El titular queda para lectores de pantalla y SEO: el banner ya
+            lleva el mensaje visual. */}
+        <h1 className="sr-only">
+          Encuentra trabajos diarios al instante en Bolivia
         </h1>
-        <p className="mx-auto mb-10 max-w-2xl font-display text-lg font-semibold text-surface-container-low opacity-90 sm:text-2xl">
-          La forma más rápida de conectar con empleadores locales para
-          oportunidades de corto plazo.
-        </p>
 
         {/* Buscador glass: qué + dónde. */}
         <form
