@@ -167,7 +167,8 @@ model Ad {
   latitude     Float?    @map("latitud")
   longitude    Float?    @map("longitud")
   schedule     String?   @map("horario")
-  salary       Decimal   @map("salario") @db.Decimal(12, 2)
+  // Nullable: la importación por CSV permite ofertas sin salario ("a convenir").
+  salary       Decimal?  @map("salario") @db.Decimal(12, 2)
   phone        String    @map("telefono")
   jobType      JobType   @map("tipoJornada")
   status       AdStatus  @default(ACTIVO) @map("estado")

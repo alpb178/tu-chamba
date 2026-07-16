@@ -12,6 +12,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdsService } from './ads.service';
 import { CreateAdDto } from './dto/create-ad.dto';
+import { BulkCreateAdsDto } from './dto/bulk-create-ads.dto';
 import { UpdateAdDto } from './dto/update-ad.dto';
 import { QueryAdDto } from './dto/query-ad.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -77,6 +78,15 @@ export class AdsController {
   @Post()
   create(@Body() dto: CreateAdDto, @CurrentUser() user: AuthUser) {
     return this.ads.create(dto, user);
+  }
+
+  // Importación masiva (CSV del panel admin): solo ADMIN. Los anuncios se
+  // publican a nombre del administrador que importa.
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Post('bulk')
+  bulkCreate(@Body() dto: BulkCreateAdsDto, @CurrentUser() user: AuthUser) {
+    return this.ads.bulkCreate(dto.items, user);
   }
 
   // Editar: dueño o ADMIN (validado en el servicio).

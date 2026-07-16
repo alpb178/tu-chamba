@@ -28,10 +28,12 @@ export class CreateAdDto {
   @IsString()
   requirements?: string;
 
-  @ApiProperty({ example: 'Santa Cruz de la Sierra, zona norte' })
+  // Opcional a nivel de API: la importación por CSV y el formulario del admin
+  // solo exigen descripción y teléfono. El sitio web la exige en su formulario.
+  @ApiPropertyOptional({ example: 'Santa Cruz de la Sierra, zona norte' })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty({ message: 'La ubicación es obligatoria' })
-  location: string;
+  location?: string;
 
   @ApiProperty({ enum: Department, example: Department.SANTA_CRUZ })
   @IsEnum(Department, { message: 'Selecciona un departamento válido' })
@@ -63,11 +65,13 @@ export class CreateAdDto {
   @IsString()
   schedule?: string;
 
-  @ApiProperty({ example: 2500, description: 'Salario en Bs' })
+  // Opcional: sin salario el anuncio se muestra como "a convenir".
+  @ApiPropertyOptional({ example: 2500, description: 'Salario en Bs' })
+  @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @IsPositive()
-  salary: number;
+  salary?: number;
 
   @ApiProperty({ example: '71111111' })
   @IsString()

@@ -18,7 +18,9 @@ export function AdCard({ ad, onPress }: { ad: Ad; onPress: () => void }) {
       </View>
       <View className="flex-row items-center justify-between">
         <Text className="text-lg font-bold text-brand">
-          Bs {Number(ad.salary).toLocaleString('es-BO')}
+          {ad.salary != null
+            ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
+            : 'A convenir'}
         </Text>
         {ad.ownerRating && ad.ownerRating.count > 0 && (
           <Text className="text-xs text-gray-600">

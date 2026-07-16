@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import {
   Ad,
@@ -40,6 +41,7 @@ const STATUS_STYLE: Record<EffectiveStatus, string> = {
 const LIMIT = 20;
 
 export default function AdsAdminPage() {
+  const router = useRouter();
   const [data, setData] = useState<Paginated<Ad> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +82,15 @@ export default function AdsAdminPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold text-on-surface">Anuncios</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold text-on-surface">Anuncios</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => router.push('/anuncios/importar')}>
+            Importar CSV
+          </Button>
+          <Button onClick={() => router.push('/anuncios/nuevo')}>Nuevo anuncio</Button>
+        </div>
+      </div>
       {loading ? (
         <TableSkeleton headers={HEADERS} rows={8} />
       ) : error ? (
@@ -100,7 +110,9 @@ export default function AdsAdminPage() {
               </td>
               <td className="px-4 py-3 text-on-surface-variant">{ad.location ?? '—'}</td>
               <td className="px-4 py-3 font-medium text-brand">
-                Bs {Number(ad.salary).toLocaleString('es-BO')}
+                {ad.salary != null
+                  ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
+                  : 'A convenir'}
               </td>
               <td className="px-4 py-3">
                 <Badge type={ad.jobType} />

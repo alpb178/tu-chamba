@@ -60,6 +60,9 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   OTRO: 'Otro',
 };
 
+// Duraciones de publicación permitidas (en días). 3 es el valor por defecto.
+export const DURATION_DAYS = [3, 7, 15, 30];
+
 // DADO_DE_BAJA se persiste; VENCIDO se calcula con expiresAt (ver adEffectiveStatus).
 export type AdStatus = 'ACTIVO' | 'DADO_DE_BAJA';
 export type EffectiveStatus = 'ACTIVO' | 'VENCIDO' | 'DADO_DE_BAJA';
@@ -107,7 +110,8 @@ export interface Ad {
   latitude?: number | null;
   longitude?: number | null;
   schedule?: string | null;
-  salary: string | number;
+  // Nulo = salario a convenir (p. ej. anuncios importados por CSV sin salario).
+  salary?: string | number | null;
   phone: string;
   jobType: JobType;
   status: AdStatus;

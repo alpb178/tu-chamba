@@ -268,6 +268,31 @@ export class AdsService {
     return ad;
   }
 
+  // Importación masiva desde el panel admin (CSV). A diferencia de create():
+  // no notifica a suscriptores (evitaría una ráfaga de correos), deja una
+  // única traza resumen en lugar de una por anuncio, y la duración por
+  // defecto es de 7 días (regla de importación).
+  async bulkCreate(dtos: CreateAdDto[], user: AuthUser) {
+    const now = new Date();
+    const { count } = await this.prisma.ad.createMany({
+      data: dtos.map((dto) => {
+        const durationDays = dto.durationDays ?? 7;
+        return {
+          ...dto,
+          durationDays,
+          expiresAt: expiryDate(durationDays, now),
+          createdById: user.id,
+        };
+      }),
+    });
+    await this.traces.record(
+      TraceType.AD_CREATED,
+      `Importación CSV: ${count} anuncios publicados por ${user.email}`,
+      user,
+    );
+    return { created: count };
+  }
+
   async update(id: string, dto: UpdateAdDto, user: AuthUser) {
     const ad = await this.findOne(id);
     this.assertCanModify(ad.createdById, user);

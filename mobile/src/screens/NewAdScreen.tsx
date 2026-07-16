@@ -25,7 +25,7 @@ export function NewAdScreen({ route, navigation }: Props) {
       api<Ad>(`/listings/${editId}`).then((a) =>
         setForm({
           description: a.description,
-          salary: String(a.salary),
+          salary: a.salary != null ? String(a.salary) : '',
           phone: a.phone,
           jobType: a.jobType,
         }),

@@ -31,6 +31,15 @@ export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInpu
   );
 }
 
+export function FormField({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="block space-y-1">
+      <span className="text-sm font-medium text-on-surface-variant">{label}</span>
+      {children}
+    </label>
+  );
+}
+
 // Chips de jornada con los contenedores de la paleta (ámbar/verde/azul).
 const BADGE_COLORS: Record<JobType, string> = {
   DIARIA: 'bg-secondary-container text-on-secondary-container',

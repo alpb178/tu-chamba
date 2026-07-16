@@ -56,7 +56,9 @@ export function DetailScreen({ route, navigation }: Props) {
       <Badge jobType={ad.jobType} />
       <Text className="my-4 text-base text-gray-800">{ad.description}</Text>
       <Text className="text-3xl font-bold text-brand">
-        Bs {Number(ad.salary).toLocaleString('es-BO')}
+        {ad.salary != null
+          ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
+          : 'Salario a convenir'}
       </Text>
       <Text className="mt-1 text-sm text-gray-600">
         Publicado por: {ad.createdBy?.name ?? '—'}

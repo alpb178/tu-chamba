@@ -116,7 +116,8 @@ export interface Ad {
   latitude?: number | null;
   longitude?: number | null;
   schedule?: string | null;
-  salary: string | number;
+  // Nulo = salario a convenir (p. ej. anuncios importados por CSV sin salario).
+  salary?: string | number | null;
   phone: string;
   jobType: JobType;
   status: AdStatus;

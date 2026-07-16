@@ -85,7 +85,9 @@ export default async function AdDetailPage({ params }: Params) {
 
       <div className="space-y-1 border-t border-outline-variant/60 pt-4">
         <p className="text-2xl font-bold text-brand">
-          Bs {Number(ad.salary).toLocaleString('es-BO')}
+          {ad.salary != null
+            ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
+            : 'Salario a convenir'}
         </p>
         {/* La ubicación exacta solo se muestra con sesión (en AdActions);
             aquí queda el departamento como zona general. */}

@@ -19,7 +19,8 @@ export interface User {
 export interface Ad {
   id: string;
   description: string;
-  salary: string | number;
+  // Nulo = salario a convenir (p. ej. anuncios importados por CSV sin salario).
+  salary?: string | number | null;
   phone: string;
   jobType: JobType;
   createdById: string;

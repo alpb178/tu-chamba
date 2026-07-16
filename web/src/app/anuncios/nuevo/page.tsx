@@ -61,7 +61,7 @@ function Form() {
           department: a.department ?? '',
           category: a.category ?? '',
           schedule: a.schedule ?? '',
-          salary: String(a.salary),
+          salary: a.salary != null ? String(a.salary) : '',
           phone: a.phone,
           jobType: a.jobType,
           durationDays: a.durationDays ?? 3,
@@ -141,13 +141,15 @@ function Form() {
             required
           />
         </FormField>
-        <FormField label="Requisitos del candidato (opcional)">
+        {/* En la web todos los campos son obligatorios salvo el horario. */}
+        <FormField label="Requisitos del candidato">
           <textarea
             className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             rows={3}
             placeholder="Experiencia, disponibilidad, documentación..."
             value={form.requirements}
             onChange={(e) => setForm({ ...form, requirements: e.target.value })}
+            required
           />
         </FormField>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

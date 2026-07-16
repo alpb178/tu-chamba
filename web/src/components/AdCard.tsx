@@ -93,7 +93,9 @@ export function AdCard({
             )}
           </div>
           <div className="font-display text-2xl font-bold text-primary">
-            Bs {Number(ad.salary).toLocaleString('es-BO')}
+            {ad.salary != null
+              ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
+              : 'A convenir'}
           </div>
         </div>
       </div>
