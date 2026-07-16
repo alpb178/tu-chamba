@@ -3,6 +3,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { NotificationType, TraceType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { TracesService } from '../traces/traces.service';
+import { MetricsService } from '../observability/metrics.service';
+import { ErrorsService } from '../observability/errors.service';
 
 // Recorte para el mensaje de la notificación al dueño.
 function summary(description: string) {
@@ -20,17 +22,34 @@ export class AdsCleanupService implements OnApplicationBootstrap {
   constructor(
     private prisma: PrismaService,
     private traces: TracesService,
+    private metrics: MetricsService,
+    private errors: ErrorsService,
   ) {}
 
   // Barrido al arrancar: cubre los vencidos acumulados mientras el
   // servicio estuvo dormido o entre deploys.
   async onApplicationBootstrap() {
-    await this.sweep().catch((err) => this.logger.error(err));
+    await this.run();
   }
 
   @Cron(CronExpression.EVERY_HOUR)
   async sweepExpired() {
-    await this.sweep().catch((err) => this.logger.error(err));
+    await this.run();
+  }
+
+  // Ejecuta el barrido reportando estado y fallos al panel de actividad.
+  private async run() {
+    try {
+      await this.sweep();
+      this.metrics.markCronRun();
+    } catch (err) {
+      this.logger.error(err);
+      await this.errors.record(
+        'cron',
+        `Limpieza de anuncios vencidos falló: ${(err as Error).message}`,
+        { stack: (err as Error).stack },
+      );
+    }
   }
 
   async sweep() {

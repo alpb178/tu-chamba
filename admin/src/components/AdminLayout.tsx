@@ -16,6 +16,7 @@ const NAV = [
   { href: '/reports/client-ads', label: 'Anuncios de clientes', icon: 'person_search' },
   { href: '/reports/reviews', label: 'Reseñas', icon: 'star' },
   { href: '/traces', label: 'Auditoría', icon: 'receipt_long' },
+  { href: '/activity', label: 'Actividad del sitio', icon: 'monitor_heart' },
 ];
 
 export function AdminLayout({ children }: { children: ReactNode }) {

@@ -41,6 +41,7 @@ export class TracesService {
           userAgent: ctx?.userAgent ?? null,
           resource: opts?.resource ?? null,
           result: opts?.result ?? TraceResult.OK,
+          durationMs: ctx ? Date.now() - ctx.startedAt : null,
         },
       });
     } catch {

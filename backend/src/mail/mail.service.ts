@@ -24,6 +24,24 @@ export class MailService {
     return process.env.SMTP_FROM ?? 'Tu Chamba <no-reply@tuchamba.com>';
   }
 
+  // Estado del servicio para el panel de Actividad del Sitio:
+  // sin SMTP configurado -> 'warning'; con SMTP se verifica la conexión.
+  async healthCheck(): Promise<'up' | 'warning' | 'down'> {
+    if (!this.transporter) return 'warning';
+    try {
+      // verify() abre la conexión SMTP; con tope para no colgar el panel.
+      await Promise.race([
+        this.transporter.verify(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('timeout')), 4000),
+        ),
+      ]);
+      return 'up';
+    } catch {
+      return 'down';
+    }
+  }
+
   async send(to: string, subject: string, html: string) {
     if (!this.transporter) {
       // Fallback de desarrollo: sin SMTP, dejamos el correo en el log.

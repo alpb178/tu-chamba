@@ -7,6 +7,8 @@ import { NextFunction, Request, Response } from 'express';
 export interface RequestContext {
   ip?: string;
   userAgent?: string;
+  // Inicio del request: las trazas calculan con esto su tiempo de ejecución.
+  startedAt: number;
 }
 
 export const requestContext = new AsyncLocalStorage<RequestContext>();
@@ -17,7 +19,7 @@ export const requestContext = new AsyncLocalStorage<RequestContext>();
 export class RequestContextMiddleware implements NestMiddleware {
   use(req: Request, _res: Response, next: NextFunction) {
     requestContext.run(
-      { ip: req.ip, userAgent: req.headers['user-agent'] },
+      { ip: req.ip, userAgent: req.headers['user-agent'], startedAt: Date.now() },
       next,
     );
   }

@@ -8,8 +8,15 @@ function buildService() {
     $transaction: jest.fn((ops: unknown[]) => Promise.all(ops)),
   };
   const traces = { record: jest.fn() };
-  const service = new AdsCleanupService(prisma as never, traces as never);
-  return { service, prisma, traces };
+  const metrics = { markCronRun: jest.fn() };
+  const errors = { record: jest.fn() };
+  const service = new AdsCleanupService(
+    prisma as never,
+    traces as never,
+    metrics as never,
+    errors as never,
+  );
+  return { service, prisma, traces, metrics, errors };
 }
 
 describe('AdsCleanupService.sweep', () => {

@@ -14,7 +14,7 @@ describe('TracesService.record', () => {
     const { service, prisma } = buildService();
 
     await requestContext.run(
-      { ip: '200.87.1.1', userAgent: 'Mozilla/5.0 Chrome/126' },
+      { ip: '200.87.1.1', userAgent: 'Mozilla/5.0 Chrome/126', startedAt: Date.now() },
       () => service.record('LOGIN', 'Inicio de sesión de ana@test.com', {
         id: 'u1',
         email: 'ana@test.com',

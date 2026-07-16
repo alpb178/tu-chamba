@@ -16,6 +16,7 @@ import { HealthModule } from './health/health.module';
 import { TracesModule } from './traces/traces.module';
 import { VisitsModule } from './visits/visits.module';
 import { AdminModule } from './admin/admin.module';
+import { ObservabilityModule } from './observability/observability.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AdminModule } from './admin/admin.module';
     InterestsModule,
     VisitsModule,
     AdminModule,
+    ObservabilityModule,
     HealthModule,
   ],
 })

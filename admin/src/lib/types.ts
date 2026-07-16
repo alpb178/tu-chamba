@@ -193,6 +193,8 @@ export interface Trace {
   // Recurso afectado en formato "tipo:id" (ej. "ad:<uuid>").
   resource: string | null;
   result: TraceResult;
+  // Milisegundos desde el inicio del request hasta el evento.
+  durationMs: number | null;
   createdAt: string;
 }
 
@@ -206,6 +208,55 @@ export interface AdminReview {
   owner: { id: string; name: string; email: string };
   ad: { id: string; description: string; status: AdStatus; expiresAt: string } | null;
 }
+
+// ——— Actividad del sitio (observabilidad) ———
+
+export type ServiceState = 'up' | 'warning' | 'down' | 'not_applicable';
+
+export interface ServiceStatus {
+  key: string;
+  state: ServiceState;
+  detail: string;
+  latencyMs?: number;
+}
+
+export interface PerformanceMetrics {
+  requestsLastHour: number;
+  requestsPerMinute: number;
+  avgResponseMs: number;
+  errorsLastHour: number;
+  connectedUsers: number;
+  startedAt: string;
+  uptimeSeconds: number;
+  cpu: { loadPercent: number; cores: number };
+  memory: { processRssMb: number; totalMb: number; freeMb: number };
+  disk: { totalGb: number; freeGb: number } | null;
+}
+
+export type ErrorSeverity = 'WARNING' | 'ERROR' | 'CRITICAL';
+export type ErrorStatus = 'NEW' | 'RESOLVED';
+
+export interface ErrorLog {
+  id: string;
+  service: string;
+  message: string;
+  stack: string | null;
+  path: string | null;
+  severity: ErrorSeverity;
+  status: ErrorStatus;
+  createdAt: string;
+}
+
+export const ERROR_SEVERITY_LABEL: Record<ErrorSeverity, string> = {
+  WARNING: 'Advertencia',
+  ERROR: 'Error',
+  CRITICAL: 'Crítico',
+};
+
+export const ERROR_STATUS_LABEL: Record<ErrorStatus, string> = {
+  NEW: 'Nuevo',
+  RESOLVED: 'Resuelto',
+};
 
 // "Mozilla/5.0 (iPhone...) Chrome/126..." -> "Chrome · Móvil" para las tablas.
 export function formatUserAgent(ua: string | null): string {

@@ -326,9 +326,41 @@ model Trace {
   userAgent   String?
   resource    String?
   result      TraceResult @default(OK)
+  // Milisegundos desde el inicio del request hasta que ocurrió el evento.
+  durationMs  Int?
   createdAt   DateTime    @default(now())
 
   @@index([createdAt])
   @@index([type])
   @@index([actorEmail])
+}
+
+// ——— Registro de errores del sistema (panel Actividad del Sitio) ———
+
+enum ErrorSeverity {
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+enum ErrorStatus {
+  NEW
+  RESOLVED
+}
+
+// Errores capturados por el filtro global (5xx) y los procesos en segundo
+// plano. El admin puede marcarlos como resueltos desde el panel.
+model ErrorLog {
+  id        String        @id @default(uuid())
+  // Origen: "api", "cron", "mail"...
+  service   String
+  message   String
+  stack     String?
+  path      String?
+  severity  ErrorSeverity @default(ERROR)
+  status    ErrorStatus   @default(NEW)
+  createdAt DateTime      @default(now())
+
+  @@index([createdAt])
+  @@index([status])
 }
