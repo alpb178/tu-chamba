@@ -1,7 +1,14 @@
+import type { Metadata } from 'next';
 import { HomeClient } from './home-client';
 import { DEPARTMENT_LABEL, Department } from '@/lib/types';
 
 type Search = { q?: string; dep?: string };
+
+// Las variantes con búsqueda (?q=, ?dep=) canonicalizan a la portada:
+// evita indexar infinitas combinaciones de parámetros como duplicados.
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+};
 
 // Server component: resuelve la búsqueda de la URL y renderiza la portada
 // (el hero y su texto viajan en el HTML inicial, indexable).

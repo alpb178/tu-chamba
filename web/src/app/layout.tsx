@@ -6,6 +6,7 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { VerificationBanner } from '@/components/VerificationBanner';
 import { TrackPageView } from '@/components/TrackPageView';
+import { jsonLd, organizationJsonLd, webSiteJsonLd } from '@/lib/seo';
 
 // Tipografías del sistema de diseño: Inter (cuerpo) + Hanken Grotesk
 // (titulares), expuestas como variables CSS para Tailwind.
@@ -50,6 +51,16 @@ export default function RootLayout({
         />
       </head>
       <body>
+        {/* Datos estructurados del sitio: buscador propio en Google
+            (SearchAction) y la organización con su logo. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd(webSiteJsonLd()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd(organizationJsonLd()) }}
+        />
         <AuthProvider>
           <TrackPageView />
           <div className="flex min-h-screen flex-col">

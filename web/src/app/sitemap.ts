@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { DEPARTMENT_SLUG } from '@/lib/types';
-import { fetchAds } from '@/lib/server-api';
+import { fetchAllAds } from '@/lib/server-api';
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tu-chamba.corpsc.com';
 
@@ -16,9 +16,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/cookies`, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
-  // Anuncios vigentes (best-effort; si la API falla, se omiten).
-  const data = await fetchAds({ limit: 100 });
-  const ads: MetadataRoute.Sitemap = (data?.items ?? []).map((a) => ({
+  // Todos los anuncios vigentes, paginando el tope de 100 de la API
+  // (best-effort; si la API falla, se omiten).
+  const items = await fetchAllAds();
+  const ads: MetadataRoute.Sitemap = items.map((a) => ({
     url: `${SITE}/listings/${a.id}`,
     lastModified: a.updatedAt,
     changeFrequency: 'weekly',

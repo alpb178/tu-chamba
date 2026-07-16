@@ -11,6 +11,7 @@ import { Badge } from '@/components/Badge';
 import { Reviews } from '@/components/Reviews';
 import { AdActions } from '@/components/AdActions';
 import { TrackVisit } from '@/components/TrackVisit';
+import { adTitle, jobPostingJsonLd, jsonLd } from '@/lib/seo';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -24,12 +25,16 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     ad.category && CATEGORY_LABEL[ad.category],
     ad.department && `en ${DEPARTMENT_LABEL[ad.department]}`,
   ].filter(Boolean);
-  const title = `${parts.join(' ') || 'Oferta de empleo'} — Tu Chamba`;
+  const title = `${adTitle(ad)} — ${parts.join(' ') || 'Empleo'} | Tu Chamba`;
   const description = ad.description.slice(0, 155);
   return {
     title,
     description,
-    openGraph: { title, description, type: 'article' },
+    alternates: { canonical: `/listings/${id}` },
+    // Las ofertas vencidas o dadas de baja salen del índice.
+    robots:
+      adEffectiveStatus(ad) === 'ACTIVO' ? undefined : { index: false },
+    openGraph: { title, description, type: 'article', images: ['/banner.jpeg'] },
   };
 }
 
@@ -42,6 +47,13 @@ export default async function AdDetailPage({ params }: Params) {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+      {/* JobPosting para Google for Jobs: solo en ofertas vigentes. */}
+      {status === 'ACTIVO' && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd(jobPostingJsonLd(ad)) }}
+        />
+      )}
       <TrackVisit adId={ad.id} />
       {status !== 'ACTIVO' && (
         <div className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">

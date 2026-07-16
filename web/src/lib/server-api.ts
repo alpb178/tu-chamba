@@ -17,15 +17,30 @@ export async function fetchAd(id: string): Promise<Ad | null> {
 export async function fetchAds(params: {
   department?: Department;
   limit?: number;
+  page?: number;
 }): Promise<Paginated<Ad> | null> {
   try {
     const qs = new URLSearchParams();
     if (params.department) qs.set('department', params.department);
     qs.set('limit', String(params.limit ?? 50));
+    if (params.page) qs.set('page', String(params.page));
     const res = await fetch(`${API}/listings?${qs}`, { cache: 'no-store' });
     if (!res.ok) return null;
     return (await res.json()) as Paginated<Ad>;
   } catch {
     return null;
   }
+}
+
+// Todos los anuncios vigentes paginando de a 100 (tope de la API), con un
+// máximo defensivo — pensado para el sitemap.
+export async function fetchAllAds(max = 1000): Promise<Ad[]> {
+  const items: Ad[] = [];
+  for (let page = 1; items.length < max; page++) {
+    const data = await fetchAds({ limit: 100, page });
+    if (!data?.items.length) break;
+    items.push(...data.items);
+    if (page >= data.totalPages) break;
+  }
+  return items.slice(0, max);
 }
