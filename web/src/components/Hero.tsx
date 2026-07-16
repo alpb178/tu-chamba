@@ -45,10 +45,9 @@ export function Hero({
           'linear-gradient(rgba(0, 74, 198, 0.95), rgba(0, 23, 75, 0.98))',
       }}
     >
-      {/* Banner de marca como cabecera a sangre completa. El archivo es
-          2880x480 (6:1): el arte original con los laterales extendidos con
-          sus propias orillas desenfocadas, así llena el ancho sin recortes
-          (~320px de alto en una pantalla de 1920). */}
+      {/* Banner de marca como cabecera a sangre completa, en su proporción
+          natural (1936x544, ~3.56:1): llena el ancho de la ventana sin
+          recortes ni rellenos laterales. */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/banner.jpeg"
