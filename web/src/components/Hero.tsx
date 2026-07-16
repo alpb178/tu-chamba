@@ -45,17 +45,15 @@ export function Hero({
           'linear-gradient(rgba(0, 74, 198, 0.95), rgba(0, 23, 75, 0.98))',
       }}
     >
-      {/* Banner de marca como cabecera: centrado y sin recortes (tiene su
-          propio texto), sobre el mismo azul del arte para que se funda. */}
-      <div className="mx-auto max-w-6xl px-4 pt-6 sm:pt-8">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/banner.jpeg"
-          alt="Ofrece o busca trabajo — conexión directa, sin CV"
-          className="w-full rounded-2xl shadow-xl"
-          fetchPriority="high"
-        />
-      </div>
+      {/* Banner panorámico de marca a sangre completa: es la cabecera de la
+          página (formato ~3.5:1, sin recortes; el arte trae su propio texto). */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/banner.jpeg"
+        alt="Ofrece o busca trabajo — conexión directa, sin CV"
+        className="w-full"
+        fetchPriority="high"
+      />
 
       <div className="relative z-20 mx-auto w-full max-w-4xl px-4 pb-10 pt-6 text-center sm:pb-12">
         {/* El titular queda para lectores de pantalla y SEO: el banner ya
