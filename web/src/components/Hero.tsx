@@ -45,18 +45,17 @@ export function Hero({
           'linear-gradient(rgba(0, 74, 198, 0.95), rgba(0, 23, 75, 0.98))',
       }}
     >
-      {/* Banner panorámico de marca como cabecera, con altura acotada:
-          se centra completo (sin recortes) y los laterales los cubre el
-          degradado azul, que se funde con el arte. */}
-      <div className="px-4 pt-4 sm:pt-6">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/banner.jpeg"
-          alt="Ofrece o busca trabajo — conexión directa, sin CV"
-          className="mx-auto w-full max-w-full rounded-xl sm:w-auto sm:max-h-[300px] lg:max-h-[340px]"
-          fetchPriority="high"
-        />
-      </div>
+      {/* Banner panorámico de marca como cabecera: a todo el ancho de la
+          ventana con altura acotada — object-cover recorta el sobrante
+          vertical manteniendo el centro del arte. En móvil va a su
+          proporción natural (ya es bajo). */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/banner.jpeg"
+        alt="Ofrece o busca trabajo — conexión directa, sin CV"
+        className="w-full sm:h-[300px] sm:object-cover sm:object-center lg:h-[340px]"
+        fetchPriority="high"
+      />
 
       <div className="relative z-20 mx-auto w-full max-w-4xl px-4 pb-10 pt-6 text-center sm:pb-12">
         {/* El titular queda para lectores de pantalla y SEO: el banner ya
