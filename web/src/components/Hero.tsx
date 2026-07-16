@@ -45,20 +45,17 @@ export function Hero({
           'linear-gradient(rgba(0, 74, 198, 0.95), rgba(0, 23, 75, 0.98))',
       }}
     >
-      {/* Banner panorámico de marca como cabecera con altura acotada. El
-          arte actual es 3.56:1: a pantalla completa con esta altura haría
-          falta ~6:1 (ideal 2880x480), así que hasta tener esa versión se
-          muestra completo y centrado, con los laterales en el degradado
-          que se funde con el arte. */}
-      <div className="px-4 pt-4 sm:pt-6">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/banner.jpeg"
-          alt="Ofrece o busca trabajo — conexión directa, sin CV"
-          className="mx-auto w-full max-w-full rounded-xl sm:w-auto sm:max-h-[300px] lg:max-h-[340px]"
-          fetchPriority="high"
-        />
-      </div>
+      {/* Banner de marca como cabecera a sangre completa. El archivo es
+          2880x480 (6:1): el arte original con los laterales extendidos con
+          sus propias orillas desenfocadas, así llena el ancho sin recortes
+          (~320px de alto en una pantalla de 1920). */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/banner.jpeg"
+        alt="Ofrece o busca trabajo — conexión directa, sin CV"
+        className="w-full"
+        fetchPriority="high"
+      />
 
       <div className="relative z-20 mx-auto w-full max-w-4xl px-4 pb-10 pt-6 text-center sm:pb-12">
         {/* El titular queda para lectores de pantalla y SEO: el banner ya
