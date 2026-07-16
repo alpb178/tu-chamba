@@ -5,6 +5,8 @@ import type { Config } from 'tailwindcss';
 // aún los usa quede automáticamente en el nuevo estilo.
 const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
+  // Siempre modo claro: sin la clase 'dark' las variantes dark: no aplican.
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

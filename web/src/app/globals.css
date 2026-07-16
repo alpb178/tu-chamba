@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 /* Tokens Material 3 como variables (tripletas RGB para poder aplicar
-   opacidad con Tailwind). El tema oscuro redefine las mismas variables
-   según la preferencia del sistema. */
+   opacidad con Tailwind). El sitio es siempre claro por decisión de
+   producto; un tema oscuro futuro solo tendría que redefinirlas. */
 :root {
   color-scheme: light;
   --c-primary: 0 74 198;
@@ -45,47 +45,6 @@
   --c-brand-light: 219 225 255;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-    --c-primary: 180 197 255;
-    --c-on-primary: 0 42 119;
-    --c-primary-container: 0 57 160;
-    --c-on-primary-container: 219 225 255;
-    --c-secondary: 255 185 92;
-    --c-on-secondary: 68 43 0;
-    --c-secondary-container: 99 64 0;
-    --c-on-secondary-container: 255 221 179;
-    --c-tertiary: 121 218 159;
-    --c-on-tertiary: 0 57 33;
-    --c-tertiary-container: 0 82 52;
-    --c-on-tertiary-container: 146 247 187;
-    --c-error: 255 180 171;
-    --c-on-error: 105 0 5;
-    --c-error-container: 147 0 10;
-    --c-on-error-container: 255 218 214;
-    --c-background: 15 17 27;
-    --c-on-background: 226 226 236;
-    --c-surface: 15 17 27;
-    --c-on-surface: 226 226 236;
-    --c-surface-variant: 68 71 84;
-    --c-on-surface-variant: 197 198 214;
-    --c-surface-container-lowest: 10 12 20;
-    --c-surface-container-low: 23 25 36;
-    --c-surface-container: 27 30 42;
-    --c-surface-container-high: 37 40 54;
-    --c-surface-container-highest: 48 51 66;
-    --c-surface-dim: 10 12 20;
-    --c-inverse-surface: 226 226 236;
-    --c-inverse-on-surface: 47 48 66;
-    --c-inverse-primary: 0 74 198;
-    --c-outline: 142 144 160;
-    --c-outline-variant: 68 71 84;
-    --c-brand: 180 197 255;
-    --c-brand-strong: 143 169 255;
-    --c-brand-light: 29 53 100;
-  }
-}
 
 @layer base {
   body {
