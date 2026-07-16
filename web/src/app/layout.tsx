@@ -34,6 +34,10 @@ export const metadata: Metadata = {
     // Banner de marca al compartir enlaces en redes/WhatsApp.
     images: ['/banner.jpeg'],
   },
+  // Verificación de Google Search Console (genera la <meta> en el <head>).
+  verification: {
+    google: 'RAbSkpDPrtoFPzaYMThMDULsfBn4bjGRobJb6z5krXQ',
+  },
 };
 
 export default function RootLayout({
