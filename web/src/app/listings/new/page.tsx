@@ -51,16 +51,24 @@ function Form() {
   // Con el correo sin verificar no se puede publicar (admins exentos).
   const notVerified = !!user && !user.isAdmin && !user.emailVerified;
 
+  // Al admin solo se le exigen descripción y teléfono (mismas reglas que su
+  // panel); al resto, todos los campos salvo el horario.
+  const isAdmin = !!user?.isAdmin;
+
   // Campos obligatorios aún sin completar: deshabilitan Publicar y se
   // listan en el tooltip del botón. Jornada y duración siempre tienen valor.
   const missingFields = (
     [
       [form.description, 'Descripción'],
-      [form.requirements, 'Requisitos'],
-      [form.department, 'Departamento'],
-      [form.category, 'Categoría'],
-      [form.location, 'Ubicación'],
-      [form.salary, 'Salario'],
+      ...(isAdmin
+        ? []
+        : ([
+            [form.requirements, 'Requisitos'],
+            [form.department, 'Departamento'],
+            [form.category, 'Categoría'],
+            [form.location, 'Ubicación'],
+            [form.salary, 'Salario'],
+          ] as const)),
       [form.phone, 'Teléfono'],
     ] as const
   )
@@ -103,16 +111,18 @@ function Form() {
     setError(null);
     setSaving(true);
     try {
+      // Los valores vacíos solo pueden llegar del admin: se omiten (salario
+      // "a convenir") o toman los mismos defaults que su panel e importación.
       const payload = {
         description: form.description,
         requirements: form.requirements.trim() || undefined,
-        location: form.location,
-        department: form.department,
-        category: form.category,
+        location: form.location.trim() || undefined,
+        department: form.department || 'SANTA_CRUZ',
+        category: form.category || 'OTRO',
         latitude: coords?.lat,
         longitude: coords?.lng,
         schedule: form.schedule.trim() || undefined,
-        salary: Number(form.salary),
+        salary: form.salary.trim() ? Number(form.salary) : undefined,
         phone: form.phone,
         jobType: form.jobType,
         durationDays: form.durationDays,
@@ -161,36 +171,35 @@ function Form() {
             required
           />
         </FormField>
-        {/* En la web todos los campos son obligatorios salvo el horario. */}
-        <FormField label="Requisitos del candidato" required>
+        <FormField label="Requisitos del candidato" required={!isAdmin}>
           <textarea
             className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             rows={3}
             placeholder="Experiencia, disponibilidad, documentación..."
             value={form.requirements}
             onChange={(e) => setForm({ ...form, requirements: e.target.value })}
-            required
+            required={!isAdmin}
           />
         </FormField>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField label="Departamento" required>
+          <FormField label="Departamento" required={!isAdmin}>
             <CustomSelect
               value={form.department}
               onChange={(v) =>
                 setForm({ ...form, department: v as Department })
               }
-              required
+              required={!isAdmin}
               placeholder="Selecciona…"
               options={Object.entries(DEPARTMENT_LABEL).map(
                 ([value, label]) => ({ value, label }),
               )}
             />
           </FormField>
-          <FormField label="Categoría / rubro" required>
+          <FormField label="Categoría / rubro" required={!isAdmin}>
             <CustomSelect
               value={form.category}
               onChange={(v) => setForm({ ...form, category: v as Category })}
-              required
+              required={!isAdmin}
               placeholder="Selecciona…"
               options={Object.entries(CATEGORY_LABEL).map(
                 ([value, label]) => ({ value, label }),
@@ -198,12 +207,12 @@ function Form() {
             />
           </FormField>
         </div>
-        <FormField label="Ubicación del puesto" required>
+        <FormField label="Ubicación del puesto" required={!isAdmin}>
           <Input
             placeholder="Zona o dirección de referencia"
             value={form.location}
             onChange={(e) => setForm({ ...form, location: e.target.value })}
-            required
+            required={!isAdmin}
           />
         </FormField>
         <FormField label="Marca el lugar en el mapa (opcional)">
@@ -226,13 +235,13 @@ function Form() {
             onChange={(e) => setForm({ ...form, schedule: e.target.value })}
           />
         </FormField>
-        <FormField label="Salario (Bs)" required>
+        <FormField label="Salario (Bs)" required={!isAdmin}>
           <Input
             type="number"
             min={1}
             value={form.salary}
             onChange={(e) => setForm({ ...form, salary: e.target.value })}
-            required
+            required={!isAdmin}
           />
         </FormField>
         <FormField label="Teléfono de contacto (WhatsApp)" required>
