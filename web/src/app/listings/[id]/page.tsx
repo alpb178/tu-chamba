@@ -56,7 +56,7 @@ export default async function AdDetailPage({ params }: Params) {
       )}
       <TrackVisit adId={ad.id} />
       {status !== 'ACTIVO' && (
-        <div className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <div className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950/60 dark:text-amber-200">
           Este anuncio está {STATUS_LABEL[status].toLowerCase()} y ya no se
           muestra en el portal.
         </div>

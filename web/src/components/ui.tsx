@@ -19,7 +19,7 @@ export function Button({
   }[variant];
   return (
     <button
-      className={`px-4 py-2 text-sm transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${styles} ${className}`}
+      className={`px-4 py-2 text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${styles} ${className}`}
       {...props}
     />
   );
@@ -28,7 +28,7 @@ export function Button({
 export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
+      className={`w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-base text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
       {...props}
     />
   );

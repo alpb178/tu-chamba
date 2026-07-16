@@ -15,6 +15,7 @@ import { AdCard } from '@/components/AdCard';
 import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
 import { Pagination } from '@/components/Pagination';
 import { FeaturedBrands } from '@/components/FeaturedBrands';
+import { Icon } from '@/components/Icon';
 
 // Portada. La búsqueda (?q= y ?dep=) llega resuelta desde el server
 // component (page.tsx), así el hero viaja en el HTML inicial.
@@ -101,19 +102,32 @@ export function HomeClient({
                 <AdListSkeleton />
               </>
             ) : data && data.items.length === 0 ? (
-              <p className="text-on-surface-variant">
-                No se encontraron anuncios con estos filtros.
-              </p>
+              <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-14 text-center">
+                <Icon name="search" className="text-4xl text-outline" />
+                <p className="text-base text-on-surface">
+                  No se encontraron ofertas con estos filtros.
+                </p>
+                <p className="text-sm text-on-surface-variant">
+                  Prueba quitar algún filtro o buscar con otras palabras.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setFilters(NO_FILTERS)}
+                  className="mt-1 rounded-lg border border-outline-variant px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                >
+                  Limpiar filtros
+                </button>
+              </div>
             ) : (
               data && (
                 <>
                   <div className="mb-4 flex flex-wrap items-baseline gap-2">
-                    <h1 className="font-display text-2xl font-semibold text-on-surface">
+                    <h2 className="font-display text-2xl font-semibold text-on-surface">
                       {data.total}{' '}
                       {data.total === 1
                         ? 'oferta encontrada'
                         : 'ofertas encontradas'}
-                    </h1>
+                    </h2>
                     {dep && (
                       <span className="text-sm text-on-surface-variant">
                         en {DEPARTMENT_LABEL[dep]}

@@ -81,7 +81,7 @@ function ItemMenu({
   children: ReactNode;
 }) {
   const clases =
-    'flex items-center gap-3 px-4 py-2.5 text-sm text-on-surface-variant transition hover:bg-surface-container-low hover:text-brand';
+    'flex items-center gap-3 px-4 py-2.5 text-base text-on-surface-variant transition hover:bg-surface-container-low hover:text-brand';
   if (externo) {
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" role="menuitem" className={clases}>
@@ -328,16 +328,16 @@ export function Navbar() {
             </Link>
             {user && (
               <>
-                <Link href="/my-listings" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/my-listings')}`}>
+                <Link href="/my-listings" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/my-listings')}`}>
                   Mis anuncios
                 </Link>
-                <Link href="/interests" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/interests')}`}>
+                <Link href="/interests" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/interests')}`}>
                   Anuncios de tu interés
                 </Link>
-                <Link href="/alerts" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/alerts')}`}>
+                <Link href="/alerts" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/alerts')}`}>
                   Alertas de empleo
                 </Link>
-                <Link href="/profile" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/profile')}`}>
+                <Link href="/profile" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/profile')}`}>
                   Mi perfil
                 </Link>
               </>
@@ -361,7 +361,7 @@ export function Navbar() {
               </button>
             ) : (
               <>
-                <Link href="/login" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/login')}`}>
+                <Link href="/login" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/login')}`}>
                   Ingresar
                 </Link>
                 <Link href="/register" className="rounded-full bg-primary-container px-3 py-2 text-center text-sm font-bold text-on-primary-container">

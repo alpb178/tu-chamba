@@ -111,7 +111,7 @@ export function Reviews({
               </span>
               <Stars value={r.rating} />
             </div>
-            <p className="mt-1 text-sm text-on-surface-variant">{r.comment}</p>
+            <p className="mt-1 text-base text-on-surface-variant">{r.comment}</p>
           </li>
         ))}
       </ul>
@@ -163,7 +163,7 @@ export function Reviews({
           </FormField>
           <FormField label="Comentario">
             <textarea
-              className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+              className="w-full rounded-md border border-outline-variant px-3 py-2 text-base outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}

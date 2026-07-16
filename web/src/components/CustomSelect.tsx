@@ -160,7 +160,7 @@ export function CustomSelect({
         }
         onClick={() => (open ? setOpen(false) : openList())}
         onKeyDown={onTriggerKey}
-        className={`flex w-full items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-left text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
+        className={`flex w-full items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-left text-base text-on-surface outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
       >
         {icon && (
           <Icon name={icon} className="text-outline" />
@@ -208,7 +208,7 @@ export function CustomSelect({
                 aria-activedescendant={
                   active >= 0 ? `${listboxId}-${active}` : undefined
                 }
-                className="w-full border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-outline focus:ring-0"
+                className="w-full border-none bg-transparent text-base text-on-surface outline-none placeholder:text-outline focus:ring-0"
               />
             </div>
           )}
@@ -236,7 +236,7 @@ export function CustomSelect({
                   e.preventDefault();
                   select(i);
                 }}
-                className={`flex cursor-pointer items-center justify-between px-3 py-2 text-sm ${
+                className={`flex cursor-pointer items-center justify-between px-3 py-2 text-base ${
                   i === active
                     ? 'bg-surface-container-low text-primary'
                     : 'text-on-surface'

@@ -12,7 +12,7 @@ import { Icon } from './Icon';
 
 const STATUS_STYLE = {
   ACTIVO: 'bg-tertiary-container text-on-tertiary-container',
-  VENCIDO: 'bg-amber-100 text-amber-800',
+  VENCIDO: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200',
   DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
 };
 
@@ -46,7 +46,7 @@ export function AdCard({
   return (
     <Link
       href={`/listings/${ad.id}`}
-      className="group relative block overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+      className="group relative block overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
       {/* Detalle decorativo que crece al pasar el cursor. */}
       <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150" />
@@ -112,13 +112,13 @@ export function AdCard({
             </>
           ) : (
             ad.category && (
-              <span className="text-xs text-outline">
+              <span className="text-sm text-outline">
                 {CATEGORY_LABEL[ad.category]}
               </span>
             )
           )}
         </div>
-        <span className="rounded-lg bg-primary px-6 py-2 text-xs font-bold text-on-primary transition-all group-hover:brightness-110">
+        <span className="rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-on-primary transition-all group-hover:brightness-110">
           Ver detalles
         </span>
       </div>

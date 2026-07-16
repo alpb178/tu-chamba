@@ -45,7 +45,7 @@ function Section({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className={`flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider transition-all ${
+        className={`flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
           open
             ? 'bg-secondary-container font-bold text-on-secondary-container'
             : 'text-on-surface-variant hover:bg-surface-container-high'
@@ -73,7 +73,7 @@ function Option({
   onToggle: () => void;
 }) {
   return (
-    <label className="group flex cursor-pointer items-center justify-between text-sm text-on-surface-variant">
+    <label className="group flex cursor-pointer items-center justify-between py-1 text-base text-on-surface-variant transition-colors hover:text-on-surface">
       <span className="flex items-center gap-3">
         <input
           type="checkbox"

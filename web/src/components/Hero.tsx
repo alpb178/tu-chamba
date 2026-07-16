@@ -46,23 +46,26 @@ export function Hero({
           'linear-gradient(rgba(0, 74, 198, 0.95), rgba(0, 23, 75, 0.98))',
       }}
     >
-      {/* Banner de marca como cabecera a sangre completa, en su proporción
-          natural (1936x544, ~3.56:1): llena el ancho de la ventana sin
-          recortes ni rellenos laterales. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/banner.jpeg"
-        alt="Ofrece o busca trabajo — conexión directa, sin CV"
-        className="w-full"
-        fetchPriority="high"
-      />
+      {/* Banner de marca con altura acotada (hero compacto): completo y
+          centrado, los laterales los funde el degradado. El mensaje
+          principal va en HTML real debajo (indexable y accesible). */}
+      <div className="px-4 pt-4 sm:pt-6">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/banner.jpeg"
+          alt="Ofrece o busca trabajo — conexión directa, sin CV"
+          className="mx-auto w-full max-w-full rounded-xl sm:w-auto sm:max-h-[280px]"
+          fetchPriority="high"
+        />
+      </div>
 
-      <div className="relative z-20 mx-auto w-full max-w-4xl px-4 pb-10 pt-6 text-center sm:pb-12">
-        {/* El titular queda para lectores de pantalla y SEO: el banner ya
-            lleva el mensaje visual. */}
-        <h1 className="sr-only">
+      <div className="relative z-20 mx-auto w-full max-w-4xl px-4 pb-10 pt-5 text-center sm:pb-12">
+        <h1 className="font-display text-2xl font-bold leading-tight text-on-primary sm:text-3xl">
           Encuentra trabajos diarios al instante en Bolivia
         </h1>
+        <p className="mx-auto mb-6 mt-2 max-w-2xl text-base text-surface-container-low opacity-90">
+          Conecta directo con empleadores locales — sin CV, por WhatsApp.
+        </p>
 
         {/* Buscador glass: qué + dónde. */}
         <form

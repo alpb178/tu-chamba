@@ -2,6 +2,91 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tokens Material 3 como variables (tripletas RGB para poder aplicar
+   opacidad con Tailwind). El tema oscuro redefine las mismas variables
+   según la preferencia del sistema. */
+:root {
+  color-scheme: light;
+  --c-primary: 0 74 198;
+  --c-on-primary: 255 255 255;
+  --c-primary-container: 37 99 235;
+  --c-on-primary-container: 238 239 255;
+  --c-secondary: 133 83 0;
+  --c-on-secondary: 255 255 255;
+  --c-secondary-container: 254 166 25;
+  --c-on-secondary-container: 104 64 0;
+  --c-tertiary: 0 98 66;
+  --c-on-tertiary: 255 255 255;
+  --c-tertiary-container: 0 125 85;
+  --c-on-tertiary-container: 189 255 219;
+  --c-error: 186 26 26;
+  --c-on-error: 255 255 255;
+  --c-error-container: 255 218 214;
+  --c-on-error-container: 147 0 10;
+  --c-background: 250 248 255;
+  --c-on-background: 19 27 46;
+  --c-surface: 250 248 255;
+  --c-on-surface: 19 27 46;
+  --c-surface-variant: 218 226 253;
+  --c-on-surface-variant: 67 70 85;
+  --c-surface-container-lowest: 255 255 255;
+  --c-surface-container-low: 242 243 255;
+  --c-surface-container: 234 237 255;
+  --c-surface-container-high: 226 231 255;
+  --c-surface-container-highest: 218 226 253;
+  --c-surface-dim: 210 217 244;
+  --c-inverse-surface: 40 48 68;
+  --c-inverse-on-surface: 238 240 255;
+  --c-inverse-primary: 180 197 255;
+  --c-outline: 115 118 134;
+  --c-outline-variant: 195 198 215;
+  --c-brand: 0 74 198;
+  --c-brand-strong: 0 62 168;
+  --c-brand-light: 219 225 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --c-primary: 180 197 255;
+    --c-on-primary: 0 42 119;
+    --c-primary-container: 0 57 160;
+    --c-on-primary-container: 219 225 255;
+    --c-secondary: 255 185 92;
+    --c-on-secondary: 68 43 0;
+    --c-secondary-container: 99 64 0;
+    --c-on-secondary-container: 255 221 179;
+    --c-tertiary: 121 218 159;
+    --c-on-tertiary: 0 57 33;
+    --c-tertiary-container: 0 82 52;
+    --c-on-tertiary-container: 146 247 187;
+    --c-error: 255 180 171;
+    --c-on-error: 105 0 5;
+    --c-error-container: 147 0 10;
+    --c-on-error-container: 255 218 214;
+    --c-background: 15 17 27;
+    --c-on-background: 226 226 236;
+    --c-surface: 15 17 27;
+    --c-on-surface: 226 226 236;
+    --c-surface-variant: 68 71 84;
+    --c-on-surface-variant: 197 198 214;
+    --c-surface-container-lowest: 10 12 20;
+    --c-surface-container-low: 23 25 36;
+    --c-surface-container: 27 30 42;
+    --c-surface-container-high: 37 40 54;
+    --c-surface-container-highest: 48 51 66;
+    --c-surface-dim: 10 12 20;
+    --c-inverse-surface: 226 226 236;
+    --c-inverse-on-surface: 47 48 66;
+    --c-inverse-primary: 0 74 198;
+    --c-outline: 142 144 160;
+    --c-outline-variant: 68 71 84;
+    --c-brand: 180 197 255;
+    --c-brand-strong: 143 169 255;
+    --c-brand-light: 29 53 100;
+  }
+}
+
 @layer base {
   body {
     /* overflow-x-clip: el hero a sangre completa usa w-screen. */
@@ -25,7 +110,8 @@
   @apply border-primary ring-1 ring-primary;
 }
 .PhoneInputInput {
-  @apply w-full border-none bg-transparent text-sm text-on-surface outline-none placeholder:text-outline;
+  /* 16px: legibilidad y evita el auto-zoom de iOS al enfocar. */
+  @apply w-full border-none bg-transparent text-base text-on-surface outline-none placeholder:text-outline;
 }
 .PhoneInputInput:focus {
   outline: none;

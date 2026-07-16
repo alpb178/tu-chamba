@@ -152,7 +152,7 @@ function Form() {
         {editId ? 'Editar anuncio' : 'Publicar anuncio'}
       </h1>
       {notVerified && (
-        <div className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <div className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:bg-amber-950/60 dark:text-amber-200">
           Verifica tu correo para poder publicar. Revisa el enlace que te
           enviamos o reenvíalo desde el aviso superior.
         </div>
@@ -164,7 +164,7 @@ function Form() {
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label="Descripción del puesto" required>
           <textarea
-            className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+            className="w-full rounded-md border border-outline-variant px-3 py-2 text-base outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             rows={4}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -173,7 +173,7 @@ function Form() {
         </FormField>
         <FormField label="Requisitos del candidato" required={!isAdmin}>
           <textarea
-            className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+            className="w-full rounded-md border border-outline-variant px-3 py-2 text-base outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             rows={3}
             placeholder="Experiencia, disponibilidad, documentación..."
             value={form.requirements}
