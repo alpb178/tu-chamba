@@ -327,7 +327,8 @@ export class AdsService {
     return updated;
   }
 
-  // Reactiva un anuncio vencido o dado de baja con una nueva ventana de vigencia.
+  // Reactiva un anuncio dado de baja (o vencido aún no barrido por la
+  // limpieza horaria) con una nueva ventana de vigencia.
   async republish(id: string, user: AuthUser) {
     const ad = await this.findOne(id);
     this.assertCanModify(ad.createdById, user);
@@ -336,8 +337,6 @@ export class AdsService {
       data: {
         status: AdStatus.ACTIVO,
         expiresAt: expiryDate(ad.durationDays),
-        // Permite volver a notificar cuando venza esta nueva ventana.
-        expiryNotified: false,
       },
       include: includeAuthor,
     });

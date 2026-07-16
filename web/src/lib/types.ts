@@ -139,7 +139,8 @@ export interface Review {
   comment: string;
   authorId: string;
   ownerId: string;
-  adId: string;
+  // Nulo si el anuncio reseñado ya fue eliminado (la reseña se conserva).
+  adId: string | null;
   author?: { id: string; name: string };
   createdAt: string;
   updatedAt: string;

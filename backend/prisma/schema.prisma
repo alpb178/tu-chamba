@@ -54,8 +54,8 @@ enum Category {
   @@map("Categoria")
 }
 
-// VENCIDO no se persiste: un anuncio ACTIVO con expiresAt en el pasado
-// se considera vencido al leer (no dependemos de cron jobs).
+// VENCIDO no se persiste: un anuncio con expiresAt en el pasado se considera
+// vencido al leer, y la limpieza horaria (AdsCleanupService) lo elimina.
 enum AdStatus {
   ACTIVO
   DADO_DE_BAJA
@@ -174,8 +174,6 @@ model Ad {
   status       AdStatus  @default(ACTIVO) @map("estado")
   durationDays Int       @default(3) @map("duracionDias")
   expiresAt    DateTime  @map("expiraEn")
-  // Evita duplicar la notificación de vencimiento (se resetea al republicar).
-  expiryNotified Boolean @default(false) @map("vencimientoNotificado")
   reports      Report[]
   notifications Notification[]
   visits       Visit[]
@@ -199,8 +197,10 @@ model Review {
   authorId  String   @map("autorId")
   owner     User     @relation("ReviewsRecibidas", fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId   String   @map("duenoId")
-  ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
-  adId      String   @map("anuncioId")
+  // SetNull: al eliminarse el anuncio (limpieza de vencidos) la reseña se
+  // desvincula pero se conserva — la calificación del dueño no se pierde.
+  ad        Ad?      @relation(fields: [adId], references: [id], onDelete: SetNull)
+  adId      String?  @map("anuncioId")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

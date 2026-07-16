@@ -12,11 +12,9 @@ function summary(text: string, max = 60) {
 export class NotificationsService {
   constructor(private prisma: PrismaService) {}
 
-  // Listado propio + conteo de no leídas. Antes de listar se generan las
-  // notificaciones de vencimiento pendientes (lazy, sin cron).
+  // Listado propio + conteo de no leídas. Las notificaciones de vencimiento
+  // las crea AdsCleanupService al eliminar el anuncio vencido.
   async findMine(user: AuthUser) {
-    await this.generateExpiryNotifications(user.id);
-
     const [items, unread] = await Promise.all([
       this.prisma.notification.findMany({
         where: { userId: user.id },
@@ -105,34 +103,5 @@ export class NotificationsService {
         adId: ad.id,
       })),
     });
-  }
-
-  // Vencimientos: genera una notificación por anuncio ACTIVO ya expirado que
-  // aún no fue notificado. El flag se resetea al republicar.
-  private async generateExpiryNotifications(userId: string) {
-    const expired = await this.prisma.ad.findMany({
-      where: {
-        createdById: userId,
-        status: 'ACTIVO',
-        expiresAt: { lt: new Date() },
-        expiryNotified: false,
-      },
-    });
-    if (!expired.length) return;
-
-    await this.prisma.$transaction([
-      this.prisma.notification.createMany({
-        data: expired.map((ad) => ({
-          type: NotificationType.ANUNCIO_VENCIDO,
-          message: `Tu anuncio «${summary(ad.description)}» venció. Puedes republicarlo desde Mis anuncios.`,
-          userId,
-          adId: ad.id,
-        })),
-      }),
-      this.prisma.ad.updateMany({
-        where: { id: { in: expired.map((ad) => ad.id) } },
-        data: { expiryNotified: true },
-      }),
-    ]);
   }
 }
