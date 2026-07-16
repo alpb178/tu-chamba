@@ -131,8 +131,12 @@ function Form() {
           enviamos o reenvíalo desde el aviso superior.
         </div>
       )}
+      <p className="mb-3 text-xs text-on-surface-variant">
+        Los campos marcados con <span className="text-error">*</span> son
+        obligatorios.
+      </p>
       <form onSubmit={onSubmit} className="space-y-4">
-        <FormField label="Descripción del puesto">
+        <FormField label="Descripción del puesto" required>
           <textarea
             className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             rows={4}
@@ -142,7 +146,7 @@ function Form() {
           />
         </FormField>
         {/* En la web todos los campos son obligatorios salvo el horario. */}
-        <FormField label="Requisitos del candidato">
+        <FormField label="Requisitos del candidato" required>
           <textarea
             className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
             rows={3}
@@ -153,7 +157,7 @@ function Form() {
           />
         </FormField>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormField label="Departamento">
+          <FormField label="Departamento" required>
             <CustomSelect
               value={form.department}
               onChange={(v) =>
@@ -166,7 +170,7 @@ function Form() {
               )}
             />
           </FormField>
-          <FormField label="Categoría / rubro">
+          <FormField label="Categoría / rubro" required>
             <CustomSelect
               value={form.category}
               onChange={(v) => setForm({ ...form, category: v as Category })}
@@ -178,7 +182,7 @@ function Form() {
             />
           </FormField>
         </div>
-        <FormField label="Ubicación del puesto">
+        <FormField label="Ubicación del puesto" required>
           <Input
             placeholder="Zona o dirección de referencia"
             value={form.location}
@@ -206,7 +210,7 @@ function Form() {
             onChange={(e) => setForm({ ...form, schedule: e.target.value })}
           />
         </FormField>
-        <FormField label="Salario (Bs)">
+        <FormField label="Salario (Bs)" required>
           <Input
             type="number"
             min={1}
@@ -215,14 +219,14 @@ function Form() {
             required
           />
         </FormField>
-        <FormField label="Teléfono de contacto (WhatsApp)">
+        <FormField label="Teléfono de contacto (WhatsApp)" required>
           <PhoneField
             value={form.phone}
             onChange={(v) => setForm({ ...form, phone: v })}
             required
           />
         </FormField>
-        <FormField label="Tipo de jornada">
+        <FormField label="Tipo de jornada" required>
           <CustomSelect
             value={form.jobType}
             onChange={(v) => setForm({ ...form, jobType: v as JobType })}
@@ -233,7 +237,7 @@ function Form() {
             ]}
           />
         </FormField>
-        <FormField label="Duración de la publicación">
+        <FormField label="Duración de la publicación" required>
           <CustomSelect
             value={String(form.durationDays)}
             onChange={(v) => setForm({ ...form, durationDays: Number(v) })}

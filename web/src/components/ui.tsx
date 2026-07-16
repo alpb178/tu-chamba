@@ -34,10 +34,26 @@ export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInpu
   );
 }
 
-export function FormField({ label, children }: { label: string; children: ReactNode }) {
+export function FormField({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  // Muestra el asterisco de campo obligatorio junto a la etiqueta.
+  required?: boolean;
+  children: ReactNode;
+}) {
   return (
     <label className="block space-y-1">
-      <span className="text-sm font-medium text-on-surface-variant">{label}</span>
+      <span className="text-sm font-medium text-on-surface-variant">
+        {label}
+        {required && (
+          <span aria-hidden className="ml-0.5 text-error">
+            *
+          </span>
+        )}
+      </span>
       {children}
     </label>
   );
