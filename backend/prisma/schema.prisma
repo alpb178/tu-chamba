@@ -92,16 +92,29 @@ enum NotificationType {
 // Eventos que registra la traza del sistema (auditoría, solo lectura).
 enum TraceType {
   LOGIN
+  LOGOUT
   REGISTER
   EMAIL_VERIFIED
   ADMIN_CREATED
   ROLE_UPDATED
   USER_DELETED
   AD_CREATED
+  AD_UPDATED
+  AD_VIEWED
+  AD_IMPORTED
   AD_UNPUBLISHED
   AD_REPUBLISHED
   AD_DELETED
+  REPORT_CREATED
   REPORT_RESOLVED
+  REVIEW_CREATED
+  REVIEW_DELETED
+}
+
+// Resultado de la operación auditada (los intentos fallidos también se trazan).
+enum TraceResult {
+  OK
+  ERROR
 }
 
 model User {
@@ -300,14 +313,22 @@ model PageView {
 
 // Traza del sistema: eventos relevantes para auditoría. El actor se
 // denormaliza (email) para que la traza sobreviva al borrado del usuario.
+// IP y user-agent se capturan automáticamente del request (ver
+// RequestContextMiddleware); resource apunta al recurso afectado
+// ("ad:<id>", "user:<id>", "review:<id>", "report:<id>").
 model Trace {
-  id          String    @id @default(uuid())
+  id          String      @id @default(uuid())
   type        TraceType
   description String
   actorId     String?
   actorEmail  String?
-  createdAt   DateTime  @default(now())
+  ip          String?
+  userAgent   String?
+  resource    String?
+  result      TraceResult @default(OK)
+  createdAt   DateTime    @default(now())
 
   @@index([createdAt])
   @@index([type])
+  @@index([actorEmail])
 }

@@ -27,7 +27,7 @@ export class ReportsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() dto: CreateReportDto, @CurrentUser() user: AuthUser) {
-    return this.reports.create(dto, user.id);
+    return this.reports.create(dto, user);
   }
 
   // Cola de reportes: solo admin.

@@ -45,9 +45,16 @@ export default function ReportsAdminPage() {
     load();
   }
 
-  // Atiende el reporte dando de baja el anuncio reportado.
+  // Atiende el reporte dando de baja el anuncio reportado (sigue en la BD).
   async function unpublishAd(r: Report) {
     await api(`/listings/${r.adId}/unpublish`, { method: 'POST' });
+    await resolve(r, 'ATENDIDO');
+  }
+
+  // Atiende el reporte eliminando el anuncio definitivamente.
+  async function deleteAd(r: Report) {
+    if (!confirm('¿Eliminar definitivamente el anuncio reportado?')) return;
+    await api(`/listings/${r.adId}`, { method: 'DELETE' });
     await resolve(r, 'ATENDIDO');
   }
 
@@ -105,8 +112,11 @@ export default function ReportsAdminPage() {
               <td className="px-4 py-3 text-right">
                 {r.status === 'PENDIENTE' && (
                   <div className="flex justify-end gap-2">
-                    <Button variant="danger" onClick={() => unpublishAd(r)}>
-                      Dar de baja anuncio
+                    <Button variant="outline" onClick={() => unpublishAd(r)}>
+                      Ocultar anuncio
+                    </Button>
+                    <Button variant="danger" onClick={() => deleteAd(r)}>
+                      Eliminar anuncio
                     </Button>
                     <Button variant="outline" onClick={() => resolve(r, 'DESCARTADO')}>
                       Descartar

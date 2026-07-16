@@ -108,9 +108,38 @@ export class AdsService {
     };
   }
 
-  // Listado para el panel admin: incluye vencidos y dados de baja.
+  // Listado para el panel admin: incluye vencidos y dados de baja, con los
+  // filtros del reporte (solo clientes, rango de fechas, publicante, estado).
   async findAllAdmin(query: QueryAdDto) {
-    return this.paginate(query, {});
+    const base: Prisma.AdWhereInput = {};
+
+    const createdBy: Prisma.UserWhereInput = {};
+    if (query.clientsOnly === 'true') createdBy.isAdmin = false;
+    if (query.owner) {
+      createdBy.OR = [
+        { email: { contains: query.owner, mode: 'insensitive' } },
+        { name: { contains: query.owner, mode: 'insensitive' } },
+      ];
+    }
+    if (Object.keys(createdBy).length) base.createdBy = createdBy;
+    if (query.from || query.to) {
+      base.createdAt = {};
+      if (query.from) base.createdAt.gte = new Date(query.from);
+      // Hasta el final del día indicado.
+      if (query.to) base.createdAt.lte = new Date(`${query.to}T23:59:59.999Z`);
+    }
+    // VENCIDO no se persiste: se traduce a "activo con vigencia pasada".
+    if (query.status === 'ACTIVO') {
+      base.status = AdStatus.ACTIVO;
+      base.expiresAt = { gt: new Date() };
+    } else if (query.status === 'VENCIDO') {
+      base.status = AdStatus.ACTIVO;
+      base.expiresAt = { lte: new Date() };
+    } else if (query.status === 'DADO_DE_BAJA') {
+      base.status = AdStatus.DADO_DE_BAJA;
+    }
+
+    return this.paginate(query, base);
   }
 
   private async paginate(query: QueryAdDto, base: Prisma.AdWhereInput) {
@@ -209,6 +238,12 @@ export class AdsService {
   // departamento sí queda visible como zona general.
   async findOnePublic(id: string, user: AuthUser | null) {
     const ad = await this.findOne(id);
+    void this.traces.record(
+      TraceType.AD_VIEWED,
+      `Detalle del anuncio "${summary(ad.description)}" visto por ${user?.email ?? 'un visitante anónimo'}`,
+      user,
+      { resource: `ad:${id}` },
+    );
     if (user) return ad;
     const {
       phone: _phone,
@@ -264,6 +299,7 @@ export class AdsService {
       TraceType.AD_CREATED,
       `Anuncio "${summary(ad.description)}" publicado por ${ad.createdBy.email}`,
       ad.createdBy,
+      { resource: `ad:${ad.id}` },
     );
     return ad;
   }
@@ -286,7 +322,7 @@ export class AdsService {
       }),
     });
     await this.traces.record(
-      TraceType.AD_CREATED,
+      TraceType.AD_IMPORTED,
       `Importación CSV: ${count} anuncios publicados por ${user.email}`,
       user,
     );
@@ -303,11 +339,18 @@ export class AdsService {
       data.expiresAt = expiryDate(dto.durationDays);
     }
 
-    return this.prisma.ad.update({
+    const updated = await this.prisma.ad.update({
       where: { id },
       data,
       include: includeAuthor,
     });
+    await this.traces.record(
+      TraceType.AD_UPDATED,
+      `Anuncio "${summary(updated.description)}" editado por ${user.email}`,
+      user,
+      { resource: `ad:${id}` },
+    );
+    return updated;
   }
 
   // Baja manual: el anuncio deja de listarse públicamente pero no se borra.
@@ -323,6 +366,7 @@ export class AdsService {
       TraceType.AD_UNPUBLISHED,
       `Anuncio "${summary(ad.description)}" dado de baja por ${user.email}`,
       user,
+      { resource: `ad:${id}` },
     );
     return updated;
   }
@@ -344,6 +388,7 @@ export class AdsService {
       TraceType.AD_REPUBLISHED,
       `Anuncio "${summary(ad.description)}" republicado por ${user.email}`,
       user,
+      { resource: `ad:${id}` },
     );
     return updated;
   }
@@ -357,6 +402,7 @@ export class AdsService {
       TraceType.AD_DELETED,
       `Anuncio "${summary(ad.description)}" eliminado por ${user.email}`,
       user,
+      { resource: `ad:${id}` },
     );
     return { deleted: true };
   }

@@ -141,30 +141,46 @@ export interface Report {
 
 export type TraceType =
   | 'LOGIN'
+  | 'LOGOUT'
   | 'REGISTER'
   | 'EMAIL_VERIFIED'
   | 'ADMIN_CREATED'
   | 'ROLE_UPDATED'
   | 'USER_DELETED'
   | 'AD_CREATED'
+  | 'AD_UPDATED'
+  | 'AD_VIEWED'
+  | 'AD_IMPORTED'
   | 'AD_UNPUBLISHED'
   | 'AD_REPUBLISHED'
   | 'AD_DELETED'
-  | 'REPORT_RESOLVED';
+  | 'REPORT_CREATED'
+  | 'REPORT_RESOLVED'
+  | 'REVIEW_CREATED'
+  | 'REVIEW_DELETED';
 
 export const TRACE_TYPE_LABEL: Record<TraceType, string> = {
   LOGIN: 'Inicio de sesión',
+  LOGOUT: 'Cierre de sesión',
   REGISTER: 'Registro',
   EMAIL_VERIFIED: 'Correo verificado',
   ADMIN_CREATED: 'Admin creado',
   ROLE_UPDATED: 'Rol actualizado',
   USER_DELETED: 'Usuario eliminado',
   AD_CREATED: 'Anuncio creado',
+  AD_UPDATED: 'Anuncio editado',
+  AD_VIEWED: 'Detalle visto',
+  AD_IMPORTED: 'Importación CSV',
   AD_UNPUBLISHED: 'Anuncio dado de baja',
   AD_REPUBLISHED: 'Anuncio republicado',
   AD_DELETED: 'Anuncio eliminado',
+  REPORT_CREATED: 'Reporte enviado',
   REPORT_RESOLVED: 'Reporte resuelto',
+  REVIEW_CREATED: 'Reseña creada',
+  REVIEW_DELETED: 'Reseña eliminada',
 };
+
+export type TraceResult = 'OK' | 'ERROR';
 
 export interface Trace {
   id: string;
@@ -172,7 +188,41 @@ export interface Trace {
   description: string;
   actorId: string | null;
   actorEmail: string | null;
+  ip: string | null;
+  userAgent: string | null;
+  // Recurso afectado en formato "tipo:id" (ej. "ad:<uuid>").
+  resource: string | null;
+  result: TraceResult;
   createdAt: string;
+}
+
+// Reseña del reporte admin (el anuncio es null si ya fue eliminado).
+export interface AdminReview {
+  id: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  author: { id: string; name: string; email: string };
+  owner: { id: string; name: string; email: string };
+  ad: { id: string; description: string; status: AdStatus; expiresAt: string } | null;
+}
+
+// "Mozilla/5.0 (iPhone...) Chrome/126..." -> "Chrome · Móvil" para las tablas.
+export function formatUserAgent(ua: string | null): string {
+  if (!ua) return '—';
+  const browser = /Edg\//.test(ua)
+    ? 'Edge'
+    : /OPR\//.test(ua)
+      ? 'Opera'
+      : /Chrome\//.test(ua)
+        ? 'Chrome'
+        : /Firefox\//.test(ua)
+          ? 'Firefox'
+          : /Safari\//.test(ua)
+            ? 'Safari'
+            : 'Otro';
+  const device = /Mobile|Android|iPhone|iPad/.test(ua) ? 'Móvil' : 'Escritorio';
+  return `${browser} · ${device}`;
 }
 
 // Punto de una serie diaria del dashboard (fecha en formato YYYY-MM-DD).

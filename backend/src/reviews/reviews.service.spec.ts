@@ -14,11 +14,16 @@ function buildService() {
     },
   };
   const notifications = { notifyReview: jest.fn() };
-  const service = new ReviewsService(prisma as never, notifications as never);
-  return { service, prisma, notifications };
+  const traces = { record: jest.fn() };
+  const service = new ReviewsService(
+    prisma as never,
+    notifications as never,
+    traces as never,
+  );
+  return { service, prisma, notifications, traces };
 }
 
-const ad = { id: 'a1', createdById: 'owner1' };
+const ad = { id: 'a1', createdById: 'owner1', description: 'Anuncio de prueba' };
 const dto = { adId: 'a1', rating: 4, comment: 'Bien' };
 
 describe('ReviewsService.create', () => {

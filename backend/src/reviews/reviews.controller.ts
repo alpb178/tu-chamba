@@ -12,8 +12,10 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { QueryReviewDto } from './dto/query-review.dto';
+import { QueryAdminReviewDto } from './dto/query-admin-review.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
 import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('reviews')
@@ -28,6 +30,15 @@ export class ReviewsController {
   @Post()
   create(@Body() dto: CreateReviewDto, @CurrentUser() user: AuthUser) {
     return this.reviews.create(dto, user.id);
+  }
+
+  // Reporte del panel admin: todas las reseñas con autor, calificado y
+  // anuncio (debe ir antes de ':id' y de '/').
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Get('all')
+  findAllAdmin(@Query() query: QueryAdminReviewDto) {
+    return this.reviews.findAllAdmin(query);
   }
 
   // Público: reseñas y promedio de un publicante (sin datos de contacto).

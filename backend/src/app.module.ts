@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { RequestContextMiddleware } from './traces/request-context';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -37,4 +38,9 @@ import { AdminModule } from './admin/admin.module';
     HealthModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // IP y user-agent de cada request quedan disponibles para las trazas.
+    consumer.apply(RequestContextMiddleware).forRoutes('*');
+  }
+}

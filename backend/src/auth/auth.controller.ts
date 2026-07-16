@@ -25,6 +25,15 @@ export class AuthController {
     return this.auth.login(dto);
   }
 
+  // El JWT es stateless: el endpoint solo deja la traza de cierre de sesión
+  // para la auditoría (el cliente descarta el token).
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  logout(@CurrentUser() user: AuthUser) {
+    return this.auth.logout(user);
+  }
+
   // Registro/login con Google (requiere GOOGLE_CLIENT_ID configurado).
   @Post('google')
   google(@Body() dto: GoogleAuthDto) {

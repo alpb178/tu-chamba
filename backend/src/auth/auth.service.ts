@@ -15,7 +15,7 @@ import { TracesService } from '../traces/traces.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
-import { TraceType, User } from '@prisma/client';
+import { TraceResult, TraceType, User } from '@prisma/client';
 
 const VERIF_TTL_MS = 24 * 60 * 60 * 1000;
 const RESET_TTL_MS = 60 * 60 * 1000;
@@ -140,7 +140,10 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
-    if (!user) throw new UnauthorizedException('Credenciales inválidas');
+    if (!user) {
+      await this.failedLogin(dto.email);
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
 
     // Cuentas creadas con Google no tienen contraseña local.
     if (!user.password) {
@@ -150,14 +153,40 @@ export class AuthService {
     }
 
     const ok = await bcrypt.compare(dto.password, user.password);
-    if (!ok) throw new UnauthorizedException('Credenciales inválidas');
+    if (!ok) {
+      await this.failedLogin(dto.email, user.id);
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
 
     await this.traces.record(
       TraceType.LOGIN,
       `Inicio de sesión de ${user.email}`,
       user,
+      { resource: `user:${user.id}` },
     );
     return this.session(user);
+  }
+
+  // Cierre de sesión: el JWT es stateless, solo queda la traza de auditoría.
+  async logout(user: { id: string; email: string }) {
+    await this.traces.record(
+      TraceType.LOGOUT,
+      `Cierre de sesión de ${user.email}`,
+      user,
+      { resource: `user:${user.id}` },
+    );
+    return { ok: true };
+  }
+
+  // Intento de inicio de sesión fallido (usuario inexistente o contraseña
+  // incorrecta): queda auditado con resultado ERROR, junto a IP y navegador.
+  private async failedLogin(email: string, userId?: string) {
+    await this.traces.record(
+      TraceType.LOGIN,
+      `Intento de inicio de sesión fallido para ${email}`,
+      { id: userId ?? null, email },
+      { result: TraceResult.ERROR },
+    );
   }
 
   // Registro/login con Google: si el correo no existe, la cuenta se crea

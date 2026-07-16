@@ -9,6 +9,10 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
+  // Detrás del proxy de Render: req.ip debe traer la IP real del cliente
+  // (X-Forwarded-For), no la del proxy. Las trazas de auditoría la guardan.
+  app.set('trust proxy', 1);
+
   // El límite por defecto de Express (100 KB) se queda corto para la
   // importación masiva del panel admin (hasta 500 ofertas por request).
   app.useBodyParser('json', { limit: '5mb' });

@@ -52,6 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
+    // Best-effort: deja la traza de cierre de sesión antes de descartar el
+    // token (el JWT es stateless, la sesión muere al borrarlo igualmente).
+    api('/auth/logout', { method: 'POST' }).catch(() => {});
     clearToken();
     setUser(null);
   }

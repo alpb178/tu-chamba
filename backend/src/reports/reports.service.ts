@@ -29,25 +29,32 @@ export class ReportsService {
     private traces: TracesService,
   ) {}
 
-  async create(dto: CreateReportDto, reporterId: string) {
+  async create(dto: CreateReportDto, reporter: AuthUser) {
     const ad = await this.prisma.ad.findUnique({
       where: { id: dto.adId },
     });
     if (!ad) throw new NotFoundException('Anuncio no encontrado');
-    if (ad.createdById === reporterId) {
+    if (ad.createdById === reporter.id) {
       throw new BadRequestException('No puedes reportar tu propio anuncio');
     }
 
     try {
-      return await this.prisma.report.create({
+      const report = await this.prisma.report.create({
         data: {
           adId: dto.adId,
           reason: dto.reason,
           comment: dto.comment?.trim() || null,
-          reporterId,
+          reporterId: reporter.id,
         },
         include: includeDetail,
       });
+      await this.traces.record(
+        TraceType.REPORT_CREATED,
+        `Reporte por ${report.reason} sobre el anuncio "${ad.description.slice(0, 60)}" enviado por ${reporter.email}`,
+        reporter,
+        { resource: `report:${report.id}` },
+      );
+      return report;
     } catch (e) {
       // Violación del único (adId, reporterId): ya lo reportó antes.
       if (
@@ -83,6 +90,7 @@ export class ReportsService {
       TraceType.REPORT_RESOLVED,
       `Reporte por ${report.reason} marcado como ${status} por ${actor.email}`,
       actor,
+      { resource: `report:${id}` },
     );
     return updated;
   }

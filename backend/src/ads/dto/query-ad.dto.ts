@@ -1,7 +1,21 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsInt, IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import {
+  IsBooleanString,
+  IsIn,
+  IsInt,
+  IsISO8601,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
 import { Category, Department, JobType } from '@prisma/client';
+
+// Estados efectivos filtrables en el panel (VENCIDO se calcula con expiresAt).
+export const EFFECTIVE_STATUSES = ['ACTIVO', 'VENCIDO', 'DADO_DE_BAJA'] as const;
+export type EffectiveStatus = (typeof EFFECTIVE_STATUSES)[number];
 
 // Los filtros de lista aceptan selección múltiple como cadenas separadas por
 // coma (p. ej. "VENTAS,GASTRONOMIA"). El servicio valida contra los enums.
@@ -46,6 +60,33 @@ export class QueryAdDto {
   @IsOptional()
   @IsString()
   location?: string;
+
+  // ——— Filtros del reporte admin (solo aplican en /listings/all) ———
+
+  @ApiPropertyOptional({ description: 'Solo anuncios de clientes (no admins)' })
+  @IsOptional()
+  @IsBooleanString()
+  clientsOnly?: string;
+
+  @ApiPropertyOptional({ description: 'Publicados desde (YYYY-MM-DD)' })
+  @IsOptional()
+  @IsISO8601()
+  from?: string;
+
+  @ApiPropertyOptional({ description: 'Publicados hasta (YYYY-MM-DD)' })
+  @IsOptional()
+  @IsISO8601()
+  to?: string;
+
+  @ApiPropertyOptional({ description: 'Email o nombre del publicante (parcial)' })
+  @IsOptional()
+  @IsString()
+  owner?: string;
+
+  @ApiPropertyOptional({ enum: EFFECTIVE_STATUSES })
+  @IsOptional()
+  @IsIn(EFFECTIVE_STATUSES)
+  status?: EffectiveStatus;
 
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()

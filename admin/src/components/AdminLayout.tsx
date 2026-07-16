@@ -12,8 +12,10 @@ const NAV = [
   { href: '/users', label: 'Usuarios', icon: 'group' },
   { href: '/listings', label: 'Anuncios', icon: 'work' },
   { href: '/top-listings', label: 'Top anuncios', icon: 'trending_up' },
-  { href: '/reports', label: 'Reportes', icon: 'flag' },
-  { href: '/traces', label: 'Trazas', icon: 'receipt_long' },
+  { href: '/reports', label: 'Anuncios reportados', icon: 'flag' },
+  { href: '/reports/client-ads', label: 'Anuncios de clientes', icon: 'person_search' },
+  { href: '/reports/reviews', label: 'Reseñas', icon: 'star' },
+  { href: '/traces', label: 'Auditoría', icon: 'receipt_long' },
 ];
 
 export function AdminLayout({ children }: { children: ReactNode }) {
