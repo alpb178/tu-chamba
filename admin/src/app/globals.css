@@ -14,12 +14,3 @@
     @apply font-display;
   }
 }
-
-/* Iconos Material Symbols (la fuente la sirve Google Fonts). */
-.material-symbols-outlined {
-  font-variation-settings:
-    'FILL' 0,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24;
-}

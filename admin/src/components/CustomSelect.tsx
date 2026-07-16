@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
+import { Icon } from './Icon';
 
 export interface SelectOption {
   value: string;
@@ -162,24 +163,17 @@ export function CustomSelect({
         className={`flex w-full items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-left text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
       >
         {icon && (
-          <span
-            aria-hidden="true"
-            className="material-symbols-outlined shrink-0 text-outline"
-          >
-            {icon}
-          </span>
+          <Icon name={icon} className="text-outline" />
         )}
         <span className={`flex-1 truncate ${selected ? '' : 'text-outline'}`}>
           {selected ? selected.label : placeholder}
         </span>
-        <span
-          aria-hidden="true"
-          className={`material-symbols-outlined shrink-0 text-outline transition-transform ${
+        <Icon
+          name="expand_more"
+          className={`text-outline transition-transform ${
             open ? 'rotate-180' : ''
           }`}
-        >
-          expand_more
-        </span>
+        />
       </button>
 
       {/* Validación nativa del formulario (required) sin select nativo. */}
@@ -199,12 +193,7 @@ export function CustomSelect({
         <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg">
           {withSearch && (
             <div className="flex items-center gap-2 border-b border-outline-variant/60 px-3 py-2">
-              <span
-                aria-hidden="true"
-                className="material-symbols-outlined text-lg text-outline"
-              >
-                search
-              </span>
+              <Icon name="search" className="text-lg text-outline" />
               <input
                 ref={searchRef}
                 value={query}
@@ -255,12 +244,7 @@ export function CustomSelect({
               >
                 <span className="truncate">{o.label}</span>
                 {o.value === value && (
-                  <span
-                    aria-hidden="true"
-                    className="material-symbols-outlined text-lg text-primary"
-                  >
-                    check
-                  </span>
+                  <Icon name="check" className="text-lg text-primary" />
                 )}
               </li>
             ))}

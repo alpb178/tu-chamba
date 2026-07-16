@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
+import { Icon } from './Icon';
 
 // Navegación del panel con su icono Material Symbols.
 const NAV = [
@@ -55,9 +56,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                   : 'text-on-surface-variant hover:bg-surface-container-high'
               }`}
             >
-              <span aria-hidden="true" className="material-symbols-outlined text-lg">
-                {n.icon}
-              </span>
+              <Icon name={n.icon} className="text-lg" />
               {n.label}
             </Link>
           ))}
