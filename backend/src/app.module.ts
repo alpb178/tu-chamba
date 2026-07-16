@@ -17,6 +17,7 @@ import { TracesModule } from './traces/traces.module';
 import { VisitsModule } from './visits/visits.module';
 import { AdminModule } from './admin/admin.module';
 import { ObservabilityModule } from './observability/observability.module';
+import { IndexingModule } from './indexing/indexing.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ObservabilityModule } from './observability/observability.module';
     VisitsModule,
     AdminModule,
     ObservabilityModule,
+    IndexingModule,
     HealthModule,
   ],
 })

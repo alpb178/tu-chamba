@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { TracesService } from '../traces/traces.service';
 import { MetricsService } from '../observability/metrics.service';
 import { ErrorsService } from '../observability/errors.service';
+import { GoogleIndexingService } from '../indexing/google-indexing.service';
 
 // Recorte para el mensaje de la notificación al dueño.
 function summary(description: string) {
@@ -24,6 +25,7 @@ export class AdsCleanupService implements OnApplicationBootstrap {
     private traces: TracesService,
     private metrics: MetricsService,
     private errors: ErrorsService,
+    private indexing: GoogleIndexingService,
   ) {}
 
   // Barrido al arrancar: cubre los vencidos acumulados mientras el
@@ -77,6 +79,12 @@ export class AdsCleanupService implements OnApplicationBootstrap {
       `Limpieza automática: ${expired.length} ${expired.length === 1 ? 'anuncio vencido eliminado' : 'anuncios vencidos eliminados'}`,
       null,
     );
+    // Saca las URLs del índice de Google. Tope de 100 por barrido para no
+    // agotar la cuota diaria de la Indexing API (200/día por defecto); el
+    // resto lo depura el sitemap.
+    for (const ad of expired.slice(0, 100)) {
+      void this.indexing.notifyDeleted(ad.id);
+    }
     this.logger.log(`Anuncios vencidos eliminados: ${expired.length}`);
     return { deleted: expired.length };
   }

@@ -17,12 +17,14 @@ function buildService() {
   };
   const notifications = { notifyNewAd: jest.fn() };
   const traces = { record: jest.fn() };
+  const indexing = { notifyUpdated: jest.fn(), notifyDeleted: jest.fn() };
   const service = new AdsService(
     prisma as never,
     notifications as never,
     traces as never,
+    indexing as never,
   );
-  return { service, prisma, notifications, traces };
+  return { service, prisma, notifications, traces, indexing };
 }
 
 const owner: AuthUser = { id: 'u1', email: 'a@t.com', isAdmin: false };

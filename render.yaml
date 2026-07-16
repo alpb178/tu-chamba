@@ -34,5 +34,11 @@ services:
       # Dominios de los frontends (web y admin). Se rellena a mano en el dashboard.
       - key: CORS_ORIGINS
         sync: false
+      # Google Indexing API (service account con acceso en Search Console).
+      # Se rellenan a mano en el dashboard; sin ellas la integración es no-op.
+      - key: GOOGLE_INDEXING_CLIENT_EMAIL
+        sync: false
+      - key: GOOGLE_INDEXING_PRIVATE_KEY
+        sync: false
       - key: NODE_VERSION
         value: "20"

@@ -23,6 +23,7 @@ import {
 import { AuthUser } from '../auth/decorators/current-user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
 import { TracesService } from '../traces/traces.service';
+import { GoogleIndexingService } from '../indexing/google-indexing.service';
 
 const includeAuthor = {
   createdBy: { select: { id: true, name: true, email: true } },
@@ -64,6 +65,7 @@ export class AdsService {
     private prisma: PrismaService,
     private notifications: NotificationsService,
     private traces: TracesService,
+    private indexing: GoogleIndexingService,
   ) {}
 
   // Listado público: solo anuncios vigentes (activos y no vencidos).
@@ -301,6 +303,8 @@ export class AdsService {
       ad.createdBy,
       { resource: `ad:${ad.id}` },
     );
+    // Google indexa la oferta mientras está viva (fire-and-forget).
+    void this.indexing.notifyUpdated(ad.id);
     return ad;
   }
 
@@ -350,6 +354,7 @@ export class AdsService {
       user,
       { resource: `ad:${id}` },
     );
+    void this.indexing.notifyUpdated(id);
     return updated;
   }
 
@@ -368,6 +373,7 @@ export class AdsService {
       user,
       { resource: `ad:${id}` },
     );
+    void this.indexing.notifyDeleted(id);
     return updated;
   }
 
@@ -390,6 +396,7 @@ export class AdsService {
       user,
       { resource: `ad:${id}` },
     );
+    void this.indexing.notifyUpdated(id);
     return updated;
   }
 
@@ -404,6 +411,7 @@ export class AdsService {
       user,
       { resource: `ad:${id}` },
     );
+    void this.indexing.notifyDeleted(id);
     return { deleted: true };
   }
 

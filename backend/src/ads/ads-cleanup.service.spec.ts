@@ -10,13 +10,15 @@ function buildService() {
   const traces = { record: jest.fn() };
   const metrics = { markCronRun: jest.fn() };
   const errors = { record: jest.fn() };
+  const indexing = { notifyDeleted: jest.fn(), notifyUpdated: jest.fn() };
   const service = new AdsCleanupService(
     prisma as never,
     traces as never,
     metrics as never,
     errors as never,
+    indexing as never,
   );
-  return { service, prisma, traces, metrics, errors };
+  return { service, prisma, traces, metrics, errors, indexing };
 }
 
 describe('AdsCleanupService.sweep', () => {
