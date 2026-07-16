@@ -1,4 +1,5 @@
 import { Company, COMPANIES } from '@/lib/companies';
+import { Icon } from './Icon';
 
 // Tarjeta promocional de una marca: captura del sitio con el nombre en
 // overlay, descripción y CTA "Visitar sitio" (enlace externo seguro).
@@ -40,12 +41,7 @@ function BrandCard({ company }: { company: Company }) {
           aria-label={`Visitar el sitio de ${company.name} (se abre en una pestaña nueva)`}
         >
           Visitar sitio
-          <span
-            aria-hidden="true"
-            className="material-symbols-outlined text-sm"
-          >
-            open_in_new
-          </span>
+          <Icon name="open_in_new" className="text-sm" />
         </a>
       </div>
     </article>

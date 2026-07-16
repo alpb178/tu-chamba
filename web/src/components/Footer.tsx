@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { CORPSC } from '@/lib/companies';
 import { DEPARTMENT_LABEL, DEPARTMENT_SLUG, Department } from '@/lib/types';
+import { Icon } from './Icon';
 
 const SUPPORT_EMAIL = 'alesx2soporte@gmail.com';
 
@@ -115,18 +116,14 @@ export function Footer() {
               aria-label="Sitio de CorpSC"
               className="text-on-surface-variant transition-colors hover:text-primary"
             >
-              <span aria-hidden="true" className="material-symbols-outlined">
-                public
-              </span>
+              <Icon name="public" />
             </a>
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
               aria-label="Escríbenos por correo"
               className="text-on-surface-variant transition-colors hover:text-primary"
             >
-              <span aria-hidden="true" className="material-symbols-outlined">
-                mail
-              </span>
+              <Icon name="mail" />
             </a>
             <a
               href="https://www.facebook.com/corpsc"
@@ -135,9 +132,7 @@ export function Footer() {
               aria-label="Síguenos en redes"
               className="text-on-surface-variant transition-colors hover:text-primary"
             >
-              <span aria-hidden="true" className="material-symbols-outlined">
-                share
-              </span>
+              <Icon name="share" />
             </a>
           </div>
         </div>

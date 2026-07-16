@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
 import { NotificationsBell } from './NotificationsBell';
 import { CORPSC } from '@/lib/companies';
+import { Icon } from './Icon';
 
 // Iniciales para el avatar (máx. 2, a partir del nombre del usuario).
 function iniciales(nombre: string) {
@@ -145,14 +146,12 @@ export function Navbar() {
     pathname === href ? 'text-brand' : 'text-on-surface-variant hover:text-brand';
 
   const chevron = (
-    <span
-      aria-hidden="true"
-      className={`material-symbols-outlined text-outline transition-all group-hover:text-primary ${
+    <Icon
+      name="expand_more"
+      className={`text-outline transition-all group-hover:text-primary ${
         menuUsuario ? 'rotate-180' : ''
       }`}
-    >
-      expand_more
-    </span>
+    />
   );
 
   return (
@@ -194,9 +193,7 @@ export function Navbar() {
                   </span>
                 ) : (
                   <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-transparent bg-surface-container text-on-surface-variant transition-all group-hover:border-primary">
-                    <span aria-hidden="true" className="material-symbols-outlined">
-                      person
-                    </span>
+                    <Icon name="person" />
                   </span>
                 )}
                 {chevron}

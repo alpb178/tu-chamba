@@ -11,6 +11,7 @@ import {
   JOB_TYPE_LABEL,
 } from '@/lib/types';
 import { Skeleton } from './Skeleton';
+import { Icon } from './Icon';
 
 export interface Filters {
   jobType: JobType[];
@@ -50,13 +51,9 @@ function Section({
             : 'text-on-surface-variant hover:bg-surface-container-high'
         }`}
       >
-        <span aria-hidden="true" className="material-symbols-outlined text-sm">
-          {icon}
-        </span>
+        <Icon name={icon} className="text-sm" />
         <span className="flex-1">{title}</span>
-        <span aria-hidden="true" className="material-symbols-outlined text-sm">
-          {open ? 'expand_less' : 'expand_more'}
-        </span>
+        <Icon name={open ? 'expand_less' : 'expand_more'} className="text-sm" />
       </button>
       {open && <div className="mt-3 space-y-2 pl-2">{children}</div>}
     </div>
@@ -292,23 +289,19 @@ export function FiltersSidebar({
         aria-controls="filtros-panel"
         className="flex w-full items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface shadow-sm md:hidden"
       >
-        <span aria-hidden="true" className="material-symbols-outlined text-lg">
-          tune
-        </span>
+        <Icon name="tune" className="text-lg" />
         Filtros
         {hasFilters && (
           <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-secondary-container px-1.5 text-xs font-bold text-on-secondary-container">
             {activeCount}
           </span>
         )}
-        <span
-          aria-hidden="true"
-          className={`material-symbols-outlined ml-auto text-outline transition-transform ${
+        <Icon
+          name="expand_more"
+          className={`ml-auto text-outline transition-transform ${
             mobileOpen ? 'rotate-180' : ''
           }`}
-        >
-          expand_more
-        </span>
+        />
       </button>
 
       <aside

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { AppNotification, NotificationsResponse, NotificationType } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
+import { Icon } from './Icon';
 
 const POLL_MS = 30_000;
 
@@ -85,9 +86,7 @@ export function NotificationsBell() {
         className="relative rounded-full p-2 transition-colors hover:bg-surface-container-high"
         aria-label={`Notificaciones${unread ? ` (${unread} sin leer)` : ''}`}
       >
-        <span aria-hidden="true" className="material-symbols-outlined text-on-surface-variant">
-          notifications
-        </span>
+        <Icon name="notifications" className="text-on-surface-variant" />
         {unread > 0 && (
           <span className="absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-surface bg-error" />
         )}

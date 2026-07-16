@@ -8,6 +8,7 @@ import {
   adEffectiveStatus,
 } from '@/lib/types';
 import { Badge } from './Badge';
+import { Icon } from './Icon';
 
 const STATUS_STYLE = {
   ACTIVO: 'bg-tertiary-container text-on-tertiary-container',
@@ -53,9 +54,10 @@ export function AdCard({
       <div className="relative z-10 flex items-start justify-between gap-4">
         <div className="flex min-w-0 gap-4">
           <div className="hidden h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container sm:flex">
-            <span className="material-symbols-outlined text-3xl text-primary">
-              {CATEGORY_ICON[ad.category ?? 'OTRO']}
-            </span>
+            <Icon
+              name={CATEGORY_ICON[ad.category ?? 'OTRO']}
+              className="text-3xl text-primary"
+            />
           </div>
           <div className="min-w-0">
             <h3 className="line-clamp-2 font-display text-lg font-semibold text-on-surface transition-colors group-hover:text-primary">
@@ -64,12 +66,7 @@ export function AdCard({
             <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-on-surface-variant">
               {(ad.location || ad.department) && (
                 <span className="flex items-center gap-1">
-                  <span
-                    aria-hidden="true"
-                    className="material-symbols-outlined text-sm"
-                  >
-                    location_on
-                  </span>
+                  <Icon name="location_on" className="text-sm" />
                   {ad.location || DEPARTMENT_LABEL[ad.department!]}
                 </span>
               )}
@@ -104,12 +101,7 @@ export function AdCard({
         <div className="flex items-center gap-1">
           {ad.ownerRating && ad.ownerRating.count > 0 ? (
             <>
-              <span
-                aria-hidden="true"
-                className="material-symbols-outlined icon-fill text-secondary-container"
-              >
-                star
-              </span>
+              <Icon name="star" className="text-secondary-container" />
               <span className="text-sm font-bold text-on-surface">
                 {Number(ad.ownerRating.average).toFixed(1)}
               </span>

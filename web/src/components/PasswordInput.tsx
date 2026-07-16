@@ -1,6 +1,7 @@
 'use client';
 
 import { InputHTMLAttributes, useState } from 'react';
+import { Icon } from './Icon';
 
 // Campo de contraseña con "ojito" para mostrar/ocultar el valor.
 // Mismos estilos que Input, con el botón integrado a la derecha.
@@ -24,9 +25,7 @@ export function PasswordInput({
         aria-pressed={visible}
         className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-outline transition-colors hover:text-primary"
       >
-        <span aria-hidden="true" className="material-symbols-outlined text-xl">
-          {visible ? 'visibility_off' : 'visibility'}
-        </span>
+        <Icon name={visible ? 'visibility_off' : 'visibility'} className="text-xl" />
       </button>
     </div>
   );

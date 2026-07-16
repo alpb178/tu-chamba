@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DEPARTMENT_LABEL, Department } from '@/lib/types';
 import { CustomSelect } from './CustomSelect';
+import { Icon } from './Icon';
 
 // Todos los departamentos + "Todo el país" como opción vacía.
 const DEPARTMENT_OPTIONS = [
@@ -69,12 +70,7 @@ export function Hero({
           className="mx-auto flex max-w-3xl flex-col gap-2 rounded-2xl border border-white/30 bg-white/70 p-3 shadow-lg backdrop-blur-md md:flex-row"
         >
           <div className="flex flex-grow items-center rounded-xl border border-outline-variant bg-white px-4 py-3 transition-all focus-within:ring-2 focus-within:ring-primary-container">
-            <span
-              aria-hidden="true"
-              className="material-symbols-outlined mr-3 text-outline"
-            >
-              search
-            </span>
+            <Icon name="search" className="mr-3 text-outline" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -98,9 +94,7 @@ export function Hero({
             className="flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3 font-bold text-on-primary shadow-lg transition-all hover:brightness-110 active:scale-95"
           >
             <span>Buscar</span>
-            <span aria-hidden="true" className="material-symbols-outlined">
-              search
-            </span>
+            <Icon name="search" />
           </button>
         </form>
       </div>
