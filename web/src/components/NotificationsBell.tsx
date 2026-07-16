@@ -67,7 +67,7 @@ export function NotificationsBell() {
         .then(load)
         .catch(() => {});
     }
-    if (n.adId) router.push(`/anuncios/${n.adId}`);
+    if (n.adId) router.push(`/listings/${n.adId}`);
   }
 
   async function markAllRead() {

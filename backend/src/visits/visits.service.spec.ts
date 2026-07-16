@@ -32,20 +32,20 @@ describe('VisitsService.recordPageView', () => {
   it('registra la página vista con la ruta', async () => {
     const { service, prisma } = buildService();
 
-    await expect(service.recordPageView('/anuncios')).resolves.toEqual({
+    await expect(service.recordPageView('/listings')).resolves.toEqual({
       ok: true,
     });
     expect(prisma.pageView.create).toHaveBeenCalledWith({
-      data: { path: '/anuncios' },
+      data: { path: '/listings' },
     });
   });
 
   it('descarta query string y fragmento de la ruta', async () => {
     const { service, prisma } = buildService();
 
-    await service.recordPageView('/anuncios?department=LA_PAZ#top');
+    await service.recordPageView('/listings?department=LA_PAZ#top');
     expect(prisma.pageView.create).toHaveBeenCalledWith({
-      data: { path: '/anuncios' },
+      data: { path: '/listings' },
     });
   });
 

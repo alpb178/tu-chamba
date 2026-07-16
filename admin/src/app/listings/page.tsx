@@ -85,10 +85,10 @@ export default function AdsAdminPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-on-surface">Anuncios</h1>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => router.push('/anuncios/importar')}>
+          <Button variant="outline" onClick={() => router.push('/listings/import')}>
             Importar CSV
           </Button>
-          <Button onClick={() => router.push('/anuncios/nuevo')}>Nuevo anuncio</Button>
+          <Button onClick={() => router.push('/listings/new')}>Nuevo anuncio</Button>
         </div>
       </div>
       {loading ? (

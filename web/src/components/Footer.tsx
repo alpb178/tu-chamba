@@ -57,7 +57,7 @@ export function Footer() {
               </a>
             </FooterCol>
             <FooterCol title="Legal">
-              <Link href="/privacidad" className={linkClass}>
+              <Link href="/privacy" className={linkClass}>
                 Política de privacidad
               </Link>
               <Link href="/cookies" className={linkClass}>
@@ -72,7 +72,7 @@ export function Footer() {
             </FooterCol>
             <FooterCol title="Empresas">
               <Link
-                href="/anuncios/nuevo"
+                href="/listings/new"
                 className="text-sm font-bold text-primary hover:underline"
               >
                 Publicar anuncio
@@ -93,7 +93,7 @@ export function Footer() {
             {(Object.keys(DEPARTMENT_SLUG) as Department[]).map((dep) => (
               <Link
                 key={dep}
-                href={`/empleos/${DEPARTMENT_SLUG[dep]}`}
+                href={`/jobs/${DEPARTMENT_SLUG[dep]}`}
                 className={linkClass}
               >
                 {DEPARTMENT_LABEL[dep]}

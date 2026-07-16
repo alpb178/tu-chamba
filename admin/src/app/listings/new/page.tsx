@@ -58,7 +58,7 @@ export default function NewAdPage() {
           durationDays: form.durationDays,
         }),
       });
-      router.push('/anuncios');
+      router.push('/listings');
     } catch (err) {
       setError((err as Error).message);
       setSaving(false);
@@ -176,7 +176,7 @@ export default function NewAdPage() {
         </div>
         {error && <p className="text-sm text-error">{error}</p>}
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={() => router.push('/anuncios')}>
+          <Button type="button" variant="outline" onClick={() => router.push('/listings')}>
             Cancelar
           </Button>
           <Button type="submit" disabled={saving}>

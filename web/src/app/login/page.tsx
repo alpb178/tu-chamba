@@ -55,7 +55,7 @@ function LoginForm() {
         </FormField>
         <p className="text-right">
           <Link
-            href="/recuperar"
+            href="/forgot-password"
             className="text-sm text-brand hover:underline"
           >
             ¿Olvidaste tu contraseña?

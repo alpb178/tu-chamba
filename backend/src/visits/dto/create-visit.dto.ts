@@ -16,7 +16,7 @@ export class CreateVisitDto {
   adId?: string;
 
   @ApiPropertyOptional({
-    description: 'Ruta de la página vista en el portal (ej. /anuncios)',
+    description: 'Ruta de la página vista en el portal (ej. /listings)',
   })
   @ValidateIf((o: CreateVisitDto) => o.adId === undefined)
   @IsString()

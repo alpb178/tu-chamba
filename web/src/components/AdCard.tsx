@@ -44,7 +44,7 @@ export function AdCard({
   const status = adEffectiveStatus(ad);
   return (
     <Link
-      href={`/anuncios/${ad.id}`}
+      href={`/listings/${ad.id}`}
       className="group relative block overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
     >
       {/* Detalle decorativo que crece al pasar el cursor. */}

@@ -202,7 +202,7 @@ export function AdActions({ ad }: { ad: Ad }) {
   const isOwner = user?.id === ad.createdById;
   const canEdit = Boolean(user?.isAdmin) || isOwner;
   const adRef = ad.id.slice(0, 8);
-  const adPath = `/anuncios/${ad.id}`;
+  const adPath = `/listings/${ad.id}`;
   const waMessage = `Hola, vi tu anuncio en Tu Chamba (Ref. ${adRef}) y me interesa.`;
 
   // Enlace compartido (?shared=1): sin sesión se exige crear cuenta y,
@@ -270,7 +270,7 @@ export function AdActions({ ad }: { ad: Ad }) {
     if (!confirm('¿Dar de baja este anuncio? Dejará de mostrarse en el portal.'))
       return;
     await api(`/listings/${ad.id}/unpublish`, { method: 'POST' });
-    router.push('/mis-anuncios');
+    router.push('/my-listings');
   }
 
   async function republish() {
@@ -386,7 +386,7 @@ export function AdActions({ ad }: { ad: Ad }) {
         <div className="flex gap-2 border-t border-outline-variant/60 pt-4">
           <Button
             variant="outline"
-            onClick={() => router.push(`/anuncios/nuevo?id=${ad.id}`)}
+            onClick={() => router.push(`/listings/new?id=${ad.id}`)}
           >
             Editar
           </Button>

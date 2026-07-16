@@ -140,7 +140,7 @@ export default function ImportAdsPage() {
           <span>
             Se importaron {created} {created === 1 ? 'oferta' : 'ofertas'} correctamente.
           </span>
-          <Button variant="outline" onClick={() => router.push('/anuncios')}>
+          <Button variant="outline" onClick={() => router.push('/listings')}>
             Ver anuncios
           </Button>
         </div>

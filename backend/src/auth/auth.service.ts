@@ -53,7 +53,7 @@ export class AuthService {
     await this.mail.sendVerification(
       user.email,
       user.name,
-      `${base}/verificar?token=${token}`,
+      `${base}/verify?token=${token}`,
     );
   }
 
@@ -254,7 +254,7 @@ export class AuthService {
     await this.mail.sendPasswordReset(
       user.email,
       user.name,
-      `${base}/restablecer?token=${token}`,
+      `${base}/reset-password?token=${token}`,
     );
     return { sent: true };
   }

@@ -112,7 +112,7 @@ function Form() {
           body: JSON.stringify(payload),
         });
       }
-      router.push('/mis-anuncios');
+      router.push('/my-listings');
     } catch (err) {
       setError((err as Error).message);
     } finally {

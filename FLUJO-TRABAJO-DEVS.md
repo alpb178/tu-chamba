@@ -1,6 +1,6 @@
 # Flujo de Trabajo para Desarrolladores — EMX Comunicaciones
 
-> Versión 1.1 — Julio 2026
+> Versión 1.2 — Julio 2026
 
 ---
 
@@ -23,7 +23,7 @@ A partir de ahora todos los repos activos de la organización siguen un flujo un
 ## Flujo estándar
 
 ```
-feature/mi-tarea
+feature/my-task
        │
        │  git push + abrir PR → develop
        ▼
@@ -41,15 +41,15 @@ feature/mi-tarea
 ```bash
 git checkout develop
 git pull origin develop
-git checkout -b feature/nombre-descriptivo
+git checkout -b feature/descriptive-name
 ```
 
 **2. Desarrollar y commitear**
 
 ```bash
 git add .
-git commit -m "feat: descripción clara del cambio"
-git push origin feature/nombre-descriptivo
+git commit -m "feat: clear description of the change"
+git push origin feature/descriptive-name
 ```
 
 Convención de commits recomendada:
@@ -188,6 +188,24 @@ El código legado en español **no se renombra "de paso"** en PRs de features
 (cambiaría contratos de API que consumen otros clientes). Su migración se
 planifica aparte — en tu-chamba, ver `docs/MIGRACION-CODIGO-INGLES.md`.
 
+### Idioma de git: inglés
+
+Todo lo que vive en git también va en inglés: **nombres de rama, mensajes de
+commit y títulos/descripciones de PR**. Así el historial queda uniforme con el
+código y con las herramientas (conventional commits, changelogs, reviews de IA).
+
+```bash
+# ✅ Bien
+git checkout -b feature/csv-bulk-import
+git commit -m "feat: add CSV bulk import for listings"
+# PR: "feat: add CSV bulk import for listings"
+
+# ❌ Mal
+git checkout -b feature/importacion-csv
+git commit -m "feat: importación masiva de anuncios por CSV"
+# PR: "Importación de anuncios"
+```
+
 ### Commits atómicos
 
 Cada commit debe representar un cambio coherente y compilable. Evitar commits tipo "WIP", "arreglando cosas" o "cambios varios".
@@ -226,7 +244,7 @@ Las ramas están protegidas — cualquier intento de push directo será rechazad
 ## Preguntas frecuentes
 
 **¿Puedo hacer push directo a `develop` en casos de urgencia?**
-No. Las ramas están protegidas técnicamente. En caso de hotfix urgente, crear una rama `hotfix/descripcion` y abrir un PR exprés — puede aprobarlo cualquier miembro del equipo.
+No. Las ramas están protegidas técnicamente. En caso de hotfix urgente, crear una rama `hotfix/description` y abrir un PR exprés — puede aprobarlo cualquier miembro del equipo.
 
 **¿Quién puede aprobar mis PRs?**
 Cualquier miembro del equipo asignado al repo en GitHub. El objetivo es que el código pase por al menos un par de ojos distintos.
@@ -236,10 +254,10 @@ Cualquier miembro del equipo asignado al repo en GitHub. El objetivo es que el c
 ```bash
 git checkout develop
 git pull origin develop
-git checkout feature/mi-rama
+git checkout feature/my-branch
 git merge develop
 # Resolver conflictos
-git push origin feature/mi-rama
+git push origin feature/my-branch
 ```
 
 **¿Cada cuánto se despliega a producción (`main`)?**

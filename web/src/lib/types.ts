@@ -29,7 +29,7 @@ export const DEPARTMENT_LABEL: Record<Department, string> = {
   PANDO: 'Pando',
 };
 
-// Slugs para las URLs SEO por departamento (/empleos/[slug]).
+// Slugs para las URLs SEO por departamento (/jobs/[slug]).
 export const DEPARTMENT_SLUG: Record<Department, string> = {
   LA_PAZ: 'la-paz',
   SANTA_CRUZ: 'santa-cruz',

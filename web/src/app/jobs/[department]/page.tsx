@@ -9,17 +9,17 @@ import {
 } from '@/lib/types';
 import { AdCard } from '@/components/AdCard';
 
-// El segmento de ruta se llama [departamento] porque es parte de la URL
-// pública SEO (/empleos/la-paz); el nombre del parámetro debe coincidir.
-type Params = { params: Promise<{ departamento: string }> };
+// El nombre del parámetro debe coincidir con el segmento de ruta [department]
+// de la URL pública SEO (/jobs/la-paz).
+type Params = { params: Promise<{ department: string }> };
 
 // Genera las 9 páginas de departamento en build (indexables y rápidas).
 export function generateStaticParams() {
-  return Object.values(DEPARTMENT_SLUG).map((departamento) => ({ departamento }));
+  return Object.values(DEPARTMENT_SLUG).map((department) => ({ department }));
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const { departamento: slug } = await params;
+  const { department: slug } = await params;
   const department = SLUG_TO_DEPARTMENT[slug];
   if (!department) return { title: 'Empleos — Tu Chamba' };
   const departmentName = DEPARTMENT_LABEL[department];
@@ -28,13 +28,13 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: { canonical: `/empleos/${slug}` },
+    alternates: { canonical: `/jobs/${slug}` },
     openGraph: { title, description },
   };
 }
 
 export default async function DepartmentJobsPage({ params }: Params) {
-  const { departamento: slug } = await params;
+  const { department: slug } = await params;
   const department = SLUG_TO_DEPARTMENT[slug];
   if (!department) notFound();
 

@@ -111,8 +111,8 @@ export function Navbar() {
   // El CTA de publicar se muestra siempre: sin sesión manda a registrarse
   // y, al crear la cuenta, vuelve directo al formulario de publicar.
   const publishHref = user
-    ? '/anuncios/nuevo'
-    : `/register?next=${encodeURIComponent('/anuncios/nuevo')}`;
+    ? '/listings/new'
+    : `/register?next=${encodeURIComponent('/listings/new')}`;
 
   const [menuUsuario, setMenuUsuario] = useState(false);
   const [menuMovil, setMenuMovil] = useState(false);
@@ -223,16 +223,16 @@ export function Navbar() {
 
                     <div className="pb-1">
                       <TituloSeccion>Mi cuenta</TituloSeccion>
-                      <ItemMenu href="/mis-anuncios" icono={<IconoAnuncios />}>
+                      <ItemMenu href="/my-listings" icono={<IconoAnuncios />}>
                         Mis anuncios
                       </ItemMenu>
-                      <ItemMenu href="/intereses" icono={<IconoInteres />}>
+                      <ItemMenu href="/interests" icono={<IconoInteres />}>
                         Anuncios de tu interés
                       </ItemMenu>
-                      <ItemMenu href="/alertas" icono={<IconoAlertas />}>
+                      <ItemMenu href="/alerts" icono={<IconoAlertas />}>
                         Alertas de empleo
                       </ItemMenu>
-                      <ItemMenu href="/perfil" icono={<IconoPerfil />}>
+                      <ItemMenu href="/profile" icono={<IconoPerfil />}>
                         Mi perfil
                       </ItemMenu>
                     </div>
@@ -331,16 +331,16 @@ export function Navbar() {
             </Link>
             {user && (
               <>
-                <Link href="/mis-anuncios" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/mis-anuncios')}`}>
+                <Link href="/my-listings" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/my-listings')}`}>
                   Mis anuncios
                 </Link>
-                <Link href="/intereses" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/intereses')}`}>
+                <Link href="/interests" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/interests')}`}>
                   Anuncios de tu interés
                 </Link>
-                <Link href="/alertas" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/alertas')}`}>
+                <Link href="/alerts" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/alerts')}`}>
                   Alertas de empleo
                 </Link>
-                <Link href="/perfil" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/perfil')}`}>
+                <Link href="/profile" className={`rounded-md px-3 py-2 text-sm hover:bg-surface-container-low ${linkActivo('/profile')}`}>
                   Mi perfil
                 </Link>
               </>

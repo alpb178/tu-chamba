@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
       // Rutas privadas o sin valor de indexación.
-      disallow: ['/mis-anuncios', '/alertas', '/anuncios/nuevo', '/login', '/register'],
+      disallow: ['/my-listings', '/alerts', '/listings/new', '/login', '/register'],
     },
     sitemap: `${SITE}/sitemap.xml`,
   };

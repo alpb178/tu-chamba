@@ -210,7 +210,7 @@ describe('AuthService.forgotPassword / resetPassword', () => {
     expect(mail.sendPasswordReset).toHaveBeenCalledWith(
       'ana@test.com',
       'Ana',
-      expect.stringContaining('/restablecer?token='),
+      expect.stringContaining('/reset-password?token='),
     );
   });
 

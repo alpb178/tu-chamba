@@ -62,7 +62,7 @@ export default function MyAdsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-on-surface">Mis anuncios</h1>
-        <Link href="/anuncios/nuevo">
+        <Link href="/listings/new">
           <Button>Publicar anuncio</Button>
         </Link>
       </div>

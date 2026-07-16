@@ -42,7 +42,7 @@ function ResetForm() {
       <p className="text-sm text-on-surface-variant">
         Falta el token de restablecimiento. Abre el enlace desde el correo que
         te enviamos, o{' '}
-        <Link href="/recuperar" className="text-brand hover:underline">
+        <Link href="/forgot-password" className="text-brand hover:underline">
           pide uno nuevo
         </Link>
         .
