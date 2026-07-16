@@ -51,6 +51,22 @@ function Form() {
   // Con el correo sin verificar no se puede publicar (admins exentos).
   const notVerified = !!user && !user.isAdmin && !user.emailVerified;
 
+  // Campos obligatorios aún sin completar: deshabilitan Publicar y se
+  // listan en el tooltip del botón. Jornada y duración siempre tienen valor.
+  const missingFields = (
+    [
+      [form.description, 'Descripción'],
+      [form.requirements, 'Requisitos'],
+      [form.department, 'Departamento'],
+      [form.category, 'Categoría'],
+      [form.location, 'Ubicación'],
+      [form.salary, 'Salario'],
+      [form.phone, 'Teléfono'],
+    ] as const
+  )
+    .filter(([value]) => !value.trim())
+    .map(([, label]) => label);
+
   useEffect(() => {
     if (editId) {
       api<Ad>(`/listings/${editId}`).then((a) => {
@@ -248,9 +264,26 @@ function Form() {
           />
         </FormField>
         {error && <p className="text-sm text-error">{error}</p>}
-        <Button type="submit" className="w-full" disabled={saving || notVerified}>
-          {saving ? 'Guardando...' : editId ? 'Guardar cambios' : 'Publicar'}
-        </Button>
+        {/* El hover se captura en el contenedor: un botón disabled no emite
+            eventos de puntero, así el tooltip funciona igual. */}
+        <div className="group relative">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={saving || notVerified || missingFields.length > 0}
+          >
+            {saving ? 'Guardando...' : editId ? 'Guardar cambios' : 'Publicar'}
+          </Button>
+          {missingFields.length > 0 && (
+            <div
+              role="tooltip"
+              className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 hidden w-max max-w-xs -translate-x-1/2 rounded-md bg-inverse-surface px-3 py-2 text-xs text-inverse-on-surface shadow-lg group-hover:block"
+            >
+              Completa los campos obligatorios:{' '}
+              {missingFields.join(', ')}.
+            </div>
+          )}
+        </div>
       </form>
     </div>
   );
