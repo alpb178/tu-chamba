@@ -41,7 +41,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         {/* Misma altura que el navbar (h-16): las líneas quedan alineadas. */}
         <div className="flex h-16 flex-col justify-center border-b border-outline-variant px-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo-full.svg" alt="Tu Chamba" className="h-7 w-auto self-start" />
+          <img src="/logo-full.png" alt="Tu Chamba" className="h-7 w-auto self-start" />
           <p className="mt-0.5 text-xs text-on-surface-variant">Administración</p>
         </div>
         <nav className="flex flex-col gap-1 p-3">
