@@ -122,8 +122,14 @@ export function AdCard({
             )
           )}
         </div>
-        <span className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-on-primary transition-all group-hover:brightness-110 md:px-6 md:py-2.5 md:text-sm">
-          Ver detalles
+        {/* Toda la tarjeta es el enlace; la acción "Ver detalles" queda
+            como icono con tooltip. */}
+        <span
+          title="Ver detalles"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-on-primary transition-all group-hover:brightness-110 md:h-10 md:w-10"
+        >
+          <Icon name="arrow_forward" className="text-lg" />
+          <span className="sr-only">Ver detalles</span>
         </span>
       </div>
     </Link>
