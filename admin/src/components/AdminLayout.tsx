@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useEffect } from 'react';
 import { useAuth } from '@/lib/auth';
-import { Button } from './ui';
+import { Button, Skeleton } from './ui';
 import { Icon } from './Icon';
 
 // Navegación del panel con su icono Material Symbols.
@@ -33,7 +33,32 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   }, [loading, user, pathname, router]);
 
   if (pathname === '/login') return <>{children}</>;
-  if (loading) return <p className="p-6 text-on-surface-variant">Cargando...</p>;
+  // Mientras se valida la sesión: silueta del panel (sidebar + contenido)
+  // en lugar de un "Cargando..." plano.
+  if (loading) {
+    return (
+      <div aria-hidden="true" className="flex min-h-screen">
+        <aside className="w-60 shrink-0 space-y-2 border-r border-outline-variant bg-surface-container-low p-4">
+          <Skeleton className="h-8 w-32" />
+          <div className="space-y-2 pt-4">
+            {Array.from({ length: 8 }, (_, i) => (
+              <Skeleton key={i} className="h-9 w-full" />
+            ))}
+          </div>
+        </aside>
+        <div className="flex-1">
+          <div className="flex h-16 items-center justify-between border-b border-outline-variant px-6">
+            <Skeleton className="h-9 w-40" />
+            <Skeleton className="h-9 w-16" />
+          </div>
+          <div className="space-y-4 p-6">
+            <Skeleton className="h-8 w-56" />
+            <Skeleton className="h-64 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!user) return null;
 
   return (
