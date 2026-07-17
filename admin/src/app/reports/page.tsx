@@ -8,7 +8,7 @@ import {
   REPORT_REASON_LABEL,
   Report,
 } from '@/lib/types';
-import { Button, DataTable, TableSkeleton } from '@/components/ui';
+import { AdminTable, Button } from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
 
 const HEADERS = ['Anuncio', 'Motivo', 'Comentario', 'Reportado por', 'Fecha', 'Estado', ''];
@@ -76,15 +76,13 @@ export default function ReportsAdminPage() {
         </div>
       </div>
 
-      {loading ? (
-        <TableSkeleton headers={HEADERS} />
-      ) : error ? (
-        <p className="text-sm text-error">{error}</p>
-      ) : items.length === 0 ? (
-        <p className="text-on-surface-variant">No hay reportes con este filtro.</p>
-      ) : (
-        <DataTable headers={HEADERS}>
-          {items.map((r) => (
+      <AdminTable
+        headers={HEADERS}
+        loading={loading}
+        error={error}
+        empty="No hay reportes con este filtro."
+      >
+        {items.map((r) => (
             <tr key={r.id}>
               <td className="max-w-xs truncate px-4 py-3">
                 {r.ad?.description ?? '—'}
@@ -126,8 +124,7 @@ export default function ReportsAdminPage() {
               </td>
             </tr>
           ))}
-        </DataTable>
-      )}
+      </AdminTable>
     </div>
   );
 }

@@ -13,7 +13,7 @@ import {
   Paginated,
   STATUS_LABEL,
 } from '@/lib/types';
-import { Button, DataTable, Input, TableSkeleton } from '@/components/ui';
+import { AdminTable, Button, Input } from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
 
 const HEADERS = [
@@ -124,18 +124,13 @@ export default function ClientAdsReportPage() {
         />
       </div>
 
-      {loading ? (
-        <TableSkeleton headers={HEADERS} rows={8} />
-      ) : error ? (
-        <p className="text-sm text-error">{error}</p>
-      ) : !data || data.items.length === 0 ? (
-        <p className="text-on-surface-variant">
-          No hay anuncios de clientes para los filtros elegidos.
-        </p>
-      ) : (
-        <>
-          <DataTable headers={HEADERS}>
-            {data.items.map((ad) => {
+      <AdminTable
+        headers={HEADERS}
+        loading={loading}
+        error={error}
+        empty="No hay anuncios de clientes para los filtros elegidos."
+      >
+        {(data?.items ?? []).map((ad) => {
               const st = adEffectiveStatus(ad);
               return (
                 <tr key={ad.id}>
@@ -167,8 +162,9 @@ export default function ClientAdsReportPage() {
                 </tr>
               );
             })}
-          </DataTable>
+      </AdminTable>
 
+      {!error && data && data.items.length > 0 && (
           <div className="flex items-center justify-between text-sm text-on-surface-variant">
             <span>
               Página {data.page} de {data.totalPages} · {data.total} anuncios
@@ -190,7 +186,6 @@ export default function ClientAdsReportPage() {
               </Button>
             </div>
           </div>
-        </>
       )}
     </div>
   );

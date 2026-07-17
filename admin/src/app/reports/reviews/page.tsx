@@ -8,7 +8,7 @@ import {
   Paginated,
   STATUS_LABEL,
 } from '@/lib/types';
-import { Button, DataTable, Input, TableSkeleton } from '@/components/ui';
+import { AdminTable, Button, Input } from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
 
 const HEADERS = [
@@ -95,16 +95,13 @@ export default function ReviewsReportPage() {
         <Input type="date" value={to} onChange={(e) => filter(setTo)(e.target.value)} />
       </div>
 
-      {loading ? (
-        <TableSkeleton headers={HEADERS} rows={8} />
-      ) : error ? (
-        <p className="text-sm text-error">{error}</p>
-      ) : !data || data.items.length === 0 ? (
-        <p className="text-on-surface-variant">No hay reseñas para los filtros elegidos.</p>
-      ) : (
-        <>
-          <DataTable headers={HEADERS}>
-            {data.items.map((r) => (
+      <AdminTable
+        headers={HEADERS}
+        loading={loading}
+        error={error}
+        empty="No hay reseñas para los filtros elegidos."
+      >
+        {(data?.items ?? []).map((r) => (
               <tr key={r.id}>
                 <td className="px-4 py-3 text-on-surface-variant">
                   {r.author.name}
@@ -135,8 +132,9 @@ export default function ReviewsReportPage() {
                 </td>
               </tr>
             ))}
-          </DataTable>
+      </AdminTable>
 
+      {!error && data && data.items.length > 0 && (
           <div className="flex items-center justify-between text-sm text-on-surface-variant">
             <span>
               Página {data.page} de {data.totalPages} · {data.total} reseñas
@@ -158,7 +156,6 @@ export default function ReviewsReportPage() {
               </Button>
             </div>
           </div>
-        </>
       )}
     </div>
   );

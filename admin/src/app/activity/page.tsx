@@ -18,7 +18,7 @@ import {
   TraceType,
   TRACE_TYPE_LABEL,
 } from '@/lib/types';
-import { Button, DataTable, Input } from '@/components/ui';
+import { AdminTable, Button, Input, Skeleton } from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
 
 // El panel se refresca solo, como un centro de monitoreo.
@@ -116,9 +116,17 @@ function ServicesSection() {
             </div>
           );
         })}
-        {!services && (
-          <p className="text-sm text-on-surface-variant">Cargando estado…</p>
-        )}
+        {!services &&
+          Array.from({ length: 4 }, (_, i) => (
+            <div
+              key={i}
+              aria-hidden="true"
+              className="space-y-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"
+            >
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-3 w-full" />
+            </div>
+          ))}
       </div>
     </section>
   );
@@ -167,7 +175,20 @@ function MetricsSection() {
     <section className="space-y-3">
       <h2 className="text-lg font-semibold text-on-surface">Rendimiento</h2>
       {!m ? (
-        <p className="text-sm text-on-surface-variant">Cargando métricas…</p>
+        <div
+          aria-hidden="true"
+          className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
+        >
+          {Array.from({ length: 9 }, (_, i) => (
+            <div
+              key={i}
+              className="space-y-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"
+            >
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="h-6 w-16" />
+            </div>
+          ))}
+        </div>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {tiles.map((t) => (
@@ -244,13 +265,13 @@ function ErrorsSection() {
         </div>
       </div>
 
-      {!data || data.items.length === 0 ? (
-        <p className="text-sm text-on-surface-variant">
-          Sin errores registrados. Todo en orden ✨
-        </p>
-      ) : (
-        <DataTable headers={['Fecha', 'Servicio', 'Descripción', 'Severidad', 'Estado', '']}>
-          {data.items.map((e) => (
+      <AdminTable
+        headers={['Fecha', 'Servicio', 'Descripción', 'Severidad', 'Estado', '']}
+        loading={!data}
+        empty="Sin errores registrados. Todo en orden ✨"
+        skeletonRows={4}
+      >
+        {(data?.items ?? []).map((e) => (
             <tr key={e.id}>
               <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant">
                 {new Date(e.createdAt).toLocaleString('es-BO', {
@@ -281,8 +302,7 @@ function ErrorsSection() {
               </td>
             </tr>
           ))}
-        </DataTable>
-      )}
+      </AdminTable>
     </section>
   );
 }
@@ -362,7 +382,16 @@ function FeedSection() {
         />
       </div>
 
-      {!data || data.items.length === 0 ? (
+      {!data ? (
+        <div aria-hidden="true" className="space-y-3 border-l border-outline-variant pl-5">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="space-y-1.5 py-1">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+            </div>
+          ))}
+        </div>
+      ) : data.items.length === 0 ? (
         <p className="text-sm text-on-surface-variant">Sin actividad para los filtros.</p>
       ) : (
         <>
