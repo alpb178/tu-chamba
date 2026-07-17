@@ -50,6 +50,7 @@ async function main() {
     await prisma.ad.createMany({
       data: [
         {
+          title: 'Ayudante de albañilería',
           description:
             'Se busca ayudante de albañilería para obra en zona norte. Pago por día.',
           requirements: 'Experiencia básica en obra. Puntualidad.',
@@ -63,6 +64,7 @@ async function main() {
           createdById: empleador.id,
         },
         {
+          title: 'Vendedor/a de tienda',
           description:
             'Vacante para vendedor/a de tienda. Atención al cliente, manejo de caja.',
           requirements: 'Experiencia en ventas de al menos 6 meses.',
@@ -77,6 +79,7 @@ async function main() {
           createdById: empleador.id,
         },
         {
+          title: 'Recepcionista turno tarde',
           description:
             'Recepcionista para turno tarde, medio tiempo. Buena presencia.',
           location: 'Cochabamba, zona sur',
