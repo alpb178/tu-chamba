@@ -11,15 +11,13 @@ import {
   adEffectiveStatus,
   Paginated,
 } from '@/lib/types';
-import {
-  Badge,
-  Button,
-  ConfirmDialog,
-  DataTable,
-  TableSkeleton,
-} from '@/components/ui';
+import { AdminTable, Badge, Button, ConfirmDialog } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 
+// La primera columna es la de selección para el borrado por lotes.
 const HEADERS = [
+  '',
+  'Título',
   'Descripción',
   'Categoría',
   'Ubicación',
@@ -38,6 +36,8 @@ const STATUS_STYLE: Record<EffectiveStatus, string> = {
   DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
 };
 
+const CHECKBOX_CLASS = 'h-4 w-4 cursor-pointer accent-primary';
+
 const LIMIT = 20;
 
 export default function AdsAdminPage() {
@@ -46,6 +46,10 @@ export default function AdsAdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<Ad | null>(null);
+  // Ids marcados para el borrado por lotes (se conservan al cambiar de página).
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirmBulk, setConfirmBulk] = useState(false);
+  const [confirmAll, setConfirmAll] = useState(false);
   const [page, setPage] = useState(1);
 
   function load() {
@@ -62,12 +66,64 @@ export default function AdsAdminPage() {
   useEffect(load, [page]);
 
   const items = data?.items ?? [];
+  const allInPageSelected =
+    items.length > 0 && items.every((ad) => selected.has(ad.id));
+
+  function toggleOne(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function togglePage() {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allInPageSelected) items.forEach((ad) => next.delete(ad.id));
+      else items.forEach((ad) => next.add(ad.id));
+      return next;
+    });
+  }
 
   async function remove() {
     if (!toDelete) return;
     await api(`/listings/${toDelete.id}`, { method: 'DELETE' });
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.delete(toDelete.id);
+      return next;
+    });
     setToDelete(null);
     load();
+  }
+
+  async function removeSelected() {
+    setConfirmBulk(false);
+    try {
+      await api('/listings/bulk-delete', {
+        method: 'POST',
+        body: JSON.stringify({ ids: [...selected] }),
+      });
+      setSelected(new Set());
+      setPage(1);
+      if (page === 1) load();
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
+  async function removeAll() {
+    setConfirmAll(false);
+    try {
+      await api('/listings/all', { method: 'DELETE' });
+      setSelected(new Set());
+      setPage(1);
+      if (page === 1) load();
+    } catch (e) {
+      setError((e as Error).message);
+    }
   }
 
   async function unpublish(ad: Ad) {
@@ -85,26 +141,64 @@ export default function AdsAdminPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-on-surface">Anuncios</h1>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={load}
+            disabled={loading}
+            aria-label="Actualizar la lista"
+            title="Actualizar la lista"
+          >
+            <Icon name="refresh" className="text-base" />
+          </Button>
+          {selected.size > 0 && (
+            <Button variant="danger" onClick={() => setConfirmBulk(true)}>
+              Eliminar seleccionados ({selected.size})
+            </Button>
+          )}
+          {(data?.total ?? 0) > 0 && (
+            <Button variant="danger" onClick={() => setConfirmAll(true)}>
+              Eliminar todos ({data!.total})
+            </Button>
+          )}
           <Button variant="outline" onClick={() => router.push('/listings/import')}>
             Importar CSV
           </Button>
           <Button onClick={() => router.push('/listings/new')}>Nuevo anuncio</Button>
         </div>
       </div>
-      {loading ? (
-        <TableSkeleton headers={HEADERS} rows={8} />
-      ) : error ? (
-        <p className="text-sm text-error">{error}</p>
-      ) : items.length === 0 ? (
-        <p className="text-on-surface-variant">No hay anuncios.</p>
-      ) : (
-      <>
-      <DataTable headers={HEADERS}>
+      <AdminTable
+        loading={loading}
+        error={error}
+        empty="No hay anuncios."
+        headers={[
+          <input
+            key="select-page"
+            type="checkbox"
+            className={CHECKBOX_CLASS}
+            checked={allInPageSelected}
+            onChange={togglePage}
+            aria-label="Seleccionar todos los anuncios de la página"
+          />,
+          ...HEADERS.slice(1),
+        ]}
+      >
         {items.map((ad) => {
           const status = adEffectiveStatus(ad);
           return (
             <tr key={ad.id}>
-              <td className="max-w-xs truncate px-4 py-3">{ad.description}</td>
+              <td className="px-4 py-3">
+                <input
+                  type="checkbox"
+                  className={CHECKBOX_CLASS}
+                  checked={selected.has(ad.id)}
+                  onChange={() => toggleOne(ad.id)}
+                  aria-label={`Seleccionar el anuncio "${ad.title}"`}
+                />
+              </td>
+              <td className="max-w-[14rem] truncate px-4 py-3 font-medium">{ad.title}</td>
+              <td className="max-w-xs truncate px-4 py-3 text-on-surface-variant">
+                {ad.description}
+              </td>
               <td className="px-4 py-3 text-on-surface-variant">
                 {ad.category ? CATEGORY_LABEL[ad.category] : '—'}
               </td>
@@ -133,6 +227,12 @@ export default function AdsAdminPage() {
               <td className="px-4 py-3 text-on-surface-variant">{ad.createdBy?.name ?? '—'}</td>
               <td className="px-4 py-3 text-right">
                 <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => router.push(`/listings/new?id=${ad.id}`)}
+                  >
+                    Editar
+                  </Button>
                   {status === 'ACTIVO' ? (
                     <Button variant="outline" onClick={() => unpublish(ad)}>
                       Dar de baja
@@ -150,7 +250,7 @@ export default function AdsAdminPage() {
             </tr>
           );
         })}
-      </DataTable>
+      </AdminTable>
 
       {data && data.totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-on-surface-variant">
@@ -175,8 +275,6 @@ export default function AdsAdminPage() {
           </div>
         </div>
       )}
-      </>
-      )}
 
       <ConfirmDialog
         open={!!toDelete}
@@ -184,6 +282,22 @@ export default function AdsAdminPage() {
         message="Esto borra el anuncio definitivamente (no es una baja). ¿Continuar?"
         onConfirm={remove}
         onCancel={() => setToDelete(null)}
+      />
+      <ConfirmDialog
+        open={confirmAll}
+        title="Eliminar TODOS los anuncios"
+        message={`Esto borra definitivamente los ${data?.total ?? 0} anuncios del sitio, incluidos los de otras páginas (no es una baja y no se puede deshacer). ¿Continuar?`}
+        onConfirm={removeAll}
+        onCancel={() => setConfirmAll(false)}
+      />
+      <ConfirmDialog
+        open={confirmBulk}
+        title="Eliminar anuncios seleccionados"
+        message={`Esto borra definitivamente ${selected.size} ${
+          selected.size === 1 ? 'anuncio' : 'anuncios'
+        } (no es una baja). ¿Continuar?`}
+        onConfirm={removeSelected}
+        onCancel={() => setConfirmBulk(false)}
       />
     </div>
   );
