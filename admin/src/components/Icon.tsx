@@ -8,6 +8,8 @@ import {
   MdExpandMore,
   MdFlag,
   MdGroup,
+  MdLogout,
+  MdMenu,
   MdMonitorHeart,
   MdPersonAdd,
   MdPersonSearch,
@@ -33,6 +35,8 @@ const ICONS: Record<string, IconType> = {
   expand_more: MdExpandMore,
   flag: MdFlag,
   group: MdGroup,
+  logout: MdLogout,
+  menu: MdMenu,
   // Material Symbols "monitoring" no existe en el set MD clásico.
   monitoring: MdBarChart,
   monitor_heart: MdMonitorHeart,
