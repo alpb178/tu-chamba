@@ -8,7 +8,7 @@ import {
   Paginated,
   STATUS_LABEL,
 } from '@/lib/types';
-import { AdminTable, Button, Input } from '@/components/ui';
+import { AdminTable, Button, IconButton, Input } from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
 
 const HEADERS = [
@@ -126,9 +126,14 @@ export default function ReviewsReportPage() {
                   {r.ad ? STATUS_LABEL[adEffectiveStatus(r.ad)] : '—'}
                 </td>
                 <td className="px-4 py-3">
-                  <Button variant="danger" onClick={() => removeReview(r)}>
-                    Eliminar
-                  </Button>
+                  <div className="flex justify-end">
+                    <IconButton
+                      icon="delete"
+                      label="Eliminar"
+                      variant="danger"
+                      onClick={() => removeReview(r)}
+                    />
+                  </div>
                 </td>
               </tr>
             ))}

@@ -7,7 +7,7 @@ import { Ad, adEffectiveStatus } from '@/lib/types';
 import { useRequireAuth } from '@/lib/useRequireAuth';
 import { AdCard } from '@/components/AdCard';
 import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
-import { Button } from '@/components/ui';
+import { Button, IconButton } from '@/components/ui';
 
 export default function MyAdsPage() {
   const { user, loading: authLoading } = useRequireAuth();
@@ -92,18 +92,26 @@ export default function MyAdsPage() {
                           Vence:{' '}
                           {new Date(a.expiresAt).toLocaleDateString('es-BO')}
                         </span>
-                        <Button variant="danger" onClick={() => unpublish(a)}>
-                          Dar de baja
-                        </Button>
+                        <IconButton
+                          icon="visibility_off"
+                          label="Dar de baja"
+                          onClick={() => unpublish(a)}
+                        />
                       </>
                     ) : (
                       <>
-                        <Button onClick={() => republish(a)}>
-                          Republicar ({a.durationDays} días)
-                        </Button>
-                        <Button variant="danger" onClick={() => remove(a)}>
-                          Eliminar
-                        </Button>
+                        <IconButton
+                          icon="publish"
+                          label={`Republicar (${a.durationDays} días)`}
+                          variant="primary"
+                          onClick={() => republish(a)}
+                        />
+                        <IconButton
+                          icon="delete"
+                          label="Eliminar"
+                          variant="danger"
+                          onClick={() => remove(a)}
+                        />
                       </>
                     )}
                   </div>

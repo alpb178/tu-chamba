@@ -18,7 +18,7 @@ import {
   TraceType,
   TRACE_TYPE_LABEL,
 } from '@/lib/types';
-import { AdminTable, Button, Input, Skeleton } from '@/components/ui';
+import { AdminTable, Button, IconButton, Input, Skeleton } from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
 
 // El panel se refresca solo, como un centro de monitoreo.
@@ -295,9 +295,13 @@ function ErrorsSection() {
               </td>
               <td className="px-4 py-3 text-right">
                 {e.status === 'NEW' && (
-                  <Button variant="outline" onClick={() => resolve(e)}>
-                    Marcar resuelto
-                  </Button>
+                  <div className="flex justify-end">
+                    <IconButton
+                      icon="check"
+                      label="Marcar resuelto"
+                      onClick={() => resolve(e)}
+                    />
+                  </div>
                 )}
               </td>
             </tr>

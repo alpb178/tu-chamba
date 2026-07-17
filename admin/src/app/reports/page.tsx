@@ -8,7 +8,7 @@ import {
   REPORT_REASON_LABEL,
   Report,
 } from '@/lib/types';
-import { AdminTable, Button } from '@/components/ui';
+import { AdminTable, IconButton } from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
 
 const HEADERS = ['Anuncio', 'Motivo', 'Comentario', 'Reportado por', 'Fecha', 'Estado', ''];
@@ -109,16 +109,23 @@ export default function ReportsAdminPage() {
               </td>
               <td className="px-4 py-3 text-right">
                 {r.status === 'PENDIENTE' && (
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => unpublishAd(r)}>
-                      Ocultar anuncio
-                    </Button>
-                    <Button variant="danger" onClick={() => deleteAd(r)}>
-                      Eliminar anuncio
-                    </Button>
-                    <Button variant="outline" onClick={() => resolve(r, 'DESCARTADO')}>
-                      Descartar
-                    </Button>
+                  <div className="flex justify-end gap-1.5">
+                    <IconButton
+                      icon="visibility_off"
+                      label="Ocultar anuncio"
+                      onClick={() => unpublishAd(r)}
+                    />
+                    <IconButton
+                      icon="delete"
+                      label="Eliminar anuncio"
+                      variant="danger"
+                      onClick={() => deleteAd(r)}
+                    />
+                    <IconButton
+                      icon="close"
+                      label="Descartar reporte"
+                      onClick={() => resolve(r, 'DESCARTADO')}
+                    />
                   </div>
                 )}
               </td>
