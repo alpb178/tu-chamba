@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { User } from '@/lib/types';
-import { AdminTable, Button, ConfirmDialog, Input } from '@/components/ui';
+import { AdminTable, Button, ConfirmDialog, IconButton, Input } from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
 
 const HEADERS = ['Nombre', 'Correo', 'Teléfono', 'Acceso', 'Anuncios', ''];
@@ -128,7 +128,12 @@ export default function UsersPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-on-surface">Usuarios</h1>
-        <Button onClick={() => setCreating(true)}>Crear admin</Button>
+        <IconButton
+          icon="person_add"
+          label="Crear administrador"
+          variant="primary"
+          onClick={() => setCreating(true)}
+        />
       </div>
       <AdminTable
         headers={HEADERS}
@@ -155,9 +160,14 @@ export default function UsersPage() {
             </td>
             <td className="px-4 py-3 text-on-surface-variant">{u._count?.ads ?? 0}</td>
             <td className="px-4 py-3 text-right">
-              <Button variant="danger" onClick={() => setToDelete(u)}>
-                Eliminar
-              </Button>
+              <div className="flex justify-end">
+                <IconButton
+                  icon="delete"
+                  label="Eliminar"
+                  variant="danger"
+                  onClick={() => setToDelete(u)}
+                />
+              </div>
             </td>
           </tr>
         ))}

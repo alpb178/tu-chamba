@@ -1,5 +1,6 @@
 import { ButtonHTMLAttributes, Children, InputHTMLAttributes, ReactNode } from 'react';
 import { JobType, JOB_TYPE_LABEL } from '@/lib/types';
+import { Icon } from './Icon';
 
 export function Button({
   className = '',
@@ -19,6 +20,39 @@ export function Button({
       className={`rounded-lg px-3 py-1.5 text-sm transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${styles} ${className}`}
       {...props}
     />
+  );
+}
+
+// Acción de fila con solo icono: el nombre de la acción va en el tooltip
+// (title) y en aria-label para lectores de pantalla.
+export function IconButton({
+  icon,
+  label,
+  variant = 'outline',
+  className = '',
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & {
+  icon: string;
+  label: string;
+  variant?: 'outline' | 'primary' | 'danger';
+}) {
+  const styles = {
+    outline:
+      'border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:border-primary hover:text-primary',
+    primary: 'bg-primary text-on-primary hover:brightness-110',
+    danger:
+      'border border-error/40 bg-surface-container-lowest text-error hover:bg-error hover:text-on-error hover:border-error',
+  }[variant];
+  return (
+    <button
+      type="button"
+      title={label}
+      aria-label={label}
+      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${styles} ${className}`}
+      {...props}
+    >
+      <Icon name={icon} className="text-lg" />
+    </button>
   );
 }
 

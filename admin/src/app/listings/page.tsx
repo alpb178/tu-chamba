@@ -11,7 +11,7 @@ import {
   adEffectiveStatus,
   Paginated,
 } from '@/lib/types';
-import { AdminTable, Badge, Button, ConfirmDialog } from '@/components/ui';
+import { AdminTable, Badge, Button, ConfirmDialog, IconButton } from '@/components/ui';
 import { Icon } from '@/components/Icon';
 
 // La primera columna es la de selección para el borrado por lotes.
@@ -126,11 +126,6 @@ export default function AdsAdminPage() {
     }
   }
 
-  async function unpublish(ad: Ad) {
-    await api(`/listings/${ad.id}/unpublish`, { method: 'POST' });
-    load();
-  }
-
   async function republish(ad: Ad) {
     await api(`/listings/${ad.id}/republish`, { method: 'POST' });
     load();
@@ -226,25 +221,25 @@ export default function AdsAdminPage() {
               </td>
               <td className="px-4 py-3 text-on-surface-variant">{ad.createdBy?.name ?? '—'}</td>
               <td className="px-4 py-3 text-right">
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
+                <div className="flex justify-end gap-1.5">
+                  <IconButton
+                    icon="edit"
+                    label="Editar"
                     onClick={() => router.push(`/listings/new?id=${ad.id}`)}
-                  >
-                    Editar
-                  </Button>
-                  {status === 'ACTIVO' ? (
-                    <Button variant="outline" onClick={() => unpublish(ad)}>
-                      Dar de baja
-                    </Button>
-                  ) : (
-                    <Button variant="outline" onClick={() => republish(ad)}>
-                      Republicar
-                    </Button>
+                  />
+                  {status !== 'ACTIVO' && (
+                    <IconButton
+                      icon="publish"
+                      label="Republicar"
+                      onClick={() => republish(ad)}
+                    />
                   )}
-                  <Button variant="danger" onClick={() => setToDelete(ad)}>
-                    Eliminar
-                  </Button>
+                  <IconButton
+                    icon="delete"
+                    label="Eliminar"
+                    variant="danger"
+                    onClick={() => setToDelete(ad)}
+                  />
                 </div>
               </td>
             </tr>
