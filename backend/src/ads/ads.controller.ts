@@ -13,6 +13,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AdsService } from './ads.service';
 import { CreateAdDto } from './dto/create-ad.dto';
 import { BulkCreateAdsDto } from './dto/bulk-create-ads.dto';
+import { BulkDeleteAdsDto } from './dto/bulk-delete-ads.dto';
 import { UpdateAdDto } from './dto/update-ad.dto';
 import { QueryAdDto } from './dto/query-ad.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -89,6 +90,14 @@ export class AdsController {
     return this.ads.bulkCreate(dto.items, user);
   }
 
+  // Borrado físico por lotes (selección múltiple del panel admin): solo ADMIN.
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Post('bulk-delete')
+  bulkRemove(@Body() dto: BulkDeleteAdsDto, @CurrentUser() user: AuthUser) {
+    return this.ads.bulkRemove(dto.ids, user);
+  }
+
   // Editar: dueño o ADMIN (validado en el servicio).
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
@@ -115,6 +124,15 @@ export class AdsController {
   @Post(':id/republish')
   republish(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.ads.republish(id, user);
+  }
+
+  // Borrado físico de TODOS los anuncios (panel admin): solo ADMIN.
+  // Declarado antes de ':id' para que 'all' no se interprete como un id.
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Delete('all')
+  removeAll(@CurrentUser() user: AuthUser) {
+    return this.ads.removeAll(user);
   }
 
   // Borrado físico: dueño del anuncio o admin.

@@ -3,13 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { User } from '@/lib/types';
-import {
-  Button,
-  ConfirmDialog,
-  DataTable,
-  Input,
-  TableSkeleton,
-} from '@/components/ui';
+import { AdminTable, Button, ConfirmDialog, Input } from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
 
 const HEADERS = ['Nombre', 'Correo', 'Teléfono', 'Acceso', 'Anuncios', ''];
@@ -136,14 +130,12 @@ export default function UsersPage() {
         <h1 className="text-2xl font-semibold text-on-surface">Usuarios</h1>
         <Button onClick={() => setCreating(true)}>Crear admin</Button>
       </div>
-      {loading ? (
-        <TableSkeleton headers={HEADERS} />
-      ) : error ? (
-        <p className="text-sm text-error">{error}</p>
-      ) : users.length === 0 ? (
-        <p className="text-on-surface-variant">No hay usuarios.</p>
-      ) : (
-      <DataTable headers={HEADERS}>
+      <AdminTable
+        headers={HEADERS}
+        loading={loading}
+        error={error}
+        empty="No hay usuarios."
+      >
         {users.map((u) => (
           <tr key={u.id}>
             <td className="px-4 py-3">{u.name}</td>
@@ -169,8 +161,7 @@ export default function UsersPage() {
             </td>
           </tr>
         ))}
-      </DataTable>
-      )}
+      </AdminTable>
 
       <CreateAdminDialog
         open={creating}

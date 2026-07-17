@@ -165,6 +165,7 @@ export class AdsService {
 
     if (query.search) {
       where.OR = [
+        { title: { contains: query.search, mode: 'insensitive' } },
         { description: { contains: query.search, mode: 'insensitive' } },
         { requirements: { contains: query.search, mode: 'insensitive' } },
         { location: { contains: query.search, mode: 'insensitive' } },
@@ -413,6 +414,45 @@ export class AdsService {
     );
     void this.indexing.notifyDeleted(id);
     return { deleted: true };
+  }
+
+  // Borrado físico por lotes (panel admin). Como en bulkCreate se deja una
+  // única traza resumen; la indexación se notifica por anuncio con el mismo
+  // tope que el barrido de vencidos para cuidar la cuota diaria de la API.
+  async bulkRemove(ids: string[], user: AuthUser) {
+    const existing = await this.prisma.ad.findMany({
+      where: { id: { in: ids } },
+      select: { id: true },
+    });
+    const { count } = await this.prisma.ad.deleteMany({
+      where: { id: { in: existing.map((ad) => ad.id) } },
+    });
+    await this.traces.record(
+      TraceType.AD_DELETED,
+      `Borrado por lotes: ${count} anuncios eliminados por ${user.email}`,
+      user,
+    );
+    for (const ad of existing.slice(0, 100)) {
+      void this.indexing.notifyDeleted(ad.id);
+    }
+    return { deleted: count };
+  }
+
+  // Borrado físico de todos los anuncios (panel admin). Igual que el borrado
+  // por lotes: traza resumen única e indexación notificada por anuncio con
+  // tope de 100 para cuidar la cuota diaria de la API.
+  async removeAll(user: AuthUser) {
+    const existing = await this.prisma.ad.findMany({ select: { id: true } });
+    const { count } = await this.prisma.ad.deleteMany({});
+    await this.traces.record(
+      TraceType.AD_DELETED,
+      `Borrado total: ${count} anuncios eliminados por ${user.email}`,
+      user,
+    );
+    for (const ad of existing.slice(0, 100)) {
+      void this.indexing.notifyDeleted(ad.id);
+    }
+    return { deleted: count };
   }
 
   // Anuncios propios, con accesos e interesados para ver su actividad.

@@ -31,6 +31,7 @@ function Form() {
   const { user } = useRequireAuth();
 
   const [form, setForm] = useState({
+    title: '',
     description: '',
     requirements: '',
     location: '',
@@ -59,6 +60,7 @@ function Form() {
   // listan en el tooltip del botón. Jornada y duración siempre tienen valor.
   const missingFields = (
     [
+      [form.title, 'Título'],
       [form.description, 'Descripción'],
       ...(isAdmin
         ? []
@@ -79,6 +81,7 @@ function Form() {
     if (editId) {
       api<Ad>(`/listings/${editId}`).then((a) => {
         setForm({
+          title: a.title,
           description: a.description,
           requirements: a.requirements ?? '',
           location: a.location ?? '',
@@ -114,6 +117,7 @@ function Form() {
       // Los valores vacíos solo pueden llegar del admin: se omiten (salario
       // "a convenir") o toman los mismos defaults que su panel e importación.
       const payload = {
+        title: form.title.trim(),
         description: form.description,
         requirements: form.requirements.trim() || undefined,
         location: form.location.trim() || undefined,
@@ -162,6 +166,15 @@ function Form() {
         obligatorios.
       </p>
       <form onSubmit={onSubmit} className="space-y-4">
+        <FormField label="Título del puesto" required>
+          <Input
+            placeholder="Ej. Vendedor de tienda"
+            maxLength={120}
+            value={form.title}
+            onChange={(e) => setForm({ ...form, title: e.target.value })}
+            required
+          />
+        </FormField>
         <FormField label="Descripción del puesto" required>
           <textarea
             className="w-full rounded-md border border-outline-variant px-3 py-2 text-base outline-none focus:border-brand focus:ring-1 focus:ring-brand"

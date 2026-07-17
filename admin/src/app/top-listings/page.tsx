@@ -9,7 +9,7 @@ import {
   adEffectiveStatus,
   TopAd,
 } from '@/lib/types';
-import { Badge, DataTable, TableSkeleton } from '@/components/ui';
+import { AdminTable, Badge } from '@/components/ui';
 
 const HEADERS = [
   '#',
@@ -49,15 +49,13 @@ export default function TopAdsPage() {
           página de detalle.
         </p>
       </div>
-      {loading ? (
-        <TableSkeleton headers={HEADERS} rows={8} />
-      ) : error ? (
-        <p className="text-sm text-error">{error}</p>
-      ) : !items || items.length === 0 ? (
-        <p className="text-on-surface-variant">Todavía no hay visitas registradas.</p>
-      ) : (
-        <DataTable headers={HEADERS}>
-          {items.map((ad, i) => {
+      <AdminTable
+        headers={HEADERS}
+        loading={loading}
+        error={error}
+        empty="Todavía no hay visitas registradas."
+      >
+        {(items ?? []).map((ad, i) => {
             const status = adEffectiveStatus(ad);
             return (
               <tr key={ad.id}>
@@ -88,8 +86,7 @@ export default function TopAdsPage() {
               </tr>
             );
           })}
-        </DataTable>
-      )}
+      </AdminTable>
     </div>
   );
 }

@@ -168,6 +168,9 @@ model PasswordResetToken {
 
 model Ad {
   id           String    @id @default(uuid())
+  // Título corto del puesto. Obligatorio; los anuncios previos a la migración
+  // se rellenaron con la primera oración de su descripción.
+  title        String    @map("titulo")
   description  String    @map("descripcion")
   // Requisitos del candidato, separados de la descripción del puesto.
   requirements String?   @map("requisitos")

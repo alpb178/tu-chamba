@@ -10,6 +10,7 @@ import {
   IsPositive,
   IsString,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 import { Category, Department, JobType } from '@prisma/client';
@@ -18,6 +19,12 @@ import { Category, Department, JobType } from '@prisma/client';
 export const DURATION_DAYS = [3, 7, 15, 30];
 
 export class CreateAdDto {
+  @ApiProperty({ example: 'Vendedor de tienda' })
+  @IsString()
+  @IsNotEmpty({ message: 'El título es obligatorio' })
+  @MaxLength(120, { message: 'El título no puede superar los 120 caracteres' })
+  title: string;
+
   @ApiProperty({ example: 'Se busca vendedor con experiencia en atención al cliente.' })
   @IsString()
   @IsNotEmpty()

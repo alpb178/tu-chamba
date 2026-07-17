@@ -10,6 +10,7 @@ import {
 
 // Payload de una oferta lista para enviar a POST /listings/bulk.
 export interface CsvAd {
+  title: string;
   description: string;
   requirements?: string;
   location?: string;
@@ -121,6 +122,8 @@ type Field = keyof CsvAd;
 // Cabeceras aceptadas (en español —como la plantilla— o el nombre del campo
 // de la API), ya normalizadas con normalizeKey.
 const HEADER_ALIASES: Record<string, Field> = {
+  titulo: 'title',
+  title: 'title',
   descripcion: 'description',
   description: 'description',
   requisitos: 'requirements',
@@ -169,6 +172,19 @@ function enumMatcher<T extends string>(labels: Record<T, string>) {
 const matchDepartment = enumMatcher<Department>(DEPARTMENT_LABEL);
 const matchCategory = enumMatcher<Category>(CATEGORY_LABEL);
 const matchJobType = enumMatcher<JobType>(JOB_TYPE_LABEL);
+
+// Título derivado de la descripción cuando el archivo no trae la columna:
+// la primera oración (hasta el primer punto, signo o salto de línea), con
+// tope de 100 caracteres. Solo se recorta de la descripción si queda resto.
+export function extractTitle(description: string): { title: string; rest: string } {
+  const cut = description.search(/[.!?\n]/);
+  const title = (cut === -1 ? description : description.slice(0, cut))
+    .trim()
+    .slice(0, 100);
+  const rest = cut === -1 ? '' : description.slice(cut + 1).trim();
+  if (!title) return { title: description.trim().slice(0, 100), rest: '' };
+  return { title, rest };
+}
 
 // "Bs 2.500,50" -> 2500.5. Acepta coma o punto decimal (formato es-BO o en-US).
 function parseSalary(raw: string): number | null {
@@ -219,6 +235,16 @@ export function parseAdsCsv(text: string): ParsedCsv {
     if (raw.description) values.description = raw.description;
     else errors.push('La descripción es obligatoria');
 
+    // Título: el de la columna o, si falta, la primera oración de la
+    // descripción (que se recorta de esta si queda contenido después).
+    if (raw.title) {
+      values.title = raw.title.slice(0, 100);
+    } else if (values.description) {
+      const { title, rest } = extractTitle(values.description);
+      values.title = title;
+      if (rest) values.description = rest;
+    }
+
     // Un teléfono real tiene al menos 7 dígitos; textos como "No especificado"
     // cuentan como fila sin teléfono.
     const phoneDigits = (raw.phone ?? '').replace(/\D/g, '');
@@ -257,8 +283,8 @@ export function parseAdsCsv(text: string): ParsedCsv {
 // Plantilla descargable con las cabeceras esperadas y filas de ejemplo.
 export function buildTemplateCsv(): string {
   return [
-    'descripcion,requisitos,ubicacion,departamento,categoria,horario,salario,telefono,tipoJornada,duracionDias',
-    '"Se busca vendedor con experiencia en atención al cliente","Experiencia mínima de 1 año","Av. Banzer 3er anillo, zona norte",SANTA_CRUZ,VENTAS,"Lun-Vie 8:00 a 16:00",2500,71111111,TIEMPO_COMPLETO,7',
-    '"Ayudante de cocina para restaurante céntrico",,"Calle Comercio esq. Ayacucho",LA_PAZ,GASTRONOMIA,,1800,72222222,MEDIA_JORNADA,3',
+    'titulo,descripcion,requisitos,ubicacion,departamento,categoria,horario,salario,telefono,tipoJornada,duracionDias',
+    '"Vendedor de tienda","Se busca vendedor con experiencia en atención al cliente","Experiencia mínima de 1 año","Av. Banzer 3er anillo, zona norte",SANTA_CRUZ,VENTAS,"Lun-Vie 8:00 a 16:00",2500,71111111,TIEMPO_COMPLETO,7',
+    ',"Ayudante de cocina para restaurante céntrico. Preparación de ingredientes y limpieza.",,"Calle Comercio esq. Ayacucho",LA_PAZ,GASTRONOMIA,,1800,72222222,MEDIA_JORNADA,3',
   ].join('\n');
 }

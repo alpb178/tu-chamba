@@ -3,9 +3,10 @@ import { Ad, DEPARTMENT_LABEL, JobType } from './types';
 export const SITE =
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tu-chamba.corpsc.com';
 
-// Los anuncios no tienen campo título: se deriva de la descripción
-// (el tramo antes del separador "|" que traen muchas ofertas, o un corte).
-export function adTitle(ad: Pick<Ad, 'description'>): string {
+// Título del anuncio. El campo es obligatorio desde la migración de julio
+// 2026; la derivación desde la descripción queda como red de seguridad.
+export function adTitle(ad: Pick<Ad, 'title' | 'description'>): string {
+  if (ad.title) return ad.title;
   const head = ad.description.split('|')[0].trim();
   if (head.length >= 10 && head.length <= 90) return head;
   return ad.description.length > 70

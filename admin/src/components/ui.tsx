@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
+import { ButtonHTMLAttributes, Children, InputHTMLAttributes, ReactNode } from 'react';
 import { JobType, JOB_TYPE_LABEL } from '@/lib/types';
 
 export function Button({
@@ -91,7 +91,7 @@ export function DataTable({
   headers,
   children,
 }: {
-  headers: string[];
+  headers: ReactNode[];
   children: ReactNode;
 }) {
   return (
@@ -99,8 +99,8 @@ export function DataTable({
       <table className="w-full text-left text-sm">
         <thead className="border-b border-outline-variant bg-surface-container-low text-on-surface-variant">
           <tr>
-            {headers.map((h) => (
-              <th key={h} className="px-4 py-3 font-medium">
+            {headers.map((h, i) => (
+              <th key={i} className="px-4 py-3 font-medium">
                 {h}
               </th>
             ))}
@@ -108,6 +108,55 @@ export function DataTable({
         </thead>
         <tbody className="divide-y divide-outline-variant/60">{children}</tbody>
       </table>
+    </div>
+  );
+}
+
+// Tabla estándar del panel: encapsula los cuatro estados de una tabla con
+// datos remotos. Primera carga -> skeleton; recarga con datos previos ->
+// tabla atenuada (transición suave, sin parpadeo); error -> mensaje; sin
+// filas -> una fila de "sin datos" dentro de la propia tabla.
+export function AdminTable({
+  headers,
+  loading = false,
+  error = null,
+  empty = 'No hay datos.',
+  skeletonRows = 8,
+  children,
+}: {
+  headers: ReactNode[];
+  loading?: boolean;
+  error?: string | null;
+  empty?: string;
+  skeletonRows?: number;
+  children?: ReactNode;
+}) {
+  const rows = Children.toArray(children);
+  if (error) return <p className="text-sm text-error">{error}</p>;
+  if (loading && rows.length === 0) {
+    return <TableSkeleton headers={headers} rows={skeletonRows} />;
+  }
+  return (
+    <div
+      aria-busy={loading}
+      className={`transition-opacity duration-300 ${
+        loading ? 'pointer-events-none opacity-50' : ''
+      }`}
+    >
+      <DataTable headers={headers}>
+        {rows.length > 0 ? (
+          rows
+        ) : (
+          <tr>
+            <td
+              colSpan={headers.length}
+              className="px-4 py-10 text-center text-sm text-on-surface-variant"
+            >
+              {empty}
+            </td>
+          </tr>
+        )}
+      </DataTable>
     </div>
   );
 }
@@ -132,7 +181,7 @@ export function TableSkeleton({
   headers,
   rows = 6,
 }: {
-  headers: string[];
+  headers: ReactNode[];
   rows?: number;
 }) {
   return (
