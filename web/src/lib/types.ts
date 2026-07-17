@@ -108,6 +108,7 @@ export interface User {
 
 export interface Ad {
   id: string;
+  title: string;
   description: string;
   requirements?: string | null;
   location?: string | null;

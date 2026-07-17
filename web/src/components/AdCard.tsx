@@ -46,12 +46,13 @@ export function AdCard({
   return (
     <Link
       href={`/listings/${ad.id}`}
-      className="group relative block overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      className="group relative block overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:p-6"
     >
       {/* Detalle decorativo que crece al pasar el cursor. */}
       <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150" />
 
-      <div className="relative z-10 flex items-start justify-between gap-4">
+      {/* En móvil (tarjetas de dos en dos) el salario baja bajo el título. */}
+      <div className="relative z-10 flex flex-col gap-2 md:flex-row md:items-start md:justify-between md:gap-4">
         <div className="flex min-w-0 gap-4">
           <div className="hidden h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container sm:flex">
             <Icon
@@ -60,9 +61,12 @@ export function AdCard({
             />
           </div>
           <div className="min-w-0">
-            <h3 className="line-clamp-2 font-display text-lg font-semibold text-on-surface transition-colors group-hover:text-primary">
-              {ad.description}
+            <h3 className="line-clamp-2 font-display text-base font-semibold text-on-surface transition-colors group-hover:text-primary md:text-lg">
+              {ad.title}
             </h3>
+            <p className="mt-0.5 line-clamp-2 text-sm text-on-surface-variant">
+              {ad.description}
+            </p>
             <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-on-surface-variant">
               {(ad.location || ad.department) && (
                 <span className="flex items-center gap-1">
@@ -78,8 +82,8 @@ export function AdCard({
           </div>
         </div>
 
-        <div className="shrink-0 text-right">
-          <div className="mb-2 flex flex-col items-end gap-1">
+        <div className="shrink-0 md:text-right">
+          <div className="mb-2 flex flex-wrap items-center gap-1 md:flex-col md:items-end">
             <Badge jobType={ad.jobType} />
             {showStatus && (
               <span
@@ -89,7 +93,7 @@ export function AdCard({
               </span>
             )}
           </div>
-          <div className="font-display text-2xl font-bold text-primary">
+          <div className="font-display text-lg font-bold text-primary md:text-2xl">
             {ad.salary != null
               ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
               : 'A convenir'}
@@ -97,7 +101,7 @@ export function AdCard({
         </div>
       </div>
 
-      <div className="relative z-10 mt-6 flex items-center justify-between border-t border-outline-variant pt-4">
+      <div className="relative z-10 mt-4 flex items-center justify-between border-t border-outline-variant pt-3 md:mt-6 md:pt-4">
         <div className="flex items-center gap-1">
           {ad.ownerRating && ad.ownerRating.count > 0 ? (
             <>
@@ -118,7 +122,7 @@ export function AdCard({
             )
           )}
         </div>
-        <span className="rounded-lg bg-primary px-6 py-2.5 text-sm font-bold text-on-primary transition-all group-hover:brightness-110">
+        <span className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-on-primary transition-all group-hover:brightness-110 md:px-6 md:py-2.5 md:text-sm">
           Ver detalles
         </span>
       </div>

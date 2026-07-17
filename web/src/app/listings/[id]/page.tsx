@@ -8,6 +8,7 @@ import {
   adEffectiveStatus,
 } from '@/lib/types';
 import { Badge } from '@/components/Badge';
+import { AuthOnly } from '@/components/AuthOnly';
 import { Reviews } from '@/components/Reviews';
 import { AdActions } from '@/components/AdActions';
 import { TrackVisit } from '@/components/TrackVisit';
@@ -79,10 +80,12 @@ export default async function AdDetailPage({ params }: Params) {
         <span className="text-xs text-outline">Ref. {ad.id.slice(0, 8)}</span>
       </div>
 
+      <h1 className="font-display text-2xl font-bold text-on-surface">{ad.title}</h1>
+
       <div>
-        <h1 className="mb-1 text-sm font-semibold text-on-surface-variant">
+        <h2 className="mb-1 text-sm font-semibold text-on-surface-variant">
           Descripción del puesto
-        </h1>
+        </h2>
         <p className="whitespace-pre-line text-on-surface">{ad.description}</p>
       </div>
 
@@ -95,45 +98,51 @@ export default async function AdDetailPage({ params }: Params) {
         </div>
       )}
 
+      {/* Título, descripción, requisitos y salario se ven sin sesión; el
+          resto de los datos del anuncio requiere iniciar sesión. */}
       <div className="space-y-1 border-t border-outline-variant/60 pt-4">
         <p className="text-2xl font-bold text-brand">
           {ad.salary != null
             ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
             : 'Salario a convenir'}
         </p>
-        {/* La ubicación exacta solo se muestra con sesión (en AdActions);
-            aquí queda el departamento como zona general. */}
-        {ad.department && (
-          <p className="text-sm text-on-surface-variant">
-            📍 Zona: {DEPARTMENT_LABEL[ad.department]}
-          </p>
-        )}
-        {ad.schedule && (
-          <p className="text-sm text-on-surface-variant">🕐 Horario: {ad.schedule}</p>
-        )}
-        <p className="text-sm text-on-surface-variant">
-          Publicado por: {ad.createdBy?.name ?? '—'}
-        </p>
-        <p className="text-xs text-outline">
-          Publicado: {new Date(ad.createdAt).toLocaleDateString('es-BO')} ·
-          Vence: {new Date(ad.expiresAt).toLocaleDateString('es-BO')}
-          {ad._count != null && (
-            <>
-              {' '}
-              · 👁 {ad._count.visits}{' '}
-              {ad._count.visits === 1 ? 'visita' : 'visitas'}
-            </>
+        <AuthOnly>
+          {/* La ubicación exacta solo se muestra con sesión (en AdActions);
+              aquí queda el departamento como zona general. */}
+          {ad.department && (
+            <p className="text-sm text-on-surface-variant">
+              📍 Zona: {DEPARTMENT_LABEL[ad.department]}
+            </p>
           )}
-        </p>
+          {ad.schedule && (
+            <p className="text-sm text-on-surface-variant">🕐 Horario: {ad.schedule}</p>
+          )}
+          <p className="text-sm text-on-surface-variant">
+            Publicado por: {ad.createdBy?.name ?? '—'}
+          </p>
+          <p className="text-xs text-outline">
+            Publicado: {new Date(ad.createdAt).toLocaleDateString('es-BO')} ·
+            Vence: {new Date(ad.expiresAt).toLocaleDateString('es-BO')}
+            {ad._count != null && (
+              <>
+                {' '}
+                · 👁 {ad._count.visits}{' '}
+                {ad._count.visits === 1 ? 'visita' : 'visitas'}
+              </>
+            )}
+          </p>
+        </AuthOnly>
       </div>
 
       <AdActions ad={ad} />
 
-      <Reviews
-        adId={ad.id}
-        ownerId={ad.createdById}
-        ownerName={ad.createdBy?.name ?? 'este publicante'}
-      />
+      <AuthOnly>
+        <Reviews
+          adId={ad.id}
+          ownerId={ad.createdById}
+          ownerName={ad.createdBy?.name ?? 'este publicante'}
+        />
+      </AuthOnly>
 
       {/* Holgura para la barra de contacto fija de AdActions en móvil. */}
       <div aria-hidden className="h-14 sm:hidden" />
