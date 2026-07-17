@@ -9,6 +9,7 @@ function buildService() {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      deleteMany: jest.fn(),
       findMany: jest.fn(),
       count: jest.fn(),
     },
@@ -116,5 +117,36 @@ describe('propiedad del recurso (editar/eliminar)', () => {
 
     await service.unpublish('a1', admin);
     expect(prisma.ad.update).toHaveBeenCalled();
+  });
+});
+
+describe('AdsService.bulkRemove', () => {
+  it('borra solo los ids existentes y notifica la desindexación de cada uno', async () => {
+    const { service, prisma, indexing } = buildService();
+    // De los tres pedidos, uno ya no existe.
+    prisma.ad.findMany.mockResolvedValue([{ id: 'a1' }, { id: 'a2' }]);
+    prisma.ad.deleteMany.mockResolvedValue({ count: 2 });
+
+    const result = await service.bulkRemove(['a1', 'a2', 'a9'], admin);
+
+    expect(prisma.ad.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ['a1', 'a2'] } },
+    });
+    expect(indexing.notifyDeleted).toHaveBeenCalledTimes(2);
+    expect(result).toEqual({ deleted: 2 });
+  });
+});
+
+describe('AdsService.removeAll', () => {
+  it('borra todos los anuncios y notifica la desindexación de cada uno', async () => {
+    const { service, prisma, indexing } = buildService();
+    prisma.ad.findMany.mockResolvedValue([{ id: 'a1' }, { id: 'a2' }, { id: 'a3' }]);
+    prisma.ad.deleteMany.mockResolvedValue({ count: 3 });
+
+    const result = await service.removeAll(admin);
+
+    expect(prisma.ad.deleteMany).toHaveBeenCalledWith({});
+    expect(indexing.notifyDeleted).toHaveBeenCalledTimes(3);
+    expect(result).toEqual({ deleted: 3 });
   });
 });
