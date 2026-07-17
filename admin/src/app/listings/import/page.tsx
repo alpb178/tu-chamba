@@ -8,13 +8,19 @@ import {
   DEPARTMENT_LABEL,
   DURATION_DAYS,
   JOB_TYPE_LABEL,
+  Category,
+  Department,
+  JobType,
 } from '@/lib/types';
 import { buildTemplateCsv, CsvAd, parseAdsCsv, ParsedCsv } from '@/lib/csv';
-import { Button, DataTable } from '@/components/ui';
+import { CleanResult, cleanRows } from '@/lib/clean';
+import { AdminTable, Button } from '@/components/ui';
 
 const PREVIEW_HEADERS = [
   'Línea',
+  'Título',
   'Descripción',
+  'Teléfono',
   'Departamento',
   'Categoría',
   'Salario',
@@ -22,17 +28,132 @@ const PREVIEW_HEADERS = [
   'Estado',
 ];
 
+const CLEAN_HEADERS = [
+  'Línea',
+  'Título',
+  'Descripción',
+  'Requisitos',
+  'Teléfono',
+  'Cambios',
+  'Estado',
+];
+
+const CELL_INPUT_CLASS =
+  'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1.5 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary';
+
+// Celdas editables no controladas: el estado se actualiza al salir del campo
+// (onBlur) para no re-renderizar toda la tabla en cada tecla.
+function CellTextarea({
+  value,
+  onCommit,
+  label,
+}: {
+  value: string;
+  onCommit: (v: string) => void;
+  label: string;
+}) {
+  return (
+    <textarea
+      className={`${CELL_INPUT_CLASS} min-w-[18rem]`}
+      rows={3}
+      defaultValue={value}
+      aria-label={label}
+      onBlur={(e) => e.target.value !== value && onCommit(e.target.value)}
+    />
+  );
+}
+
+function CellInput({
+  value,
+  onCommit,
+  label,
+  type = 'text',
+  className = '',
+}: {
+  value: string;
+  onCommit: (v: string) => void;
+  label: string;
+  type?: string;
+  className?: string;
+}) {
+  return (
+    <input
+      type={type}
+      className={`${CELL_INPUT_CLASS} ${className}`}
+      defaultValue={value}
+      aria-label={label}
+      onBlur={(e) => e.target.value !== value && onCommit(e.target.value)}
+    />
+  );
+}
+
+function CellSelect<T extends string>({
+  value,
+  labels,
+  onCommit,
+  label,
+}: {
+  value: T;
+  labels: Record<T, string>;
+  onCommit: (v: T) => void;
+  label: string;
+}) {
+  return (
+    <select
+      className={`${CELL_INPUT_CLASS} cursor-pointer`}
+      value={value}
+      aria-label={label}
+      onChange={(e) => onCommit(e.target.value as T)}
+    >
+      {(Object.entries(labels) as [T, string][]).map(([v, l]) => (
+        <option key={v} value={v}>
+          {l}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+// Reglas mínimas de una fila importable (las mismas del parser CSV).
+function validateValues(v: Partial<CsvAd>): string[] {
+  const errors: string[] = [];
+  if (!v.title) errors.push('El título es obligatorio');
+  if (!v.description) errors.push('La descripción es obligatoria');
+  if ((v.phone ?? '').replace(/\D/g, '').length < 7)
+    errors.push('El teléfono es obligatorio');
+  return errors;
+}
+
+function removedReasonsFor(v: Partial<CsvAd>): string[] {
+  const reasons: string[] = [];
+  if (!v.title) reasons.push('Sin título');
+  if (!v.description) reasons.push('Sin descripción');
+  if ((v.phone ?? '').replace(/\D/g, '').length < 7)
+    reasons.push('Sin teléfono de contacto');
+  return reasons;
+}
+
 export default function ImportAdsPage() {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsed, setParsed] = useState<ParsedCsv | null>(null);
+  // Filas del archivo descartadas de entrada por no tener descripción o teléfono.
+  const [discarded, setDiscarded] = useState(0);
+  // Vista previa del preprocesado (limpieza); null = vista del archivo tal cual.
+  const [cleaned, setCleaned] = useState<CleanResult | null>(null);
+  // Cambia en cada limpieza para remontar las celdas editables con los
+  // valores recién procesados (son campos no controlados).
+  const [cleanGen, setCleanGen] = useState(0);
   const [importing, setImporting] = useState(false);
   const [created, setCreated] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const validRows = parsed?.rows.filter((r) => r.errors.length === 0) ?? [];
   const invalidRows = parsed?.rows.filter((r) => r.errors.length > 0) ?? [];
+  const cleanRowsReady = cleaned?.rows.filter((r) => r.removedReasons.length === 0) ?? [];
+  const cleanRowsRemoved = (cleaned?.rows.length ?? 0) - cleanRowsReady.length;
+  const importCount = cleaned ? cleanRowsReady.length : validRows.length;
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -42,7 +163,55 @@ export default function ImportAdsPage() {
     setFileName(file.name);
     setCreated(null);
     setError(null);
-    setParsed(parseAdsCsv(await file.text()));
+    setCleaned(null);
+    // Los anuncios sin descripción o sin teléfono se eliminan de entrada:
+    // no aparecen en la vista previa ni se importan.
+    const result = parseAdsCsv(await file.text());
+    const kept = result.rows.filter((r) => r.errors.length === 0);
+    setDiscarded(result.rows.length - kept.length);
+    setParsed({ ...result, rows: kept });
+  }
+
+  // Edición de la vista previa original: revalida la fila al guardar.
+  function updateRawRow(line: number, patch: Partial<CsvAd>) {
+    setParsed((p) => {
+      if (!p) return p;
+      return {
+        ...p,
+        rows: p.rows.map((r) => {
+          if (r.line !== line) return r;
+          const values = { ...r.values, ...patch };
+          return { ...r, values, errors: validateValues(values) };
+        }),
+      };
+    });
+  }
+
+  // Edición de la vista previa limpia: recalcula si la fila queda eliminada.
+  function updateCleanRow(line: number, patch: Partial<CsvAd>) {
+    setCleaned((c) => {
+      if (!c) return c;
+      return {
+        ...c,
+        rows: c.rows.map((r) => {
+          if (r.line !== line) return r;
+          const values = { ...r.values, ...patch };
+          return { ...r, values, removedReasons: removedReasonsFor(values) };
+        }),
+      };
+    });
+  }
+
+  function runClean() {
+    if (!parsed) return;
+    // Las filas que la limpieza deja sin descripción (o sin teléfono) se
+    // eliminan de la vista; el resumen conserva el conteo en "eliminados".
+    const result = cleanRows(parsed.rows);
+    setCleaned({
+      ...result,
+      rows: result.rows.filter((r) => r.removedReasons.length === 0),
+    });
+    setCleanGen((g) => g + 1);
   }
 
   function downloadTemplate() {
@@ -59,13 +228,16 @@ export default function ImportAdsPage() {
     setImporting(true);
     setError(null);
     try {
-      const items = validRows.map((r) => r.values as CsvAd);
+      const items = cleaned
+        ? cleanRowsReady.map((r) => r.values as CsvAd)
+        : validRows.map((r) => r.values as CsvAd);
       const res = await api<{ created: number }>('/listings/bulk', {
         method: 'POST',
         body: JSON.stringify({ items }),
       });
       setCreated(res.created);
       setParsed(null);
+      setCleaned(null);
       setFileName(null);
     } catch (err) {
       setError((err as Error).message);
@@ -106,7 +278,10 @@ export default function ImportAdsPage() {
           Columnas obligatorias:{' '}
           <code className="rounded bg-surface-container-high px-1">descripcion</code> y{' '}
           <code className="rounded bg-surface-container-high px-1">telefono</code>; las filas
-          sin alguno de estos datos no se importan. El resto de columnas es opcional:{' '}
+          sin alguno de estos datos se eliminan al cargar el archivo (no aparecen en la
+          vista previa ni se importan). El resto de columnas es opcional:{' '}
+          <code className="rounded bg-surface-container-high px-1">titulo</code> (si falta,
+          se toma la primera oración de la descripción),{' '}
           <code className="rounded bg-surface-container-high px-1">requisitos</code>,{' '}
           <code className="rounded bg-surface-container-high px-1">ubicacion</code>,{' '}
           <code className="rounded bg-surface-container-high px-1">departamento</code>,{' '}
@@ -132,6 +307,17 @@ export default function ImportAdsPage() {
             Duraciones: {DURATION_DAYS.join(', ')} días.
           </li>
           <li>Se acepta separador coma o punto y coma, y valores con o sin tildes.</li>
+          <li>
+            La vista previa es editable: los cambios en las celdas se aplican al salir del
+            campo y solo afectan a lo que se importa, no al archivo.
+          </li>
+          <li>
+            <span className="font-medium text-on-surface">Limpiar y previsualizar</span>{' '}
+            quita de las descripciones las frases con teléfonos o datos de contacto, mueve la
+            sección de requisitos a su columna (también cuando dice &quot;Ver
+            descripción&quot;) y descarta las filas que quedan sin descripción o sin
+            teléfono, mostrando el resultado antes de importar.
+          </li>
         </ul>
       </div>
 
@@ -154,57 +340,247 @@ export default function ImportAdsPage() {
         </p>
       )}
 
-      {parsed && !parsed.headerError && (
+      {parsed && !parsed.headerError && parsed.rows.length === 0 && (
+        <p className="rounded-xl border border-outline-variant bg-amber-50 px-5 py-4 text-sm text-amber-800">
+          {fileName}: las {discarded} filas del archivo fueron eliminadas por no tener
+          descripción o teléfono; no hay nada para importar.
+        </p>
+      )}
+
+      {parsed && !parsed.headerError && parsed.rows.length > 0 && (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-on-surface-variant">
-              {fileName}: {validRows.length} {validRows.length === 1 ? 'oferta lista' : 'ofertas listas'}
-              {invalidRows.length > 0 && (
+              {fileName}:{' '}
+              {cleaned ? (
+                <>
+                  {cleanRowsReady.length}{' '}
+                  {cleanRowsReady.length === 1 ? 'oferta limpia lista' : 'ofertas limpias listas'}
+                  {cleaned.stats.removed > 0 && (
+                    <span className="text-error">
+                      {' '}· {cleaned.stats.removed} eliminadas por la limpieza
+                    </span>
+                  )}
+                  {cleanRowsRemoved > 0 && (
+                    <span className="text-error">
+                      {' '}· {cleanRowsRemoved} con errores (no se importarán)
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  {validRows.length} {validRows.length === 1 ? 'oferta lista' : 'ofertas listas'}
+                  {invalidRows.length > 0 && (
+                    <span className="text-error">
+                      {' '}· {invalidRows.length} con errores (no se importarán)
+                    </span>
+                  )}
+                </>
+              )}
+              {discarded > 0 && (
                 <span className="text-error">
-                  {' '}· {invalidRows.length} con errores (no se importarán)
+                  {' '}· {discarded} {discarded === 1 ? 'eliminada' : 'eliminadas'} del archivo
+                  por no tener descripción o teléfono
                 </span>
               )}
             </p>
-            <Button onClick={importAds} disabled={importing || validRows.length === 0}>
-              {importing
-                ? 'Importando...'
-                : `Importar ${validRows.length} ${validRows.length === 1 ? 'oferta' : 'ofertas'}`}
-            </Button>
+            <div className="flex gap-2">
+              {cleaned ? (
+                <Button variant="outline" onClick={() => setCleaned(null)}>
+                  Ver archivo original
+                </Button>
+              ) : (
+                <Button variant="outline" onClick={runClean}>
+                  Limpiar y previsualizar
+                </Button>
+              )}
+              <Button onClick={importAds} disabled={importing || importCount === 0}>
+                {importing
+                  ? 'Importando...'
+                  : `Importar ${importCount} ${importCount === 1 ? 'oferta' : 'ofertas'}${cleaned ? ' limpias' : ''}`}
+              </Button>
+            </div>
           </div>
 
-          <DataTable headers={PREVIEW_HEADERS}>
-            {parsed.rows.map((row) => (
-              <tr key={row.line} className={row.errors.length ? 'bg-error/5' : ''}>
-                <td className="px-4 py-3 text-on-surface-variant">{row.line}</td>
-                <td className="max-w-xs truncate px-4 py-3">
-                  {row.values.description ?? '—'}
-                </td>
-                <td className="px-4 py-3 text-on-surface-variant">
-                  {row.values.department ? DEPARTMENT_LABEL[row.values.department] : '—'}
-                </td>
-                <td className="px-4 py-3 text-on-surface-variant">
-                  {row.values.category ? CATEGORY_LABEL[row.values.category] : '—'}
-                </td>
-                <td className="px-4 py-3 text-on-surface-variant">
-                  {row.values.salary != null
-                    ? `Bs ${row.values.salary.toLocaleString('es-BO')}`
-                    : '—'}
-                </td>
-                <td className="px-4 py-3 text-on-surface-variant">
-                  {row.values.jobType ? JOB_TYPE_LABEL[row.values.jobType] : '—'}
-                </td>
-                <td className="px-4 py-3">
-                  {row.errors.length === 0 ? (
-                    <span className="inline-block rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                      Lista
-                    </span>
-                  ) : (
-                    <span className="text-xs text-error">{row.errors.join('; ')}</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </DataTable>
+          {/* Resumen del preprocesado */}
+          {cleaned && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+              {(
+                [
+                  ['Registros procesados', cleaned.stats.total],
+                  ['Registros eliminados', cleaned.stats.removed],
+                  ['Descripciones modificadas', cleaned.stats.descriptionsModified],
+                  ['Requisitos extraídos', cleaned.stats.requirementsExtracted],
+                  ['"Ver descripción" reemplazados', cleaned.stats.placeholdersReplaced],
+                ] as const
+              ).map(([label, value]) => (
+                <div
+                  key={label}
+                  className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"
+                >
+                  <p className="text-xs text-on-surface-variant">{label}</p>
+                  <p className="mt-1 font-display text-2xl font-bold text-primary">{value}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {cleaned ? (
+            <AdminTable
+              headers={CLEAN_HEADERS}
+              empty="La limpieza eliminó todas las filas del archivo."
+            >
+              {cleaned.rows.map((row) => {
+                const changes = [
+                  row.descriptionModified && 'Descripción limpiada',
+                  row.requirementsExtracted && 'Requisitos extraídos',
+                  row.placeholderReplaced && '"Ver descripción" reemplazado',
+                ].filter(Boolean) as string[];
+                const removed = row.removedReasons.length > 0;
+                return (
+                  <tr key={`${cleanGen}-${row.line}`} className={removed ? 'bg-error/5' : ''}>
+                    <td className="px-4 py-3 align-top text-on-surface-variant">{row.line}</td>
+                    <td className="px-4 py-3 align-top">
+                      <CellInput
+                        value={row.values.title ?? ''}
+                        label={`Título de la línea ${row.line}`}
+                        className="min-w-[12rem]"
+                        onCommit={(v) =>
+                          updateCleanRow(row.line, { title: v.trim() || undefined })
+                        }
+                      />
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      <CellTextarea
+                        value={row.values.description ?? ''}
+                        label={`Descripción de la línea ${row.line}`}
+                        onCommit={(v) =>
+                          updateCleanRow(row.line, { description: v.trim() || undefined })
+                        }
+                      />
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      <CellTextarea
+                        value={row.values.requirements ?? ''}
+                        label={`Requisitos de la línea ${row.line}`}
+                        onCommit={(v) =>
+                          updateCleanRow(row.line, { requirements: v.trim() || undefined })
+                        }
+                      />
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      <CellInput
+                        value={row.values.phone ?? ''}
+                        label={`Teléfono de la línea ${row.line}`}
+                        type="tel"
+                        className="w-28"
+                        onCommit={(v) =>
+                          updateCleanRow(row.line, { phone: v.trim() || undefined })
+                        }
+                      />
+                    </td>
+                    <td className="px-4 py-3 align-top text-xs text-on-surface-variant">
+                      {changes.length ? changes.join(' · ') : 'Sin cambios'}
+                    </td>
+                    <td className="px-4 py-3 align-top">
+                      {removed ? (
+                        <span className="text-xs text-error">
+                          Eliminada: {row.removedReasons.join('; ')}
+                        </span>
+                      ) : (
+                        <span className="inline-block rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                          Lista
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </AdminTable>
+          ) : (
+            <AdminTable headers={PREVIEW_HEADERS} empty="No hay filas para importar.">
+              {parsed.rows.map((row) => (
+                <tr key={row.line} className={row.errors.length ? 'bg-error/5' : ''}>
+                  <td className="px-4 py-3 align-top text-on-surface-variant">{row.line}</td>
+                  <td className="px-4 py-3 align-top">
+                    <CellInput
+                      value={row.values.title ?? ''}
+                      label={`Título de la línea ${row.line}`}
+                      className="min-w-[12rem]"
+                      onCommit={(v) =>
+                        updateRawRow(row.line, { title: v.trim() || undefined })
+                      }
+                    />
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <CellTextarea
+                      value={row.values.description ?? ''}
+                      label={`Descripción de la línea ${row.line}`}
+                      onCommit={(v) =>
+                        updateRawRow(row.line, { description: v.trim() || undefined })
+                      }
+                    />
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <CellInput
+                      value={row.values.phone ?? ''}
+                      label={`Teléfono de la línea ${row.line}`}
+                      type="tel"
+                      className="w-28"
+                      onCommit={(v) => updateRawRow(row.line, { phone: v.trim() || undefined })}
+                    />
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <CellSelect<Department>
+                      value={row.values.department ?? 'SANTA_CRUZ'}
+                      labels={DEPARTMENT_LABEL}
+                      label={`Departamento de la línea ${row.line}`}
+                      onCommit={(v) => updateRawRow(row.line, { department: v })}
+                    />
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <CellSelect<Category>
+                      value={row.values.category ?? 'OTRO'}
+                      labels={CATEGORY_LABEL}
+                      label={`Categoría de la línea ${row.line}`}
+                      onCommit={(v) => updateRawRow(row.line, { category: v })}
+                    />
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <CellInput
+                      value={row.values.salary != null ? String(row.values.salary) : ''}
+                      label={`Salario de la línea ${row.line}`}
+                      type="number"
+                      className="w-24"
+                      onCommit={(v) => {
+                        const n = Number(v);
+                        updateRawRow(row.line, {
+                          salary: v.trim() && Number.isFinite(n) && n > 0 ? n : undefined,
+                        });
+                      }}
+                    />
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <CellSelect<JobType>
+                      value={row.values.jobType ?? 'TIEMPO_COMPLETO'}
+                      labels={JOB_TYPE_LABEL}
+                      label={`Jornada de la línea ${row.line}`}
+                      onCommit={(v) => updateRawRow(row.line, { jobType: v })}
+                    />
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    {row.errors.length === 0 ? (
+                      <span className="inline-block rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                        Lista
+                      </span>
+                    ) : (
+                      <span className="text-xs text-error">{row.errors.join('; ')}</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </AdminTable>
+          )}
         </>
       )}
     </div>
