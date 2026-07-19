@@ -14,7 +14,8 @@ import {
 } from '@/lib/types';
 import { buildTemplateCsv, CsvAd, parseAdsCsv, ParsedCsv } from '@/lib/csv';
 import { CleanResult, cleanRows } from '@/lib/clean';
-import { AdminTable, Button } from '@/components/ui';
+import { AdminTable, Button, IconButton, SelectCheckbox } from '@/components/ui';
+import { useSelection } from '@/lib/useSelection';
 
 const PREVIEW_HEADERS = [
   'Línea',
@@ -26,6 +27,7 @@ const PREVIEW_HEADERS = [
   'Salario',
   'Jornada',
   'Estado',
+  '',
 ];
 
 const CLEAN_HEADERS = [
@@ -36,6 +38,7 @@ const CLEAN_HEADERS = [
   'Teléfono',
   'Cambios',
   'Estado',
+  '',
 ];
 
 const CELL_INPUT_CLASS =
@@ -149,6 +152,13 @@ export default function ImportAdsPage() {
   const [created, setCreated] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Selección para quitar varias filas de la vista previa a la vez. Las
+  // filas se identifican por su número de línea del archivo.
+  const visibleRows = cleaned ? cleaned.rows : parsed?.rows ?? [];
+  const { selected, allInPage, toggleOne, togglePage, clear } = useSelection(
+    visibleRows.map((r) => String(r.line)),
+  );
+
   const validRows = parsed?.rows.filter((r) => r.errors.length === 0) ?? [];
   const invalidRows = parsed?.rows.filter((r) => r.errors.length > 0) ?? [];
   const cleanRowsReady = cleaned?.rows.filter((r) => r.removedReasons.length === 0) ?? [];
@@ -170,6 +180,7 @@ export default function ImportAdsPage() {
     const kept = result.rows.filter((r) => r.errors.length === 0);
     setDiscarded(result.rows.length - kept.length);
     setParsed({ ...result, rows: kept });
+    clear();
   }
 
   // Edición de la vista previa original: revalida la fila al guardar.
@@ -202,6 +213,30 @@ export default function ImportAdsPage() {
     });
   }
 
+  // Quita una fila de la vista previa: no se importará (el archivo no cambia).
+  function removeRawRow(line: number) {
+    setParsed((p) =>
+      p ? { ...p, rows: p.rows.filter((r) => r.line !== line) } : p,
+    );
+  }
+
+  function removeCleanRow(line: number) {
+    setCleaned((c) =>
+      c ? { ...c, rows: c.rows.filter((r) => r.line !== line) } : c,
+    );
+  }
+
+  // Quita todas las filas seleccionadas de la vista previa visible.
+  function removeSelectedRows() {
+    const keep = (r: { line: number }) => !selected.has(String(r.line));
+    if (cleaned) {
+      setCleaned((c) => (c ? { ...c, rows: c.rows.filter(keep) } : c));
+    } else {
+      setParsed((p) => (p ? { ...p, rows: p.rows.filter(keep) } : p));
+    }
+    clear();
+  }
+
   function runClean() {
     if (!parsed) return;
     // Las filas que la limpieza deja sin descripción (o sin teléfono) se
@@ -212,6 +247,7 @@ export default function ImportAdsPage() {
       rows: result.rows.filter((r) => r.removedReasons.length === 0),
     });
     setCleanGen((g) => g + 1);
+    clear();
   }
 
   function downloadTemplate() {
@@ -385,8 +421,19 @@ export default function ImportAdsPage() {
               )}
             </p>
             <div className="flex gap-2">
+              {selected.size > 0 && (
+                <Button variant="danger" onClick={removeSelectedRows}>
+                  Quitar seleccionadas ({selected.size})
+                </Button>
+              )}
               {cleaned ? (
-                <Button variant="outline" onClick={() => setCleaned(null)}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setCleaned(null);
+                    clear();
+                  }}
+                >
                   Ver archivo original
                 </Button>
               ) : (
@@ -427,7 +474,15 @@ export default function ImportAdsPage() {
 
           {cleaned ? (
             <AdminTable
-              headers={CLEAN_HEADERS}
+              headers={[
+                <SelectCheckbox
+                  key="select-page"
+                  label="Seleccionar todas las filas"
+                  checked={allInPage}
+                  onChange={togglePage}
+                />,
+                ...CLEAN_HEADERS,
+              ]}
               empty="La limpieza eliminó todas las filas del archivo."
             >
               {cleaned.rows.map((row) => {
@@ -439,6 +494,13 @@ export default function ImportAdsPage() {
                 const removed = row.removedReasons.length > 0;
                 return (
                   <tr key={`${cleanGen}-${row.line}`} className={removed ? 'bg-error/5' : ''}>
+                    <td className="px-4 py-3 align-top">
+                      <SelectCheckbox
+                        label={`Seleccionar la línea ${row.line}`}
+                        checked={selected.has(String(row.line))}
+                        onChange={() => toggleOne(String(row.line))}
+                      />
+                    </td>
                     <td className="px-4 py-3 align-top text-on-surface-variant">{row.line}</td>
                     <td className="px-4 py-3 align-top">
                       <CellInput
@@ -493,14 +555,40 @@ export default function ImportAdsPage() {
                         </span>
                       )}
                     </td>
+                    <td className="px-4 py-3 align-top">
+                      <IconButton
+                        icon="delete"
+                        label="Quitar fila"
+                        variant="danger"
+                        onClick={() => removeCleanRow(row.line)}
+                      />
+                    </td>
                   </tr>
                 );
               })}
             </AdminTable>
           ) : (
-            <AdminTable headers={PREVIEW_HEADERS} empty="No hay filas para importar.">
+            <AdminTable
+              headers={[
+                <SelectCheckbox
+                  key="select-page"
+                  label="Seleccionar todas las filas"
+                  checked={allInPage}
+                  onChange={togglePage}
+                />,
+                ...PREVIEW_HEADERS,
+              ]}
+              empty="No hay filas para importar."
+            >
               {parsed.rows.map((row) => (
                 <tr key={row.line} className={row.errors.length ? 'bg-error/5' : ''}>
+                  <td className="px-4 py-3 align-top">
+                    <SelectCheckbox
+                      label={`Seleccionar la línea ${row.line}`}
+                      checked={selected.has(String(row.line))}
+                      onChange={() => toggleOne(String(row.line))}
+                    />
+                  </td>
                   <td className="px-4 py-3 align-top text-on-surface-variant">{row.line}</td>
                   <td className="px-4 py-3 align-top">
                     <CellInput
@@ -576,6 +664,14 @@ export default function ImportAdsPage() {
                     ) : (
                       <span className="text-xs text-error">{row.errors.join('; ')}</span>
                     )}
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <IconButton
+                      icon="delete"
+                      label="Quitar fila"
+                      variant="danger"
+                      onClick={() => removeRawRow(row.line)}
+                    />
                   </td>
                 </tr>
               ))}

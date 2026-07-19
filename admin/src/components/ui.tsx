@@ -1,4 +1,5 @@
 import { ButtonHTMLAttributes, Children, InputHTMLAttributes, ReactNode } from 'react';
+import Link from 'next/link';
 import { JobType, JOB_TYPE_LABEL } from '@/lib/types';
 import { Icon } from './Icon';
 
@@ -53,6 +54,21 @@ export function IconButton({
     >
       <Icon name={icon} className="text-lg" />
     </button>
+  );
+}
+
+// Checkbox de selección de filas (borrado por lotes) en las tablas.
+export function SelectCheckbox({
+  label,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { label: string }) {
+  return (
+    <input
+      type="checkbox"
+      aria-label={label}
+      className="h-4 w-4 cursor-pointer accent-primary"
+      {...props}
+    />
   );
 }
 
@@ -195,12 +211,37 @@ export function AdminTable({
   );
 }
 
-export function StatCard({ label, value }: { label: string; value: number | string }) {
-  return (
-    <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm">
+// Con href, el KPI es un acceso directo a la sección a la que pertenece.
+export function StatCard({
+  label,
+  value,
+  href,
+}: {
+  label: string;
+  value: number | string;
+  href?: string;
+}) {
+  const body = (
+    <>
       <p className="text-sm text-on-surface-variant">{label}</p>
       <p className="mt-1 font-display text-3xl font-bold text-primary">{value}</p>
-    </div>
+    </>
+  );
+  const base =
+    'rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm';
+  if (!href) return <div className={base}>{body}</div>;
+  return (
+    <Link
+      href={href}
+      title="Ver la sección"
+      className={`group relative block transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md ${base}`}
+    >
+      {body}
+      <Icon
+        name="chevron_right"
+        className="absolute right-3 top-3 text-lg text-outline opacity-0 transition-opacity group-hover:opacity-100"
+      />
+    </Link>
   );
 }
 

@@ -13,6 +13,7 @@ import {
 } from '@/lib/types';
 import { AdminTable, Badge, Button, ConfirmDialog, IconButton } from '@/components/ui';
 import { Icon } from '@/components/Icon';
+import { Pagination } from '@/components/Pagination';
 
 // La primera columna es la de selección para el borrado por lotes.
 const HEADERS = [
@@ -247,28 +248,14 @@ export default function AdsAdminPage() {
         })}
       </AdminTable>
 
-      {data && data.totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-on-surface-variant">
-          <span>
-            Página {data.page} de {data.totalPages} · {data.total} anuncios
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => p - 1)}
-            >
-              Anterior
-            </Button>
-            <Button
-              variant="outline"
-              disabled={page >= data.totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Siguiente
-            </Button>
-          </div>
-        </div>
+      {data && (
+        <Pagination
+          page={data.page}
+          totalPages={data.totalPages}
+          total={data.total}
+          limit={data.limit}
+          onPage={setPage}
+        />
       )}
 
       <ConfirmDialog
