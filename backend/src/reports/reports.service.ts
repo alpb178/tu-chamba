@@ -94,4 +94,42 @@ export class ReportsService {
     );
     return updated;
   }
+
+  // Elimina el reporte de la cola (el anuncio reportado no se toca).
+  async remove(id: string, actor: AuthUser) {
+    const report = await this.prisma.report.findUnique({ where: { id } });
+    if (!report) throw new NotFoundException('Reporte no encontrado');
+    await this.prisma.report.delete({ where: { id } });
+    await this.traces.record(
+      TraceType.REPORT_DELETED,
+      `Reporte por ${report.reason} eliminado por ${actor.email}`,
+      actor,
+      { resource: `report:${id}` },
+    );
+    return { deleted: true };
+  }
+
+  // Borrado total de la cola de reportes (los anuncios no se tocan).
+  async removeAll(actor: AuthUser) {
+    const { count } = await this.prisma.report.deleteMany({});
+    await this.traces.record(
+      TraceType.REPORT_DELETED,
+      `Borrado total: ${count} reportes eliminados por ${actor.email}`,
+      actor,
+    );
+    return { deleted: count };
+  }
+
+  // Borrado por lotes de reportes seleccionados, con traza resumen única.
+  async removeMany(ids: string[], actor: AuthUser) {
+    const { count } = await this.prisma.report.deleteMany({
+      where: { id: { in: ids } },
+    });
+    await this.traces.record(
+      TraceType.REPORT_DELETED,
+      `Borrado por lotes: ${count} reportes eliminados por ${actor.email}`,
+      actor,
+    );
+    return { deleted: count };
+  }
 }

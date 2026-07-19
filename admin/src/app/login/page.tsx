@@ -9,7 +9,7 @@ import { PasswordInput } from '@/components/PasswordInput';
 export default function AdminLoginPage() {
   const { login } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
     setError(null);
     setLoading(true);
     try {
-      await login(email, password);
+      await login(identifier, password);
       router.push('/');
     } catch (err) {
       setError((err as Error).message);
@@ -38,11 +38,11 @@ export default function AdminLoginPage() {
         </p>
         <form onSubmit={onSubmit} className="space-y-3">
           <Input
-            type="email"
-            autoComplete="email"
-            placeholder="Correo"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            autoComplete="username"
+            placeholder="Usuario o correo"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
             required
           />
           <PasswordInput

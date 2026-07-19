@@ -49,9 +49,11 @@ const config: Config = {
           dark: 'rgb(var(--c-brand-strong) / <alpha-value>)',
           light: 'rgb(var(--c-brand-light) / <alpha-value>)',
         },
+        // El acento ámbar apunta a los tokens (antes iba hardcodeado y
+        // podía divergir de la paleta si cambiaba el tema).
         accent: {
-          DEFAULT: '#fea619',
-          dark: '#e08c00',
+          DEFAULT: 'rgb(var(--c-secondary-container) / <alpha-value>)',
+          dark: 'rgb(var(--c-secondary) / <alpha-value>)',
         },
       },
       fontFamily: {

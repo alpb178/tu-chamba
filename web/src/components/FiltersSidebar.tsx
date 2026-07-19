@@ -73,13 +73,14 @@ function Option({
   onToggle: () => void;
 }) {
   return (
-    <label className="group flex cursor-pointer items-center justify-between py-1 text-base text-on-surface-variant transition-colors hover:text-on-surface">
+    // py-1.5 + checkbox de 20px: objetivo táctil cómodo en móvil.
+    <label className="group flex cursor-pointer items-center justify-between py-1.5 text-base text-on-surface-variant transition-colors hover:text-on-surface">
       <span className="flex items-center gap-3">
         <input
           type="checkbox"
           checked={checked}
           onChange={onToggle}
-          className="h-4 w-4 rounded border-outline accent-primary"
+          className="h-5 w-5 rounded border-outline accent-primary"
         />
         <span className="transition-colors group-hover:text-primary">
           {label}
@@ -237,10 +238,14 @@ export function FiltersSidebar({
   value,
   facets,
   onChange,
+  total,
 }: {
   value: Filters;
   facets: Facets | null;
   onChange: (f: Filters) => void;
+  // Resultados con los filtros actuales: alimenta el botón "Ver N
+  // resultados" que cierra el panel en móvil.
+  total?: number | null;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -394,6 +399,18 @@ export function FiltersSidebar({
           </p>
         )}
       </Section>
+
+      {/* Móvil: cierra el panel mostrando cuántos resultados esperan
+          debajo (el listado ya se actualizó en vivo). */}
+      <button
+        type="button"
+        onClick={() => setMobileOpen(false)}
+        className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-on-primary transition-all hover:brightness-110 active:scale-95 md:hidden"
+      >
+        {total != null
+          ? `Ver ${total} ${total === 1 ? 'resultado' : 'resultados'}`
+          : 'Ver resultados'}
+      </button>
       </aside>
     </div>
   );

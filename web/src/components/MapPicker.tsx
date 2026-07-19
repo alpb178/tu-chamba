@@ -220,6 +220,7 @@ export function MapPicker({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
           onClick={() => setExpanded(false)}
           role="dialog"
+          aria-modal="true"
           aria-label="Mapa ampliado"
         >
           <div
@@ -233,8 +234,10 @@ export function MapPicker({
               onPlace={onPlace}
               className="h-full w-full"
             />
+            {/* autoFocus: el foco entra al diálogo al abrirse. */}
             <button
               type="button"
+              autoFocus
               onClick={() => setExpanded(false)}
               className="absolute right-3 top-3 z-[1001] rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow hover:text-primary"
             >

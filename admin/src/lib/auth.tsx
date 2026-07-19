@@ -13,7 +13,8 @@ import { User } from './types';
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  // identifier: nombre de usuario o correo.
+  login: (identifier: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -39,10 +40,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  async function login(email: string, password: string) {
+  async function login(identifier: string, password: string) {
     const res = await api<{ accessToken: string; user: User }>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     });
     if (!res.user.isAdmin) {
       throw new Error('Acceso restringido: solo administradores');

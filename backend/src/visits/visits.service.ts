@@ -18,11 +18,15 @@ export class VisitsService {
     return { ok: true };
   }
 
-  // Registra una página vista del portal. Se guarda solo la ruta,
-  // sin query string, para que la métrica sea agregada y anónima.
-  async recordPageView(path: string) {
+  // Registra una página vista del portal. Se guarda solo la ruta, sin
+  // query string. Si la visita llegó con sesión iniciada se asocia al
+  // usuario (última visita y tiempo de estancia del panel admin); sin
+  // sesión la métrica sigue siendo anónima.
+  async recordPageView(path: string, userId?: string) {
     const cleanPath = path.split(/[?#]/)[0].slice(0, 200);
-    await this.prisma.pageView.create({ data: { path: cleanPath } });
+    await this.prisma.pageView.create({
+      data: { path: cleanPath, userId: userId ?? null },
+    });
     return { ok: true };
   }
 }

@@ -12,7 +12,7 @@ import { Icon } from './Icon';
 
 const STATUS_STYLE = {
   ACTIVO: 'bg-tertiary-container text-on-tertiary-container',
-  VENCIDO: 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-200',
+  VENCIDO: 'bg-amber-100 text-amber-800',
   DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
 };
 
@@ -51,13 +51,15 @@ export function AdCard({
       {/* Detalle decorativo que crece al pasar el cursor. */}
       <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150" />
 
-      {/* En móvil (tarjetas de dos en dos) el salario baja bajo el título. */}
+      {/* En móvil el salario baja bajo el título. */}
       <div className="relative z-10 flex flex-col gap-2 md:flex-row md:items-start md:justify-between md:gap-4">
-        <div className="flex min-w-0 gap-4">
-          <div className="hidden h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container sm:flex">
+        <div className="flex min-w-0 gap-3 md:gap-4">
+          {/* El tile del rubro también se ve en móvil (ancla visual de la
+              tarjeta ahora que va una por fila). */}
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container sm:h-16 sm:w-16">
             <Icon
               name={CATEGORY_ICON[ad.category ?? 'OTRO']}
-              className="text-3xl text-primary"
+              className="text-2xl text-primary sm:text-3xl"
             />
           </div>
           <div className="min-w-0">
@@ -102,21 +104,27 @@ export function AdCard({
       </div>
 
       <div className="relative z-10 mt-4 flex items-center justify-between border-t border-outline-variant pt-3 md:mt-6 md:pt-4">
-        <div className="flex items-center gap-1">
+        <div className="flex flex-wrap items-center gap-1">
+          {/* Señal de confianza: publicante con correo verificado. */}
+          {ad.createdBy?.emailVerified && (
+            <span className="mr-1 flex items-center gap-0.5 rounded-full bg-tertiary-container px-2 py-0.5 text-xs font-medium text-on-tertiary-container">
+              <Icon name="verified" className="text-sm" /> Verificado
+            </span>
+          )}
           {ad.ownerRating && ad.ownerRating.count > 0 ? (
             <>
               <Icon name="star" className="text-secondary-container" />
               <span className="text-sm font-bold text-on-surface">
                 {Number(ad.ownerRating.average).toFixed(1)}
               </span>
-              <span className="ml-1 text-xs text-outline">
+              <span className="ml-1 text-xs text-on-surface-variant">
                 ({ad.ownerRating.count}{' '}
                 {ad.ownerRating.count === 1 ? 'reseña' : 'reseñas'})
               </span>
             </>
           ) : (
             ad.category && (
-              <span className="text-sm text-outline">
+              <span className="text-sm text-on-surface-variant">
                 {CATEGORY_LABEL[ad.category]}
               </span>
             )

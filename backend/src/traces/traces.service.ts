@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, TraceResult, TraceType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryTraceDto } from './dto/query-trace.dto';
@@ -79,5 +79,45 @@ export class TracesService {
     ]);
 
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
+  }
+
+  // Borra una traza desde el panel. La eliminación queda auditada con una
+  // traza nueva: el registro de auditoría nunca se vacía en silencio.
+  async remove(id: string, actor: TraceActor) {
+    const trace = await this.prisma.trace.findUnique({ where: { id } });
+    if (!trace) throw new NotFoundException('Traza no encontrada');
+    await this.prisma.trace.delete({ where: { id } });
+    await this.record(
+      TraceType.TRACE_DELETED,
+      `Traza "${trace.description.slice(0, 80)}" eliminada por ${actor.email}`,
+      actor,
+      { resource: `trace:${id}` },
+    );
+    return { deleted: true };
+  }
+
+  // Borrado total del historial de trazas. La traza resumen se crea
+  // después del borrado, así el historial nunca queda vacío en silencio.
+  async removeAll(actor: TraceActor) {
+    const { count } = await this.prisma.trace.deleteMany({});
+    await this.record(
+      TraceType.TRACE_DELETED,
+      `Borrado total: ${count} trazas eliminadas por ${actor.email}`,
+      actor,
+    );
+    return { deleted: count };
+  }
+
+  // Borrado por lotes de trazas, auditado con una traza resumen única.
+  async removeMany(ids: string[], actor: TraceActor) {
+    const { count } = await this.prisma.trace.deleteMany({
+      where: { id: { in: ids } },
+    });
+    await this.record(
+      TraceType.TRACE_DELETED,
+      `Borrado por lotes: ${count} trazas eliminadas por ${actor.email}`,
+      actor,
+    );
+    return { deleted: count };
   }
 }

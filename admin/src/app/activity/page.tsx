@@ -18,8 +18,18 @@ import {
   TraceType,
   TRACE_TYPE_LABEL,
 } from '@/lib/types';
-import { AdminTable, Button, IconButton, Input, Skeleton } from '@/components/ui';
+import {
+  AdminTable,
+  Button,
+  ConfirmDialog,
+  IconButton,
+  Input,
+  SelectCheckbox,
+  Skeleton,
+} from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
+import { Pagination } from '@/components/Pagination';
+import { useSelection } from '@/lib/useSelection';
 
 // El panel se refresca solo, como un centro de monitoreo.
 const REFRESH_MS = 15_000;
@@ -228,6 +238,37 @@ function ErrorsSection() {
     setReload((n) => n + 1);
   }
 
+  const [toDelete, setToDelete] = useState<ErrorLog | null>(null);
+  const [confirmBulk, setConfirmBulk] = useState(false);
+  const [confirmAll, setConfirmAll] = useState(false);
+  const { selected, allInPage, toggleOne, togglePage, clear } = useSelection(
+    (data?.items ?? []).map((e) => e.id),
+  );
+
+  async function remove() {
+    if (!toDelete) return;
+    await api(`/admin/errors/${toDelete.id}`, { method: 'DELETE' });
+    setToDelete(null);
+    setReload((n) => n + 1);
+  }
+
+  async function removeSelected() {
+    setConfirmBulk(false);
+    await api('/admin/errors/bulk-delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids: [...selected] }),
+    });
+    clear();
+    setReload((n) => n + 1);
+  }
+
+  async function removeAllErrors() {
+    setConfirmAll(false);
+    await api('/admin/errors/all', { method: 'DELETE' });
+    clear();
+    setReload((n) => n + 1);
+  }
+
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -240,6 +281,21 @@ function ErrorsSection() {
           )}
         </h2>
         <div className="flex gap-2">
+          {selected.size > 0 && (
+            <Button variant="danger" onClick={() => setConfirmBulk(true)}>
+              Eliminar seleccionados ({selected.size})
+            </Button>
+          )}
+          {(data?.total ?? 0) > 0 && (
+            <Button variant="danger" onClick={() => setConfirmAll(true)}>
+              Eliminar todos
+            </Button>
+          )}
+          <IconButton
+            icon="refresh"
+            label="Actualizar la lista"
+            onClick={() => setReload((n) => n + 1)}
+          />
           <CustomSelect
             value={severity}
             onChange={(v) => setSeverity(v as ErrorSeverity | '')}
@@ -266,13 +322,33 @@ function ErrorsSection() {
       </div>
 
       <AdminTable
-        headers={['Fecha', 'Servicio', 'Descripción', 'Severidad', 'Estado', '']}
+        headers={[
+          <SelectCheckbox
+            key="select-page"
+            label="Seleccionar todos los errores de la página"
+            checked={allInPage}
+            onChange={togglePage}
+          />,
+          'Fecha',
+          'Servicio',
+          'Descripción',
+          'Severidad',
+          'Estado',
+          '',
+        ]}
         loading={!data}
         empty="Sin errores registrados. Todo en orden ✨"
         skeletonRows={4}
       >
         {(data?.items ?? []).map((e) => (
             <tr key={e.id}>
+              <td className="px-4 py-3">
+                <SelectCheckbox
+                  label="Seleccionar el error"
+                  checked={selected.has(e.id)}
+                  onChange={() => toggleOne(e.id)}
+                />
+              </td>
               <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant">
                 {new Date(e.createdAt).toLocaleString('es-BO', {
                   dateStyle: 'short',
@@ -294,24 +370,58 @@ function ErrorsSection() {
                 {ERROR_STATUS_LABEL[e.status]}
               </td>
               <td className="px-4 py-3 text-right">
-                {e.status === 'NEW' && (
-                  <div className="flex justify-end">
+                <div className="flex justify-end gap-1.5">
+                  {e.status === 'NEW' && (
                     <IconButton
                       icon="check"
                       label="Marcar resuelto"
                       onClick={() => resolve(e)}
                     />
-                  </div>
-                )}
+                  )}
+                  <IconButton
+                    icon="delete"
+                    label="Eliminar"
+                    variant="danger"
+                    onClick={() => setToDelete(e)}
+                  />
+                </div>
               </td>
             </tr>
           ))}
       </AdminTable>
+
+      <ConfirmDialog
+        open={!!toDelete}
+        title="Eliminar error"
+        message="La entrada se borra del registro de errores. ¿Continuar?"
+        onConfirm={remove}
+        onCancel={() => setToDelete(null)}
+      />
+
+      <ConfirmDialog
+        open={confirmAll}
+        title="Vaciar el registro de errores"
+        message="Esto borra TODAS las entradas del registro de errores, no solo las filtradas (no se puede deshacer). ¿Continuar?"
+        onConfirm={removeAllErrors}
+        onCancel={() => setConfirmAll(false)}
+      />
+
+      <ConfirmDialog
+        open={confirmBulk}
+        title="Eliminar errores seleccionados"
+        message={`Se borran ${selected.size} ${
+          selected.size === 1 ? 'entrada' : 'entradas'
+        } del registro de errores. ¿Continuar?`}
+        onConfirm={removeSelected}
+        onCancel={() => setConfirmBulk(false)}
+      />
     </section>
   );
 }
 
 // ——— Feed de actividad ———
+
+const FEED_HEADERS = ['Fecha', 'Evento', 'Descripción', 'Detalle', ''];
 
 function FeedSection() {
   const [data, setData] = useState<Paginated<Trace> | null>(null);
@@ -320,6 +430,12 @@ function FeedSection() {
   const [actor, setActor] = useState('');
   const [from, setFrom] = useState('');
   const [page, setPage] = useState(1);
+  const [toDelete, setToDelete] = useState<Trace | null>(null);
+  const [confirmBulk, setConfirmBulk] = useState(false);
+  const [confirmAll, setConfirmAll] = useState(false);
+  const { selected, allInPage, toggleOne, togglePage, clear } = useSelection(
+    (data?.items ?? []).map((t) => t.id),
+  );
 
   const load = useCallback(() => {
     const params = new URLSearchParams({ page: String(page), limit: '15' });
@@ -332,6 +448,32 @@ function FeedSection() {
       .catch(() => {});
   }, [type, result, actor, from, page]);
 
+  // El feed comparte las trazas de auditoría; el borrado queda auditado.
+  async function remove() {
+    if (!toDelete) return;
+    await api(`/admin/traces/${toDelete.id}`, { method: 'DELETE' });
+    setToDelete(null);
+    load();
+  }
+
+  async function removeSelected() {
+    setConfirmBulk(false);
+    await api('/admin/traces/bulk-delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids: [...selected] }),
+    });
+    clear();
+    load();
+  }
+
+  async function removeAll() {
+    setConfirmAll(false);
+    await api('/admin/traces/all', { method: 'DELETE' });
+    clear();
+    setPage(1);
+    load();
+  }
+
   useEffect(() => {
     load();
     // Solo la primera página se refresca sola (es la vista "en vivo").
@@ -342,7 +484,22 @@ function FeedSection() {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-lg font-semibold text-on-surface">Feed de actividad</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold text-on-surface">Feed de actividad</h2>
+        <div className="flex gap-2">
+          {selected.size > 0 && (
+            <Button variant="danger" onClick={() => setConfirmBulk(true)}>
+              Eliminar seleccionados ({selected.size})
+            </Button>
+          )}
+          {(data?.total ?? 0) > 0 && (
+            <Button variant="danger" onClick={() => setConfirmAll(true)}>
+              Eliminar todos
+            </Button>
+          )}
+          <IconButton icon="refresh" label="Actualizar la lista" onClick={load} />
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <CustomSelect
@@ -386,72 +543,105 @@ function FeedSection() {
         />
       </div>
 
-      {!data ? (
-        <div aria-hidden="true" className="space-y-3 border-l border-outline-variant pl-5">
-          {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="space-y-1.5 py-1">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3 w-1/2" />
-            </div>
-          ))}
-        </div>
-      ) : data.items.length === 0 ? (
-        <p className="text-sm text-on-surface-variant">Sin actividad para los filtros.</p>
-      ) : (
-        <>
-          <ol className="relative space-y-0 border-l border-outline-variant pl-5">
-            {data.items.map((t) => (
-              <li key={t.id} className="relative py-2.5">
+      <AdminTable
+        headers={[
+          <SelectCheckbox
+            key="select-page"
+            label="Seleccionar todos los eventos de la página"
+            checked={allInPage}
+            onChange={togglePage}
+          />,
+          ...FEED_HEADERS,
+        ]}
+        loading={!data}
+        empty="Sin actividad para los filtros."
+        skeletonRows={6}
+      >
+        {(data?.items ?? []).map((t) => (
+          <tr key={t.id}>
+            <td className="px-4 py-3">
+              <SelectCheckbox
+                label="Seleccionar el evento"
+                checked={selected.has(t.id)}
+                onChange={() => toggleOne(t.id)}
+              />
+            </td>
+            <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant">
+              {new Date(t.createdAt).toLocaleString('es-BO', {
+                dateStyle: 'short',
+                timeStyle: 'medium',
+              })}
+            </td>
+            <td className="px-4 py-3">
+              <span className="flex items-center gap-2 whitespace-nowrap">
                 <span
-                  className={`absolute -left-[26.5px] top-4 h-3 w-3 rounded-full border-2 border-surface-container-lowest ${
+                  className={`h-2.5 w-2.5 shrink-0 rounded-full ${
                     t.result === 'ERROR' ? 'bg-red-500' : 'bg-green-500'
                   }`}
                 />
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <span className="whitespace-nowrap text-xs text-on-surface-variant">
-                    {new Date(t.createdAt).toLocaleString('es-BO', {
-                      dateStyle: 'short',
-                      timeStyle: 'medium',
-                    })}
-                  </span>
-                  <span className="rounded-full bg-surface-container-high px-2 py-0.5 text-xs font-medium text-on-surface-variant">
-                    {TRACE_TYPE_LABEL[t.type]}
-                  </span>
-                  <span className="text-sm text-on-surface">{t.description}</span>
-                </div>
-                <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-on-surface-variant">
-                  {t.actorEmail && <span>{t.actorEmail}</span>}
-                  {t.resource && <span className="font-mono">{t.resource}</span>}
-                  {t.durationMs != null && <span>{t.durationMs} ms</span>}
-                  {t.userAgent && <span>{formatUserAgent(t.userAgent)}</span>}
-                </div>
-              </li>
-            ))}
-          </ol>
+                <span className="rounded-full bg-surface-container-high px-2 py-0.5 text-xs font-medium text-on-surface-variant">
+                  {TRACE_TYPE_LABEL[t.type]}
+                </span>
+              </span>
+            </td>
+            <td className="max-w-md px-4 py-3">{t.description}</td>
+            <td className="px-4 py-3 text-xs text-on-surface-variant">
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {t.actorEmail && <span>{t.actorEmail}</span>}
+                {t.resource && <span className="font-mono">{t.resource}</span>}
+                {t.durationMs != null && <span>{t.durationMs} ms</span>}
+                {t.userAgent && <span>{formatUserAgent(t.userAgent)}</span>}
+              </div>
+            </td>
+            <td className="px-4 py-3 text-right">
+              <div className="flex justify-end">
+                <IconButton
+                  icon="delete"
+                  label="Eliminar"
+                  variant="danger"
+                  onClick={() => setToDelete(t)}
+                />
+              </div>
+            </td>
+          </tr>
+        ))}
+      </AdminTable>
 
-          <div className="flex items-center justify-between text-sm text-on-surface-variant">
-            <span>
-              Página {data.page} de {data.totalPages} · {data.total} eventos
-            </span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Anterior
-              </Button>
-              <Button
-                variant="outline"
-                disabled={page >= data.totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Siguiente
-              </Button>
-            </div>
-          </div>
-        </>
+      {data && (
+        <Pagination
+          page={data.page}
+          totalPages={data.totalPages}
+          total={data.total}
+          limit={data.limit}
+          onPage={setPage}
+        />
       )}
+
+      <ConfirmDialog
+        open={!!toDelete}
+        title="Eliminar evento"
+        message="El evento se borra del historial y la eliminación queda auditada. ¿Continuar?"
+        onConfirm={remove}
+        onCancel={() => setToDelete(null)}
+      />
+
+      <ConfirmDialog
+        open={confirmAll}
+        title="Eliminar TODO el historial"
+        message="El feed comparte las trazas de auditoría: esto borra TODO el historial, no solo lo filtrado; queda una traza resumen del borrado (no se puede deshacer). ¿Continuar?"
+        onConfirm={removeAll}
+        onCancel={() => setConfirmAll(false)}
+      />
+
+      <ConfirmDialog
+        open={confirmBulk}
+        title="Eliminar eventos seleccionados"
+        message={`Se borran ${selected.size} ${
+          selected.size === 1 ? 'evento' : 'eventos'
+        } del historial y la eliminación queda auditada. ¿Continuar?`}
+        onConfirm={removeSelected}
+        onCancel={() => setConfirmBulk(false)}
+      />
     </section>
   );
 }

@@ -10,6 +10,7 @@ import { TraceType } from '@prisma/client';
 import { TracesService } from '../traces/traces.service';
 import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
 
 const selectSafe = {
@@ -66,6 +67,36 @@ export class UsersService {
     });
   }
 
+  // Edición de los datos de un usuario desde el panel de administración.
+  async adminUpdate(id: string, dto: UpdateUserDto, actor: AuthUser) {
+    const user = await this.ensureExists(id);
+
+    if (dto.email && dto.email !== user.email) {
+      const taken = await this.prisma.user.findUnique({
+        where: { email: dto.email },
+        select: { id: true },
+      });
+      if (taken) throw new ConflictException('El correo ya está registrado');
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: {
+        ...(dto.name != null ? { name: dto.name.trim() } : {}),
+        ...(dto.email != null ? { email: dto.email.trim() } : {}),
+        ...(dto.phone != null ? { phone: dto.phone.trim() || null } : {}),
+      },
+      select: selectSafe,
+    });
+    await this.traces.record(
+      TraceType.USER_UPDATED,
+      `Usuario ${user.email} editado por ${actor.email}`,
+      actor,
+      { resource: `user:${id}` },
+    );
+    return updated;
+  }
+
   // Alta de un administrador desde el panel (solo correo y contraseña).
   async createAdmin(dto: CreateAdminDto, actor: AuthUser) {
     const exists = await this.prisma.user.findUnique({
@@ -77,8 +108,8 @@ export class UsersService {
       data: {
         email: dto.email,
         password: await bcrypt.hash(dto.password, 10),
-        // Solo se pide correo y contraseña: el nombre sale del correo.
-        name: dto.email.split('@')[0],
+        // El usuario sirve para iniciar sesión; si no se indica, del correo.
+        name: dto.name?.trim() || dto.email.split('@')[0],
         isAdmin: true,
         // Cuenta creada por un admin de confianza: no exige verificación.
         emailVerified: true,
@@ -119,6 +150,35 @@ export class UsersService {
       actor,
     );
     return { deleted: true };
+  }
+
+  // Borrado total de los usuarios registrados. Los administradores se
+  // conservan a propósito: se eliminan solo de a uno o por lotes.
+  async removeAllClients(actor: AuthUser) {
+    const { count } = await this.prisma.user.deleteMany({
+      where: { isAdmin: false },
+    });
+    await this.traces.record(
+      TraceType.USER_DELETED,
+      `Borrado total: ${count} usuarios eliminados por ${actor.email}`,
+      actor,
+    );
+    return { deleted: count };
+  }
+
+  // Borrado por lotes desde el panel, con traza resumen única. El actor no
+  // puede borrarse a sí mismo en el lote (evita quedarse sin sesión).
+  async removeMany(ids: string[], actor: AuthUser) {
+    const targets = ids.filter((id) => id !== actor.id);
+    const { count } = await this.prisma.user.deleteMany({
+      where: { id: { in: targets } },
+    });
+    await this.traces.record(
+      TraceType.USER_DELETED,
+      `Borrado por lotes: ${count} usuarios eliminados por ${actor.email}`,
+      actor,
+    );
+    return { deleted: count };
   }
 
   private async ensureExists(id: string) {

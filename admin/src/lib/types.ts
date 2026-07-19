@@ -157,8 +157,12 @@ export type TraceType =
   | 'AD_DELETED'
   | 'REPORT_CREATED'
   | 'REPORT_RESOLVED'
+  | 'REPORT_DELETED'
   | 'REVIEW_CREATED'
-  | 'REVIEW_DELETED';
+  | 'REVIEW_UPDATED'
+  | 'REVIEW_DELETED'
+  | 'USER_UPDATED'
+  | 'TRACE_DELETED';
 
 export const TRACE_TYPE_LABEL: Record<TraceType, string> = {
   LOGIN: 'Inicio de sesión',
@@ -177,8 +181,12 @@ export const TRACE_TYPE_LABEL: Record<TraceType, string> = {
   AD_DELETED: 'Anuncio eliminado',
   REPORT_CREATED: 'Reporte enviado',
   REPORT_RESOLVED: 'Reporte resuelto',
+  REPORT_DELETED: 'Reporte eliminado',
   REVIEW_CREATED: 'Reseña creada',
+  REVIEW_UPDATED: 'Reseña editada',
   REVIEW_DELETED: 'Reseña eliminada',
+  USER_UPDATED: 'Usuario editado',
+  TRACE_DELETED: 'Traza eliminada',
 };
 
 export type TraceResult = 'OK' | 'ERROR';
@@ -283,6 +291,12 @@ export interface DayPoint {
   total: number;
 }
 
+// Punto de la distribución horaria (hora local de Bolivia, 0-23).
+export interface HourPoint {
+  hour: number;
+  total: number;
+}
+
 export interface VisitStats {
   total: number;
   last24h: number;
@@ -291,12 +305,29 @@ export interface VisitStats {
 }
 
 export interface AdminStats {
-  users: { total: number; admins: number };
+  // byDay: registros por día calendario, siempre sin administradores.
+  users: { total: number; admins: number; byDay: DayPoint[] };
   ads: { total: number; byDay: DayPoint[] };
   // Visitas al detalle de anuncios.
   visits: VisitStats;
-  // Páginas vistas del portal (visitas generales al sitio).
-  siteVisits: VisitStats;
+  // Páginas vistas del portal (visitas generales al sitio); byHour es la
+  // distribución por hora del día de la última semana.
+  siteVisits: VisitStats & { byHour: HourPoint[] };
+}
+
+// Fila de la estadística de actividad de usuarios registrados (sin admins):
+// última visita al portal y tiempo de estancia (sesiones por huecos de
+// inactividad de 30 min sobre los últimos 30 días).
+export interface UserActivity {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  createdAt: string;
+  lastVisitAt: string | null;
+  sessionsLast30Days: number;
+  totalMinutesLast30Days: number;
+  avgSessionMinutes: number;
 }
 
 // Fila del ranking de anuncios más clickeados (visitas al detalle).
