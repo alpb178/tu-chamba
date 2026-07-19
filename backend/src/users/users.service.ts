@@ -108,8 +108,8 @@ export class UsersService {
       data: {
         email: dto.email,
         password: await bcrypt.hash(dto.password, 10),
-        // Solo se pide correo y contraseña: el nombre sale del correo.
-        name: dto.email.split('@')[0],
+        // El usuario sirve para iniciar sesión; si no se indica, del correo.
+        name: dto.name?.trim() || dto.email.split('@')[0],
         isAdmin: true,
         // Cuenta creada por un admin de confianza: no exige verificación.
         emailVerified: true,
