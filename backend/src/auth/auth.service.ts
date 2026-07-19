@@ -137,11 +137,10 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const identifier = (dto.identifier ?? dto.email ?? '').trim();
+    const user = await this.findByIdentifier(identifier);
     if (!user) {
-      await this.failedLogin(dto.email);
+      await this.failedLogin(identifier);
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
@@ -154,7 +153,7 @@ export class AuthService {
 
     const ok = await bcrypt.compare(dto.password, user.password);
     if (!ok) {
-      await this.failedLogin(dto.email, user.id);
+      await this.failedLogin(user.email, user.id);
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
@@ -165,6 +164,26 @@ export class AuthService {
       { resource: `user:${user.id}` },
     );
     return this.session(user);
+  }
+
+  // Busca la cuenta por correo o, si el texto no parece un correo, por
+  // nombre de usuario (sin distinguir mayúsculas). El nombre no es único:
+  // si hay más de una cuenta con ese nombre se pide usar el correo.
+  private async findByIdentifier(identifier: string) {
+    if (!identifier) return null;
+    if (identifier.includes('@')) {
+      return this.prisma.user.findUnique({ where: { email: identifier } });
+    }
+    const matches = await this.prisma.user.findMany({
+      where: { name: { equals: identifier, mode: 'insensitive' } },
+      take: 2,
+    });
+    if (matches.length > 1) {
+      throw new UnauthorizedException(
+        'Hay más de una cuenta con ese nombre; inicia sesión con tu correo',
+      );
+    }
+    return matches[0] ?? null;
   }
 
   // Cierre de sesión: el JWT es stateless, solo queda la traza de auditoría.
