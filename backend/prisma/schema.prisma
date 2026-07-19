@@ -107,8 +107,12 @@ enum TraceType {
   AD_DELETED
   REPORT_CREATED
   REPORT_RESOLVED
+  REPORT_DELETED
   REVIEW_CREATED
+  REVIEW_UPDATED
   REVIEW_DELETED
+  USER_UPDATED
+  TRACE_DELETED
 }
 
 // Resultado de la operación auditada (los intentos fallidos también se trazan).
@@ -305,13 +309,18 @@ model Visit {
 }
 
 // Página vista en el portal (visita general al sitio, no solo a anuncios).
-// Sin relación a usuario a propósito: la métrica es agregada y anónima.
+// userId se guarda solo si la visita llegó con sesión iniciada: alimenta la
+// estadística de última visita y tiempo de estancia por usuario registrado.
+// Sin FK a propósito: la métrica sobrevive al borrado del usuario y las
+// visitas anónimas siguen siendo anónimas (userId null).
 model PageView {
   id        String   @id @default(uuid())
   path      String
+  userId    String?
   createdAt DateTime @default(now())
 
   @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 // Traza del sistema: eventos relevantes para auditoría. El actor se

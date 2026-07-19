@@ -3,8 +3,17 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { User } from '@/lib/types';
-import { AdminTable, Button, ConfirmDialog, IconButton, Input } from '@/components/ui';
+import {
+  AdminTable,
+  Button,
+  ConfirmDialog,
+  IconButton,
+  Input,
+  SelectCheckbox,
+} from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
+import { EditUserDialog } from '@/components/EditUserDialog';
+import { useSelection } from '@/lib/useSelection';
 
 const HEADERS = ['Nombre', 'Correo', 'Teléfono', 'Acceso', 'Anuncios', ''];
 
@@ -95,7 +104,15 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<UserRow | null>(null);
+  const [toEdit, setToEdit] = useState<UserRow | null>(null);
   const [creating, setCreating] = useState(false);
+  const [confirmBulk, setConfirmBulk] = useState(false);
+  const [confirmAll, setConfirmAll] = useState(false);
+  const { selected, allInPage, toggleOne, togglePage, clear } = useSelection(
+    users.map((u) => u.id),
+  );
+  // El borrado total conserva a los administradores.
+  const clientCount = users.filter((u) => !u.isAdmin).length;
 
   function load() {
     setLoading(true);
@@ -124,25 +141,75 @@ export default function UsersPage() {
     load();
   }
 
+  async function removeSelected() {
+    setConfirmBulk(false);
+    await api('/users/bulk-delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids: [...selected] }),
+    });
+    clear();
+    load();
+  }
+
+  async function removeAll() {
+    setConfirmAll(false);
+    await api('/users/all', { method: 'DELETE' });
+    clear();
+    load();
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-on-surface">Usuarios</h1>
-        <IconButton
-          icon="person_add"
-          label="Crear administrador"
-          variant="primary"
-          onClick={() => setCreating(true)}
-        />
+        <div className="flex gap-2">
+          {selected.size > 0 && (
+            <Button variant="danger" onClick={() => setConfirmBulk(true)}>
+              Eliminar seleccionados ({selected.size})
+            </Button>
+          )}
+          {clientCount > 0 && (
+            <Button variant="danger" onClick={() => setConfirmAll(true)}>
+              Eliminar todos ({clientCount})
+            </Button>
+          )}
+          <IconButton
+            icon="refresh"
+            label="Actualizar la lista"
+            onClick={load}
+            disabled={loading}
+          />
+          <IconButton
+            icon="person_add"
+            label="Crear administrador"
+            variant="primary"
+            onClick={() => setCreating(true)}
+          />
+        </div>
       </div>
       <AdminTable
-        headers={HEADERS}
+        headers={[
+          <SelectCheckbox
+            key="select-page"
+            label="Seleccionar todos los usuarios de la página"
+            checked={allInPage}
+            onChange={togglePage}
+          />,
+          ...HEADERS,
+        ]}
         loading={loading}
         error={error}
         empty="No hay usuarios."
       >
         {users.map((u) => (
           <tr key={u.id}>
+            <td className="px-4 py-3">
+              <SelectCheckbox
+                label={`Seleccionar a ${u.name}`}
+                checked={selected.has(u.id)}
+                onChange={() => toggleOne(u.id)}
+              />
+            </td>
             <td className="px-4 py-3">{u.name}</td>
             <td className="px-4 py-3 text-on-surface-variant">{u.email}</td>
             <td className="px-4 py-3 text-on-surface-variant">{u.phone}</td>
@@ -160,7 +227,8 @@ export default function UsersPage() {
             </td>
             <td className="px-4 py-3 text-on-surface-variant">{u._count?.ads ?? 0}</td>
             <td className="px-4 py-3 text-right">
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-1.5">
+                <IconButton icon="edit" label="Editar" onClick={() => setToEdit(u)} />
                 <IconButton
                   icon="delete"
                   label="Eliminar"
@@ -172,6 +240,15 @@ export default function UsersPage() {
           </tr>
         ))}
       </AdminTable>
+
+      <EditUserDialog
+        user={toEdit}
+        onClose={() => setToEdit(null)}
+        onSaved={() => {
+          setToEdit(null);
+          load();
+        }}
+      />
 
       <CreateAdminDialog
         open={creating}
@@ -188,6 +265,24 @@ export default function UsersPage() {
         message={`¿Eliminar a ${toDelete?.name}? Se borrarán también sus anuncios.`}
         onConfirm={remove}
         onCancel={() => setToDelete(null)}
+      />
+
+      <ConfirmDialog
+        open={confirmAll}
+        title="Eliminar TODOS los usuarios"
+        message={`Esto borra definitivamente los ${clientCount} usuarios registrados y sus anuncios (no se puede deshacer). Las cuentas de administrador se conservan. ¿Continuar?`}
+        onConfirm={removeAll}
+        onCancel={() => setConfirmAll(false)}
+      />
+
+      <ConfirmDialog
+        open={confirmBulk}
+        title="Eliminar usuarios seleccionados"
+        message={`¿Eliminar ${selected.size} ${
+          selected.size === 1 ? 'usuario' : 'usuarios'
+        }? Se borrarán también sus anuncios. Tu propia cuenta no se toca.`}
+        onConfirm={removeSelected}
+        onCancel={() => setConfirmBulk(false)}
       />
     </div>
   );

@@ -9,6 +9,7 @@ import { Prisma, TraceType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { QueryAdminReviewDto } from './dto/query-admin-review.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
 import { TracesService } from '../traces/traces.service';
@@ -152,6 +153,29 @@ export class ReviewsService {
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
+  // Moderación: el admin corrige la calificación o el comentario. El
+  // promedio del dueño no se persiste (se agrega al leer), así que no
+  // hay nada más que recalcular.
+  async update(id: string, dto: UpdateReviewDto, actor: AuthUser) {
+    const review = await this.prisma.review.findUnique({ where: { id } });
+    if (!review) throw new NotFoundException('Reseña no encontrada');
+    const updated = await this.prisma.review.update({
+      where: { id },
+      data: {
+        ...(dto.rating != null ? { rating: dto.rating } : {}),
+        ...(dto.comment != null ? { comment: dto.comment.trim() } : {}),
+      },
+      include: includeAuthor,
+    });
+    await this.traces.record(
+      TraceType.REVIEW_UPDATED,
+      `Reseña de ${review.rating}★ editada por ${actor.email} (moderación)`,
+      actor,
+      { resource: `review:${id}` },
+    );
+    return updated;
+  }
+
   // Eliminar: el autor de la reseña o un admin (moderación).
   async remove(id: string, user: AuthUser) {
     const review = await this.prisma.review.findUnique({ where: { id } });
@@ -167,5 +191,29 @@ export class ReviewsService {
       { resource: `review:${id}` },
     );
     return { deleted: true };
+  }
+
+  // Borrado total de las reseñas de la plataforma (moderación).
+  async removeAll(actor: AuthUser) {
+    const { count } = await this.prisma.review.deleteMany({});
+    await this.traces.record(
+      TraceType.REVIEW_DELETED,
+      `Borrado total: ${count} reseñas eliminadas por ${actor.email} (moderación)`,
+      actor,
+    );
+    return { deleted: count };
+  }
+
+  // Borrado por lotes desde el panel (moderación), con traza resumen única.
+  async removeMany(ids: string[], actor: AuthUser) {
+    const { count } = await this.prisma.review.deleteMany({
+      where: { id: { in: ids } },
+    });
+    await this.traces.record(
+      TraceType.REVIEW_DELETED,
+      `Borrado por lotes: ${count} reseñas eliminadas por ${actor.email} (moderación)`,
+      actor,
+    );
+    return { deleted: count };
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import {
   Ad,
@@ -13,8 +14,17 @@ import {
   Paginated,
   STATUS_LABEL,
 } from '@/lib/types';
-import { AdminTable, Button, Input } from '@/components/ui';
+import {
+  AdminTable,
+  Button,
+  ConfirmDialog,
+  IconButton,
+  Input,
+  SelectCheckbox,
+} from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
+import { Pagination } from '@/components/Pagination';
+import { useSelection } from '@/lib/useSelection';
 
 const HEADERS = [
   'Anuncio',
@@ -24,6 +34,7 @@ const HEADERS = [
   'Salario',
   'Publicado',
   'Estado',
+  '',
 ];
 
 const LIMIT = 20;
@@ -36,9 +47,17 @@ const STATUS_STYLE: Record<EffectiveStatus, string> = {
 
 // Reporte de anuncios publicados por clientes (excluye a los administradores).
 export default function ClientAdsReportPage() {
+  const router = useRouter();
   const [data, setData] = useState<Paginated<Ad> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [toDelete, setToDelete] = useState<Ad | null>(null);
+  const [reload, setReload] = useState(0);
+  const [confirmBulk, setConfirmBulk] = useState(false);
+  const [confirmAll, setConfirmAll] = useState(false);
+  const { selected, allInPage, toggleOne, togglePage, clear } = useSelection(
+    (data?.items ?? []).map((ad) => ad.id),
+  );
   const [status, setStatus] = useState<EffectiveStatus | ''>('');
   const [category, setCategory] = useState<Category | ''>('');
   const [department, setDepartment] = useState<Department | ''>('');
@@ -65,7 +84,7 @@ export default function ClientAdsReportPage() {
       .then(setData)
       .catch((e) => setError((e as Error).message))
       .finally(() => setLoading(false));
-  }, [status, category, department, owner, from, to, page]);
+  }, [status, category, department, owner, from, to, page, reload]);
 
   function filter<T>(setter: (v: T) => void) {
     return (v: T) => {
@@ -74,16 +93,62 @@ export default function ClientAdsReportPage() {
     };
   }
 
+  async function remove() {
+    if (!toDelete) return;
+    await api(`/listings/${toDelete.id}`, { method: 'DELETE' });
+    setToDelete(null);
+    setReload((n) => n + 1);
+  }
+
+  async function removeSelected() {
+    setConfirmBulk(false);
+    await api('/listings/bulk-delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids: [...selected] }),
+    });
+    clear();
+    setReload((n) => n + 1);
+  }
+
+  // Borra todos los anuncios de clientes (los de administradores no).
+  async function removeAll() {
+    setConfirmAll(false);
+    await api('/listings/all?clientsOnly=true', { method: 'DELETE' });
+    clear();
+    setPage(1);
+    setReload((n) => n + 1);
+  }
+
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-2xl font-semibold text-on-surface">
-          Anuncios publicados por clientes
-        </h1>
-        <p className="mt-1 text-sm text-on-surface-variant">
-          Solo anuncios creados por usuarios de la web (excluye a los
-          administradores).
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-semibold text-on-surface">
+            Anuncios publicados por clientes
+          </h1>
+          <p className="mt-1 text-sm text-on-surface-variant">
+            Solo anuncios creados por usuarios de la web (excluye a los
+            administradores).
+          </p>
+        </div>
+        <div className="flex gap-2">
+          {selected.size > 0 && (
+            <Button variant="danger" onClick={() => setConfirmBulk(true)}>
+              Eliminar seleccionados ({selected.size})
+            </Button>
+          )}
+          {(data?.total ?? 0) > 0 && (
+            <Button variant="danger" onClick={() => setConfirmAll(true)}>
+              Eliminar todos
+            </Button>
+          )}
+          <IconButton
+            icon="refresh"
+            label="Actualizar la lista"
+            onClick={() => setReload((n) => n + 1)}
+            disabled={loading}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-6">
@@ -125,7 +190,15 @@ export default function ClientAdsReportPage() {
       </div>
 
       <AdminTable
-        headers={HEADERS}
+        headers={[
+          <SelectCheckbox
+            key="select-page"
+            label="Seleccionar todos los anuncios de la página"
+            checked={allInPage}
+            onChange={togglePage}
+          />,
+          ...HEADERS,
+        ]}
         loading={loading}
         error={error}
         empty="No hay anuncios de clientes para los filtros elegidos."
@@ -134,6 +207,13 @@ export default function ClientAdsReportPage() {
               const st = adEffectiveStatus(ad);
               return (
                 <tr key={ad.id}>
+                  <td className="px-4 py-3">
+                    <SelectCheckbox
+                      label={`Seleccionar el anuncio "${ad.title}"`}
+                      checked={selected.has(ad.id)}
+                      onChange={() => toggleOne(ad.id)}
+                    />
+                  </td>
                   <td className="max-w-xs truncate px-4 py-3">{ad.description}</td>
                   <td className="px-4 py-3 text-on-surface-variant">
                     {ad.createdBy ? `${ad.createdBy.name} (${ad.createdBy.email})` : '—'}
@@ -159,34 +239,61 @@ export default function ClientAdsReportPage() {
                       {STATUS_LABEL[st]}
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-1.5">
+                      <IconButton
+                        icon="edit"
+                        label="Editar"
+                        onClick={() => router.push(`/listings/new?id=${ad.id}`)}
+                      />
+                      <IconButton
+                        icon="delete"
+                        label="Eliminar"
+                        variant="danger"
+                        onClick={() => setToDelete(ad)}
+                      />
+                    </div>
+                  </td>
                 </tr>
               );
             })}
       </AdminTable>
 
-      {!error && data && data.items.length > 0 && (
-          <div className="flex items-center justify-between text-sm text-on-surface-variant">
-            <span>
-              Página {data.page} de {data.totalPages} · {data.total} anuncios
-            </span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Anterior
-              </Button>
-              <Button
-                variant="outline"
-                disabled={page >= data.totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Siguiente
-              </Button>
-            </div>
-          </div>
+      {!error && data && (
+        <Pagination
+          page={data.page}
+          totalPages={data.totalPages}
+          total={data.total}
+          limit={data.limit}
+          onPage={setPage}
+        />
       )}
+
+      <ConfirmDialog
+        open={!!toDelete}
+        title="Eliminar anuncio"
+        message="Esto borra el anuncio definitivamente (no es una baja). ¿Continuar?"
+        onConfirm={remove}
+        onCancel={() => setToDelete(null)}
+      />
+
+      <ConfirmDialog
+        open={confirmAll}
+        title="Eliminar TODOS los anuncios de clientes"
+        message="Esto borra definitivamente TODOS los anuncios publicados por clientes, no solo los filtrados; los de administradores se conservan (no se puede deshacer). ¿Continuar?"
+        onConfirm={removeAll}
+        onCancel={() => setConfirmAll(false)}
+      />
+
+      <ConfirmDialog
+        open={confirmBulk}
+        title="Eliminar anuncios seleccionados"
+        message={`Esto borra definitivamente ${selected.size} ${
+          selected.size === 1 ? 'anuncio' : 'anuncios'
+        } (no es una baja). ¿Continuar?`}
+        onConfirm={removeSelected}
+        onCancel={() => setConfirmBulk(false)}
+      />
     </div>
   );
 }
