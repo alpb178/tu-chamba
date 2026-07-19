@@ -4,9 +4,11 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '@/lib/api';
 import {
   Ad,
+  CATEGORY_LABEL,
   DEPARTMENT_LABEL,
   Department,
   Facets,
+  JOB_TYPE_LABEL,
   Paginated,
 } from '@/lib/types';
 import { Hero } from '@/components/Hero';
@@ -16,6 +18,103 @@ import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
 import { Pagination } from '@/components/Pagination';
 import { FeaturedBrands } from '@/components/FeaturedBrands';
 import { Icon } from '@/components/Icon';
+
+// Chips de los filtros activos sobre el listado: recuerdan qué está
+// aplicado y se quitan de un toque (clave en móvil, donde el panel de
+// filtros vive colapsado).
+function FilterChips({
+  filters,
+  onChange,
+}: {
+  filters: Filters;
+  onChange: (f: Filters) => void;
+}) {
+  const chips: { key: string; label: string; next: Filters }[] = [];
+  filters.jobType.forEach((t) =>
+    chips.push({
+      key: `t-${t}`,
+      label: JOB_TYPE_LABEL[t],
+      next: { ...filters, jobType: filters.jobType.filter((x) => x !== t) },
+    }),
+  );
+  filters.category.forEach((c) =>
+    chips.push({
+      key: `c-${c}`,
+      label: CATEGORY_LABEL[c],
+      next: { ...filters, category: filters.category.filter((x) => x !== c) },
+    }),
+  );
+  filters.department.forEach((d) =>
+    chips.push({
+      key: `d-${d}`,
+      label: DEPARTMENT_LABEL[d],
+      next: { ...filters, department: filters.department.filter((x) => x !== d) },
+    }),
+  );
+  if (filters.salaryMin != null || filters.salaryMax != null) {
+    chips.push({
+      key: 'salary',
+      label: `Bs ${(filters.salaryMin ?? 0).toLocaleString('es-BO')}${
+        filters.salaryMax != null
+          ? ` – ${filters.salaryMax.toLocaleString('es-BO')}`
+          : ' o más'
+      }`,
+      next: { ...filters, salaryMin: undefined, salaryMax: undefined },
+    });
+  }
+  if (chips.length === 0) return null;
+
+  return (
+    <div className="mb-3 flex flex-wrap items-center gap-1.5">
+      {chips.map((c) => (
+        <button
+          key={c.key}
+          type="button"
+          onClick={() => onChange(c.next)}
+          title={`Quitar el filtro ${c.label}`}
+          className="flex items-center gap-1 rounded-full bg-secondary-container px-3 py-1.5 text-xs font-medium text-on-secondary-container transition-all hover:brightness-95 active:scale-95"
+        >
+          {c.label}
+          <Icon name="close" className="text-sm" />
+        </button>
+      ))}
+      {chips.length > 1 && (
+        <button
+          type="button"
+          onClick={() => onChange(NO_FILTERS)}
+          className="px-2 py-1.5 text-xs font-bold text-primary hover:underline"
+        >
+          Limpiar todo
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Botón flotante para volver arriba en móvil: con scroll infinito la
+// lista se hace larga y no hay paginación para "escapar".
+function BackToTop() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 800);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  if (!visible) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      aria-label="Volver arriba"
+      className="fixed bottom-20 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface-variant shadow-lg transition-colors hover:text-primary md:hidden"
+    >
+      <Icon name="arrow_upward" className="text-xl" />
+    </button>
+  );
+}
 
 // Portada. La búsqueda (?q= y ?dep=) llega resuelta desde el server
 // component (page.tsx), así el hero viaja en el HTML inicial.
@@ -143,6 +242,7 @@ export function HomeClient({
           <FiltersSidebar
             value={filters}
             facets={facets}
+            total={data?.total}
             onChange={(f) => {
               setFilters(f);
               setPage(1);
@@ -208,10 +308,18 @@ export function HomeClient({
                       <Icon name="refresh" className="text-xl" />
                     </button>
                   </div>
-                  {/* En móvil, tarjetas de dos en dos (una sola columna en
-                      pantallas muy angostas); en escritorio, una debajo de
-                      otra. */}
-                  <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-2 md:grid-cols-1 md:gap-4">
+                  {/* Filtros activos como chips removibles sobre la lista. */}
+                  <FilterChips
+                    filters={filters}
+                    onChange={(f) => {
+                      setFilters(f);
+                      setPage(1);
+                    }}
+                  />
+
+                  {/* Una tarjeta por fila: en móvil las tarjetas necesitan
+                      todo el ancho para respirar (título + salario + rating). */}
+                  <div className="grid grid-cols-1 gap-3 md:gap-4">
                     {items.map((a) => (
                       <AdCard key={a.id} ad={a} />
                     ))}
@@ -222,6 +330,13 @@ export function HomeClient({
                   {loadingMore && (
                     <p className="py-4 text-center text-sm text-on-surface-variant md:hidden">
                       Cargando más ofertas…
+                    </p>
+                  )}
+                  {/* Móvil: progreso del scroll infinito siempre visible. */}
+                  {!loadingMore && data.total > 0 && (
+                    <p className="py-3 text-center text-xs text-on-surface-variant md:hidden">
+                      Mostrando {items.length} de {data.total}{' '}
+                      {data.total === 1 ? 'oferta' : 'ofertas'}
                     </p>
                   )}
 
@@ -249,6 +364,7 @@ export function HomeClient({
       )}
 
       <FeaturedBrands />
+      <BackToTop />
     </div>
   );
 }

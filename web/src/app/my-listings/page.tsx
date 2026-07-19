@@ -8,6 +8,7 @@ import { useRequireAuth } from '@/lib/useRequireAuth';
 import { AdCard } from '@/components/AdCard';
 import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
 import { Button, IconButton } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 
 export default function MyAdsPage() {
   const { user, loading: authLoading } = useRequireAuth();
@@ -67,7 +68,20 @@ export default function MyAdsPage() {
         </Link>
       </div>
       {items.length === 0 ? (
-        <p className="text-on-surface-variant">Aún no has publicado anuncios.</p>
+        // Estado vacío con camino claro: publicar el primer anuncio.
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-14 text-center">
+          <Icon name="publish" className="text-4xl text-outline" />
+          <p className="text-base text-on-surface">
+            Aún no has publicado anuncios.
+          </p>
+          <p className="text-sm text-on-surface-variant">
+            Publica tu primera oferta: es gratis y los interesados te
+            escriben directo por WhatsApp.
+          </p>
+          <Link href="/listings/new" className="mt-1">
+            <Button>Publicar mi primer anuncio</Button>
+          </Link>
+        </div>
       ) : (
         <div className="grid grid-cols-1 gap-3">
           {items.map((a) => {

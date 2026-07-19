@@ -125,7 +125,8 @@ export interface Ad {
   durationDays: number;
   expiresAt: string;
   createdById: string;
-  createdBy?: { id: string; name: string; email: string };
+  // emailVerified alimenta el badge "Verificado" (señal de confianza).
+  createdBy?: { id: string; name: string; email: string; emailVerified?: boolean };
   // Calificación del publicante; el backend la adjunta en los listados.
   ownerRating?: { average: number | null; count: number };
   // Accesos e interesados; el backend los adjunta en detalle y /listings/mine.

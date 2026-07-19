@@ -26,7 +26,11 @@ import { TracesService } from '../traces/traces.service';
 import { GoogleIndexingService } from '../indexing/google-indexing.service';
 
 const includeAuthor = {
-  createdBy: { select: { id: true, name: true, email: true } },
+  // emailVerified alimenta el badge "Verificado" del portal (señal de
+  // confianza pública; no expone ningún dato de contacto).
+  createdBy: {
+    select: { id: true, name: true, email: true, emailVerified: true },
+  },
 };
 
 // Conteos de actividad del anuncio (accesos e interesados).

@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import { Ad, adEffectiveStatus, DEPARTMENT_LABEL, waLink } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
+import { Icon } from './Icon';
 import { ReportAd } from './ReportAd';
 
 // Leaflet usa window: solo en cliente.
@@ -46,9 +47,9 @@ function LocationMap({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="absolute right-2 top-2 z-[1001] rounded-md border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-sm hover:text-brand"
+          className="absolute right-2 top-2 z-[1001] flex items-center gap-1 rounded-md border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-sm hover:text-brand"
         >
-          ⤢ Ampliar
+          <Icon name="open_in_full" className="text-sm" /> Ampliar
         </button>
       </div>
       <div className="flex items-center justify-between gap-2">
@@ -63,9 +64,9 @@ function LocationMap({
           href={mapsUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="shrink-0 text-xs text-brand underline hover:text-brand-dark"
+          className="flex shrink-0 items-center gap-0.5 text-xs text-brand underline hover:text-brand-dark"
         >
-          Abrir en Google Maps ↗
+          Abrir en Google Maps <Icon name="open_in_new" className="text-sm" />
         </a>
       </div>
 
@@ -74,6 +75,7 @@ function LocationMap({
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
           onClick={() => setExpanded(false)}
           role="dialog"
+          aria-modal="true"
           aria-label="Mapa ampliado"
         >
           <div
@@ -86,12 +88,15 @@ function LocationMap({
               zoom={approximate ? 14 : 16}
               className="h-full"
             />
+            {/* autoFocus: el foco entra al diálogo al abrirse (Escape y el
+                click en el fondo lo cierran). */}
             <button
               type="button"
+              autoFocus
               onClick={() => setExpanded(false)}
-              className="absolute right-3 top-3 z-[1001] rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow hover:text-brand"
+              className="absolute right-3 top-3 z-[1001] flex items-center gap-1 rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow hover:text-brand"
             >
-              ✕ Cerrar
+              <Icon name="close" className="text-base" /> Cerrar
             </button>
           </div>
         </div>
@@ -153,6 +158,33 @@ function ShareIcon() {
   );
 }
 
+// Glifo oficial de WhatsApp (relleno): el CTA debe reconocerse como
+// WhatsApp de un vistazo, no como un botón genérico.
+function WhatsAppIcon({ className = 'h-4.5 w-4.5' }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.1-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+    </svg>
+  );
+}
+
+function CallIcon({ className = 'h-4 w-4' }: { className?: string }) {
+  return (
+    <svg {...iconProps} className={className}>
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  );
+}
+
+// CTA verde de WhatsApp (color de marca) y botón secundario "Llamar".
+// Ambos son <a>: con sesión apuntan a wa.me/tel:, sin sesión llevan a
+// iniciar sesión y vuelven al anuncio (next=). El teléfono en sí nunca
+// se muestra sin sesión.
+const WA_BUTTON_CLASS =
+  'flex w-full items-center justify-center gap-2 rounded-lg bg-[#25d366] px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#25d366] focus-visible:ring-offset-2 active:scale-95';
+const CALL_BUTTON_CLASS =
+  'flex w-full items-center justify-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-medium text-on-surface-variant transition-all hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-95';
+
 // Coordenadas aproximadas de una dirección (Nominatim, best effort).
 // Para anuncios sin pin: así el detalle siempre muestra el lugar en el mapa.
 async function geocode(
@@ -203,6 +235,8 @@ export function AdActions({ ad }: { ad: Ad }) {
   const canEdit = Boolean(user?.isAdmin) || isOwner;
   const adRef = ad.id.slice(0, 8);
   const adPath = `/listings/${ad.id}`;
+  // Sin sesión, los CTA de contacto llevan al login y vuelven al anuncio.
+  const loginNext = `/login?next=${encodeURIComponent(adPath)}`;
   const waMessage = `Hola, vi tu anuncio en Tu Chamba (Ref. ${adRef}) y me interesa.`;
 
   // Enlace compartido (?shared=1): sin sesión se exige crear cuenta y,
@@ -283,8 +317,8 @@ export function AdActions({ ad }: { ad: Ad }) {
     <div className="space-y-4">
       {/* Ubicación exacta y mapa: solo con sesión. */}
       {user && location && (
-        <p className="text-sm text-on-surface-variant">
-          📍 Ubicación: {location}
+        <p className="flex items-center gap-1 text-sm text-on-surface-variant">
+          <Icon name="location_on" className="text-base" /> Ubicación: {location}
         </p>
       )}
       {user &&
@@ -323,63 +357,83 @@ export function AdActions({ ad }: { ad: Ad }) {
         </IconButton>
       </div>
 
-      {/* Contacto: con sesión muestra Chatear/Llamar; sin sesión, CTA. */}
-      {phone ? (
+      {/* Contacto: con sesión los botones abren WhatsApp/llamada y se ve el
+          teléfono; sin sesión los MISMOS botones llevan a iniciar sesión y
+          vuelven al anuncio (el teléfono queda oculto hasta entonces). */}
+      {(phone || (!loading && !user)) && (
         <>
-          {/* Escritorio: contacto en el flujo del detalle (tel: no sirve ahí,
-              el número se muestra como texto para marcarlo desde el teléfono). */}
+          {/* Escritorio: contacto en el flujo del detalle. */}
           <div className="hidden space-y-1.5 sm:block">
-            <a
-              href={waLink(phone, waMessage)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block"
-              onClick={registerInterest}
-            >
-              <Button className="w-full">Chatear</Button>
-            </a>
+            <div className="flex gap-2">
+              {phone ? (
+                <a
+                  href={waLink(phone, waMessage)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${WA_BUTTON_CLASS} flex-1`}
+                  onClick={registerInterest}
+                >
+                  <WhatsAppIcon className="h-5 w-5" /> WhatsApp
+                </a>
+              ) : (
+                <Link href={loginNext} className={`${WA_BUTTON_CLASS} flex-1`}>
+                  <WhatsAppIcon className="h-5 w-5" /> WhatsApp
+                </Link>
+              )}
+              {phone ? (
+                <a
+                  href={`tel:${phone}`}
+                  className={`${CALL_BUTTON_CLASS} flex-1`}
+                  onClick={registerInterest}
+                >
+                  <CallIcon /> Llamar
+                </a>
+              ) : (
+                <Link href={loginNext} className={`${CALL_BUTTON_CLASS} flex-1`}>
+                  <CallIcon /> Llamar
+                </Link>
+              )}
+            </div>
             <p className="text-center text-xs text-on-surface-variant">
-              Teléfono: {phone}
+              {phone
+                ? `Teléfono: ${phone}`
+                : 'Inicia sesión para contactar: el teléfono se muestra al ingresar.'}
             </p>
           </div>
 
           {/* Móvil: barra fija al pie para que el contacto siempre esté a
               mano aunque la descripción sea larga (safe-area por el notch). */}
           <div className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-outline-variant bg-surface-container-lowest p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-2px_8px_rgba(0,0,0,0.08)] sm:hidden">
-            <a
-              href={waLink(phone, waMessage)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1"
-              onClick={registerInterest}
-            >
-              <Button className="w-full">Chatear</Button>
-            </a>
-            <a href={`tel:${phone}`} className="flex-1">
-              <Button variant="outline" className="w-full">
-                Llamar
-              </Button>
-            </a>
+            {phone ? (
+              <a
+                href={waLink(phone, waMessage)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${WA_BUTTON_CLASS} flex-1`}
+                onClick={registerInterest}
+              >
+                <WhatsAppIcon className="h-5 w-5" /> WhatsApp
+              </a>
+            ) : (
+              <Link href={loginNext} className={`${WA_BUTTON_CLASS} flex-1`}>
+                <WhatsAppIcon className="h-5 w-5" /> WhatsApp
+              </Link>
+            )}
+            {phone ? (
+              <a
+                href={`tel:${phone}`}
+                className={`${CALL_BUTTON_CLASS} flex-1`}
+                onClick={registerInterest}
+              >
+                <CallIcon /> Llamar
+              </a>
+            ) : (
+              <Link href={loginNext} className={`${CALL_BUTTON_CLASS} flex-1`}>
+                <CallIcon /> Llamar
+              </Link>
+            )}
           </div>
         </>
-      ) : (
-        !loading &&
-        !user && (
-          <div className="rounded-md border border-outline-variant bg-surface-container-low p-4 text-center">
-            <p className="text-sm text-on-surface-variant">
-              Inicia sesión para ver la ubicación y el teléfono, y contactar
-              por WhatsApp.
-            </p>
-            <div className="mt-3 flex justify-center gap-2">
-              <Link href={`/login?next=${encodeURIComponent(adPath)}`}>
-                <Button>Ingresar</Button>
-              </Link>
-              <Link href={`/register?next=${encodeURIComponent(adPath)}`}>
-                <Button variant="outline">Registrarse</Button>
-              </Link>
-            </div>
-          </div>
-        )
       )}
 
       {canEdit && (
