@@ -1,25 +1,29 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+
 import { api } from '@/lib/api';
 import { User } from '@/lib/types';
 import {
   AdminTable,
   Button,
   ConfirmDialog,
+  FormField,
   IconButton,
   Input,
   SelectCheckbox,
 } from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
 import { EditUserDialog } from '@/components/EditUserDialog';
+import { PasswordInput } from '@/components/PasswordInput';
 import { useSelection } from '@/lib/useSelection';
 
 const HEADERS = ['Nombre', 'Correo', 'Teléfono', 'Acceso', 'Anuncios', ''];
 
 type UserRow = User & { _count?: { ads: number } };
 
-// Alta de un administrador: el backend solo pide correo y contraseña.
+// Alta de un administrador: correo, contraseña y usuario opcional (el
+// usuario también sirve para iniciar sesión; si falta, sale del correo).
 function CreateAdminDialog({
   open,
   onClose,
@@ -30,9 +34,21 @@ function CreateAdminDialog({
   onCreated: () => void;
 }) {
   const [email, setEmail] = useState('');
+  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // El diálogo sigue montado al cerrarse (solo deja de renderizar): al
+  // reabrirlo, el formulario debe arrancar vacío aunque se haya cancelado
+  // a medio escribir.
+  useEffect(() => {
+    if (!open) return;
+    setEmail('');
+    setName('');
+    setPassword('');
+    setError(null);
+  }, [open]);
 
   if (!open) return null;
 
@@ -43,9 +59,14 @@ function CreateAdminDialog({
     try {
       await api('/users/admin', {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email,
+          password,
+          ...(name.trim() ? { name: name.trim() } : {}),
+        }),
       });
       setEmail('');
+      setName('');
       setPassword('');
       onCreated();
     } catch (err) {
@@ -57,8 +78,11 @@ function CreateAdminDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      {/* autoComplete=off + new-password: sin esto Chrome rellena el par
+          correo/contraseña con las credenciales guardadas del panel. */}
       <form
         onSubmit={submit}
+        autoComplete="off"
         className="w-full max-w-sm space-y-4 rounded-lg bg-surface-container-lowest p-6 shadow-lg"
       >
         <div>
@@ -68,23 +92,40 @@ function CreateAdminDialog({
           </p>
         </div>
         <div className="space-y-3">
-          <Input
-            type="email"
-            placeholder="Correo"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            autoFocus
-          />
-          <Input
-            type="password"
-            placeholder="Contraseña (mínimo 6 caracteres)"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            minLength={6}
-            required
-          />
+          <FormField label="Correo">
+            <Input
+              type="email"
+              autoComplete="off"
+              placeholder="nuevo-admin@tuchamba.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoFocus
+            />
+          </FormField>
+          <FormField label="Usuario">
+            <Input
+              type="text"
+              autoComplete="off"
+              placeholder="Opcional; si falta, sale del correo"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </FormField>
+          <FormField label="Contraseña">
+            <PasswordInput
+              autoComplete="new-password"
+              placeholder="Mínimo 6 caracteres"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              minLength={6}
+              required
+            />
+          </FormField>
         </div>
+        <p className="text-xs text-on-surface-variant">
+          Podrá iniciar sesión con el usuario o con el correo.
+        </p>
         {error && <p className="text-sm text-error">{error}</p>}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose}>

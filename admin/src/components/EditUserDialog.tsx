@@ -54,11 +54,17 @@ export function EditUserDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <form
         onSubmit={submit}
+        autoComplete="off"
         className="w-full max-w-sm space-y-4 rounded-lg bg-surface-container-lowest p-6 shadow-lg"
       >
-        <h3 className="text-lg font-semibold text-on-surface">Editar usuario</h3>
+        <div>
+          <h3 className="text-lg font-semibold text-on-surface">Editar usuario</h3>
+          <p className="mt-1 text-sm text-on-surface-variant">
+            Puede iniciar sesión con el usuario o con el correo.
+          </p>
+        </div>
         <div className="space-y-3">
-          <FormField label="Nombre">
+          <FormField label="Usuario">
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
