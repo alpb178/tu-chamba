@@ -127,12 +127,17 @@ export class AdsController {
   }
 
   // Borrado físico de TODOS los anuncios (panel admin): solo ADMIN.
-  // Declarado antes de ':id' para que 'all' no se interprete como un id.
+  // Con clientsOnly=true borra solo los anuncios creados por clientes
+  // (usuarios sin acceso al panel). Declarado antes de ':id' para que
+  // 'all' no se interprete como un id.
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Delete('all')
-  removeAll(@CurrentUser() user: AuthUser) {
-    return this.ads.removeAll(user);
+  removeAll(
+    @CurrentUser() user: AuthUser,
+    @Query('clientsOnly') clientsOnly?: string,
+  ) {
+    return this.ads.removeAll(user, clientsOnly === 'true');
   }
 
   // Borrado físico: dueño del anuncio o admin.

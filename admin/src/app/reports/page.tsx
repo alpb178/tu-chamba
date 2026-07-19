@@ -8,22 +8,29 @@ import {
   REPORT_REASON_LABEL,
   Report,
 } from '@/lib/types';
-import { AdminTable, IconButton } from '@/components/ui';
+import {
+  AdminTable,
+  Button,
+  ConfirmDialog,
+  IconButton,
+  SelectCheckbox,
+} from '@/components/ui';
 import { CustomSelect } from '@/components/CustomSelect';
+import { useSelection } from '@/lib/useSelection';
 
 const HEADERS = ['Anuncio', 'Motivo', 'Comentario', 'Reportado por', 'Fecha', 'Estado', ''];
-
-const STATUS_STYLE: Record<ReportStatus, string> = {
-  PENDIENTE: 'bg-amber-100 text-amber-800',
-  ATENDIDO: 'bg-green-100 text-green-800',
-  DESCARTADO: 'bg-surface-container-high text-on-surface-variant',
-};
 
 export default function ReportsAdminPage() {
   const [items, setItems] = useState<Report[]>([]);
   const [filter, setFilter] = useState<ReportStatus | ''>('PENDIENTE');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [toDelete, setToDelete] = useState<Report | null>(null);
+  const [confirmBulk, setConfirmBulk] = useState(false);
+  const [confirmAll, setConfirmAll] = useState(false);
+  const { selected, allInPage, toggleOne, togglePage, clear } = useSelection(
+    items.map((r) => r.id),
+  );
 
   function load(status: ReportStatus | '' = filter) {
     setLoading(true);
@@ -37,11 +44,37 @@ export default function ReportsAdminPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => load(), [filter]);
 
-  async function resolve(r: Report, status: 'ATENDIDO' | 'DESCARTADO') {
+  // Actualiza el estado del reporte (atender, descartar o reabrir).
+  async function resolve(r: Report, status: ReportStatus) {
     await api(`/reports/${r.id}`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
     });
+    load();
+  }
+
+  // Elimina el reporte de la cola (el anuncio reportado no se toca).
+  async function removeReport() {
+    if (!toDelete) return;
+    await api(`/reports/${toDelete.id}`, { method: 'DELETE' });
+    setToDelete(null);
+    load();
+  }
+
+  async function removeSelected() {
+    setConfirmBulk(false);
+    await api('/reports/bulk-delete', {
+      method: 'POST',
+      body: JSON.stringify({ ids: [...selected] }),
+    });
+    clear();
+    load();
+  }
+
+  async function removeAll() {
+    setConfirmAll(false);
+    await api('/reports/all', { method: 'DELETE' });
+    clear();
     load();
   }
 
@@ -60,30 +93,63 @@ export default function ReportsAdminPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold text-on-surface">Reportes</h1>
-        <div className="w-48">
-          <CustomSelect
-            value={filter}
-            onChange={(v) => setFilter(v as ReportStatus | '')}
-            options={[
-              { value: '', label: 'Todos' },
-              { value: 'PENDIENTE', label: 'Pendientes' },
-              { value: 'ATENDIDO', label: 'Atendidos' },
-              { value: 'DESCARTADO', label: 'Descartados' },
-            ]}
+        <div className="flex items-center gap-2">
+          {selected.size > 0 && (
+            <Button variant="danger" onClick={() => setConfirmBulk(true)}>
+              Eliminar seleccionados ({selected.size})
+            </Button>
+          )}
+          {items.length > 0 && (
+            <Button variant="danger" onClick={() => setConfirmAll(true)}>
+              Eliminar todos
+            </Button>
+          )}
+          <IconButton
+            icon="refresh"
+            label="Actualizar la lista"
+            onClick={() => load()}
+            disabled={loading}
           />
+          <div className="w-48">
+            <CustomSelect
+              value={filter}
+              onChange={(v) => setFilter(v as ReportStatus | '')}
+              options={[
+                { value: '', label: 'Todos' },
+                { value: 'PENDIENTE', label: 'Pendientes' },
+                { value: 'ATENDIDO', label: 'Atendidos' },
+                { value: 'DESCARTADO', label: 'Descartados' },
+              ]}
+            />
+          </div>
         </div>
       </div>
 
       <AdminTable
-        headers={HEADERS}
+        headers={[
+          <SelectCheckbox
+            key="select-page"
+            label="Seleccionar todos los reportes de la página"
+            checked={allInPage}
+            onChange={togglePage}
+          />,
+          ...HEADERS,
+        ]}
         loading={loading}
         error={error}
         empty="No hay reportes con este filtro."
       >
         {items.map((r) => (
             <tr key={r.id}>
+              <td className="px-4 py-3">
+                <SelectCheckbox
+                  label="Seleccionar el reporte"
+                  checked={selected.has(r.id)}
+                  onChange={() => toggleOne(r.id)}
+                />
+              </td>
               <td className="max-w-xs truncate px-4 py-3">
                 {r.ad?.description ?? '—'}
                 {r.ad?.status === 'DADO_DE_BAJA' && (
@@ -101,37 +167,71 @@ export default function ReportsAdminPage() {
                 {new Date(r.createdAt).toLocaleDateString('es-BO')}
               </td>
               <td className="px-4 py-3">
-                <span
-                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[r.status]}`}
-                >
-                  {REPORT_STATUS_LABEL[r.status]}
-                </span>
+                {/* Cambio de estado directo: atender, descartar o reabrir. */}
+                <div className="w-36">
+                  <CustomSelect
+                    value={r.status}
+                    onChange={(v) => resolve(r, v as ReportStatus)}
+                    options={Object.entries(REPORT_STATUS_LABEL).map(
+                      ([value, label]) => ({ value, label }),
+                    )}
+                  />
+                </div>
               </td>
               <td className="px-4 py-3 text-right">
-                {r.status === 'PENDIENTE' && (
-                  <div className="flex justify-end gap-1.5">
-                    <IconButton
-                      icon="visibility_off"
-                      label="Ocultar anuncio"
-                      onClick={() => unpublishAd(r)}
-                    />
-                    <IconButton
-                      icon="delete"
-                      label="Eliminar anuncio"
-                      variant="danger"
-                      onClick={() => deleteAd(r)}
-                    />
-                    <IconButton
-                      icon="close"
-                      label="Descartar reporte"
-                      onClick={() => resolve(r, 'DESCARTADO')}
-                    />
-                  </div>
-                )}
+                <div className="flex justify-end gap-1.5">
+                  {r.status === 'PENDIENTE' && (
+                    <>
+                      <IconButton
+                        icon="visibility_off"
+                        label="Ocultar anuncio"
+                        onClick={() => unpublishAd(r)}
+                      />
+                      <IconButton
+                        icon="delete"
+                        label="Eliminar anuncio"
+                        variant="danger"
+                        onClick={() => deleteAd(r)}
+                      />
+                    </>
+                  )}
+                  <IconButton
+                    icon="close"
+                    label="Eliminar reporte"
+                    variant="danger"
+                    onClick={() => setToDelete(r)}
+                  />
+                </div>
               </td>
             </tr>
           ))}
       </AdminTable>
+
+      <ConfirmDialog
+        open={!!toDelete}
+        title="Eliminar reporte"
+        message="El reporte se borra de la cola; el anuncio reportado no se toca. ¿Continuar?"
+        onConfirm={removeReport}
+        onCancel={() => setToDelete(null)}
+      />
+
+      <ConfirmDialog
+        open={confirmAll}
+        title="Eliminar TODOS los reportes"
+        message="Esto vacía toda la cola de reportes (de cualquier estado, no solo los filtrados); los anuncios reportados no se tocan (no se puede deshacer). ¿Continuar?"
+        onConfirm={removeAll}
+        onCancel={() => setConfirmAll(false)}
+      />
+
+      <ConfirmDialog
+        open={confirmBulk}
+        title="Eliminar reportes seleccionados"
+        message={`Se borran ${selected.size} ${
+          selected.size === 1 ? 'reporte' : 'reportes'
+        } de la cola; los anuncios reportados no se tocan. ¿Continuar?`}
+        onConfirm={removeSelected}
+        onCancel={() => setConfirmBulk(false)}
+      />
     </div>
   );
 }

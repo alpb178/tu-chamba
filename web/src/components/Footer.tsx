@@ -129,10 +129,10 @@ export function Footer() {
               href="https://www.facebook.com/corpsc"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Síguenos en redes"
+              aria-label="Síguenos en Facebook"
               className="text-on-surface-variant transition-colors hover:text-primary"
             >
-              <Icon name="share" />
+              <Icon name="facebook" />
             </a>
           </div>
         </div>

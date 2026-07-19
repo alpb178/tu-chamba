@@ -26,7 +26,11 @@ import { TracesService } from '../traces/traces.service';
 import { GoogleIndexingService } from '../indexing/google-indexing.service';
 
 const includeAuthor = {
-  createdBy: { select: { id: true, name: true, email: true } },
+  // emailVerified alimenta el badge "Verificado" del portal (señal de
+  // confianza pública; no expone ningún dato de contacto).
+  createdBy: {
+    select: { id: true, name: true, email: true, emailVerified: true },
+  },
 };
 
 // Conteos de actividad del anuncio (accesos e interesados).
@@ -441,12 +445,17 @@ export class AdsService {
   // Borrado físico de todos los anuncios (panel admin). Igual que el borrado
   // por lotes: traza resumen única e indexación notificada por anuncio con
   // tope de 100 para cuidar la cuota diaria de la API.
-  async removeAll(user: AuthUser) {
-    const existing = await this.prisma.ad.findMany({ select: { id: true } });
-    const { count } = await this.prisma.ad.deleteMany({});
+  async removeAll(user: AuthUser, clientsOnly = false) {
+    // clientsOnly: solo los anuncios de clientes (reporte del panel).
+    const where = clientsOnly ? { createdBy: { isAdmin: false } } : {};
+    const existing = await this.prisma.ad.findMany({
+      where,
+      select: { id: true },
+    });
+    const { count } = await this.prisma.ad.deleteMany({ where });
     await this.traces.record(
       TraceType.AD_DELETED,
-      `Borrado total: ${count} anuncios eliminados por ${user.email}`,
+      `Borrado total: ${count} anuncios${clientsOnly ? ' de clientes' : ''} eliminados por ${user.email}`,
       user,
     );
     for (const ad of existing.slice(0, 100)) {

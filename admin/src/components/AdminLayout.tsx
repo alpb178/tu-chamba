@@ -15,6 +15,7 @@ const NAV = [
   { href: '/top-listings', label: 'Top anuncios', icon: 'trending_up' },
   { href: '/reports', label: 'Anuncios reportados', icon: 'flag' },
   { href: '/reports/client-ads', label: 'Anuncios de clientes', icon: 'person_search' },
+  { href: '/reports/user-activity', label: 'Actividad de usuarios', icon: 'history' },
   { href: '/reports/reviews', label: 'Reseñas', icon: 'star' },
   { href: '/traces', label: 'Auditoría', icon: 'receipt_long' },
   { href: '/activity', label: 'Actividad del sitio', icon: 'monitor_heart' },
@@ -28,6 +29,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   // contenido: con hover/focus en escritorio (CSS) y con el botón ☰ en
   // táctil, donde no existe hover (estado "pinned").
   const [pinned, setPinned] = useState(false);
+  // Al elegir una opción el menú se cierra al instante, aunque el cursor
+  // siga encima: se apaga la expansión por hover hasta que el mouse salga.
+  const [hoverEnabled, setHoverEnabled] = useState(true);
   // Menú del usuario en la cabecera (cerrar sesión).
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -59,7 +63,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     return (
       <div aria-hidden="true" className="flex min-h-screen">
         <aside className="flex w-16 shrink-0 flex-col items-center gap-2 border-r border-outline-variant bg-surface-container-low py-4">
-          {Array.from({ length: 9 }, (_, i) => (
+          {Array.from({ length: NAV.length }, (_, i) => (
             <Skeleton key={i} className="h-10 w-10 rounded-lg" />
           ))}
         </aside>
@@ -97,10 +101,14 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         }`}
       />
 
+      {/* La expansión usa la curva "emphasized" de Material (arranque suave,
+          frenado largo) y anima también la sombra para que no aparezca de
+          golpe al final. */}
       <aside
-        className={`group fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden border-r border-outline-variant bg-surface-container-low transition-[width] duration-200 hover:w-64 hover:shadow-xl focus-within:w-64 ${
-          expanded ? 'w-64 shadow-xl' : 'w-16'
-        }`}
+        onMouseLeave={() => setHoverEnabled(true)}
+        className={`group fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden border-r border-outline-variant bg-surface-container-low transition-[width,box-shadow] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
+          hoverEnabled ? 'hover:w-64 hover:shadow-xl focus-within:w-64' : ''
+        } ${expanded ? 'w-64 shadow-xl' : 'w-16'}`}
       >
         {/* Cabecera del riel: ☰ fija el menú en táctil. */}
         <div className="flex h-16 shrink-0 items-center gap-2 border-b border-outline-variant px-3">
@@ -113,8 +121,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           >
             <Icon name={expanded ? 'close' : 'menu'} className="text-2xl" />
           </button>
+          {/* La etiqueta aparece con un pequeño retardo (cuando el ancho ya
+              avanzó) y se desvanece sin retardo al colapsar. */}
           <p
-            className={`whitespace-nowrap text-sm font-medium text-on-surface-variant transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 ${
+            className={`whitespace-nowrap text-sm font-medium text-on-surface-variant transition-opacity duration-200 ease-out group-hover:delay-100 group-focus-within:delay-100 group-hover:opacity-100 group-focus-within:opacity-100 ${
               expanded ? 'opacity-100' : 'opacity-0'
             }`}
           >
@@ -128,6 +138,13 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               key={n.href}
               href={n.href}
               title={n.label}
+              onClick={(e) => {
+                // Cierra el menú al elegir una opción (también si se
+                // navega a la página actual, donde pathname no cambia).
+                setPinned(false);
+                setHoverEnabled(false);
+                e.currentTarget.blur();
+              }}
               className={`flex h-10 items-center gap-3 rounded-lg px-2 transition-all ${
                 pathname === n.href
                   ? 'bg-secondary-container font-bold text-on-secondary-container'
@@ -137,9 +154,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               <span className="flex h-6 w-6 shrink-0 items-center justify-center">
                 <Icon name={n.icon} className="text-xl" />
               </span>
-              {/* La etiqueta solo se ve con el menú expandido (hover/fijado). */}
+              {/* La etiqueta solo se ve con el menú expandido (hover/fijado);
+                  entra con retardo, siguiendo al ancho, y sale sin él. */}
               <span
-                className={`whitespace-nowrap text-sm transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100 ${
+                className={`whitespace-nowrap text-sm transition-opacity duration-200 ease-out group-hover:delay-100 group-focus-within:delay-100 group-hover:opacity-100 group-focus-within:opacity-100 ${
                   expanded ? 'opacity-100' : 'opacity-0'
                 }`}
               >

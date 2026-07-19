@@ -46,14 +46,18 @@ export function Hero({
           'linear-gradient(rgba(0, 74, 198, 0.95), rgba(0, 23, 75, 0.98))',
       }}
     >
-      {/* Banner de marca a sangre completa en su proporción natural
-          (decisión de producto). El mensaje principal también va en HTML
-          real debajo (indexable y accesible). */}
+      {/* Banner de marca SIEMPRE a todo el ancho de la página, completo y sin
+          recortar (tiene texto hasta el borde inferior). h-auto conserva su
+          proporción natural; width/height reservan el espacio antes de
+          cargar para que no salte el layout (sin CLS). El mensaje principal
+          también va en HTML real debajo (indexable y accesible). */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/banner.jpeg"
         alt="Ofrece o busca trabajo — conexión directa, sin CV"
-        className="w-full"
+        width={1936}
+        height={544}
+        className="h-auto w-full"
         fetchPriority="high"
       />
 
@@ -77,7 +81,7 @@ export function Hero({
               onChange={(e) => setQuery(e.target.value)}
               placeholder="¿Qué trabajo buscas hoy?"
               aria-label="Qué trabajo buscas"
-              className="w-full border-none bg-transparent text-base text-on-surface outline-none placeholder:text-outline-variant focus:ring-0"
+              className="w-full border-none bg-transparent text-base text-on-surface outline-none placeholder:text-outline focus:ring-0"
             />
           </div>
           <div className="md:w-1/3">

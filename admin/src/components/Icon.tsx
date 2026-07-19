@@ -2,7 +2,10 @@ import type { IconType } from 'react-icons';
 import {
   MdBarChart,
   MdCheck,
+  MdChevronLeft,
+  MdChevronRight,
   MdClose,
+  MdHistory,
   MdDelete,
   MdEdit,
   MdExpandMore,
@@ -29,7 +32,10 @@ import {
 // Material como API (mismo criterio que en el portal web).
 const ICONS: Record<string, IconType> = {
   check: MdCheck,
+  chevron_left: MdChevronLeft,
+  chevron_right: MdChevronRight,
   close: MdClose,
+  history: MdHistory,
   delete: MdDelete,
   edit: MdEdit,
   expand_more: MdExpandMore,
