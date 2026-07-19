@@ -63,4 +63,24 @@ export class ErrorsService {
       data: { status: ErrorStatus.RESOLVED },
     });
   }
+
+  // Borra una entrada puntual del registro de errores.
+  async remove(id: string) {
+    await this.prisma.errorLog.delete({ where: { id } });
+    return { deleted: true };
+  }
+
+  // Borrado por lotes de entradas seleccionadas.
+  async removeMany(ids: string[]) {
+    const { count } = await this.prisma.errorLog.deleteMany({
+      where: { id: { in: ids } },
+    });
+    return { deleted: count };
+  }
+
+  // Vacía el registro de errores completo.
+  async removeAll() {
+    const { count } = await this.prisma.errorLog.deleteMany({});
+    return { deleted: count };
+  }
 }

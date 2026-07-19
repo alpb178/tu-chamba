@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   UseGuards,
@@ -13,6 +14,8 @@ import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { QueryReviewDto } from './dto/query-review.dto';
 import { QueryAdminReviewDto } from './dto/query-admin-review.dto';
+import { UpdateReviewDto } from './dto/update-review.dto';
+import { BulkIdsDto } from '../common/dto/bulk-ids.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
@@ -55,6 +58,35 @@ export class ReviewsController {
       query.limit ?? 20,
       { adId: query.adId, userId: user?.id },
     );
+  }
+
+  // Moderación: borrado por lotes de reseñas seleccionadas en el panel.
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Post('bulk-delete')
+  removeMany(@Body() dto: BulkIdsDto, @CurrentUser() actor: AuthUser) {
+    return this.reviews.removeMany(dto.ids, actor);
+  }
+
+  // Moderación: el admin corrige la calificación o el comentario.
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateReviewDto,
+    @CurrentUser() actor: AuthUser,
+  ) {
+    return this.reviews.update(id, dto, actor);
+  }
+
+  // Moderación: borrado total de las reseñas de la plataforma. Declarado
+  // antes de ':id' para que 'all' no se interprete como un id.
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, AdminGuard)
+  @Delete('all')
+  removeAll(@CurrentUser() actor: AuthUser) {
+    return this.reviews.removeAll(actor);
   }
 
   // Eliminar: autor o admin.
