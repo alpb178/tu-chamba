@@ -46,10 +46,10 @@ export function Hero({
           'linear-gradient(rgba(0, 74, 198, 0.95), rgba(0, 23, 75, 0.98))',
       }}
     >
-      {/* Banner de marca SIEMPRE a todo el ancho de la página (decisión de
-          producto). width/height reservan su espacio antes de cargar (sin
-          saltos de layout) y max-h con object-cover evita que en pantallas
-          muy anchas/cortas se coma media pantalla. El mensaje principal
+      {/* Banner de marca SIEMPRE a todo el ancho de la página, completo y sin
+          recortar (tiene texto hasta el borde inferior). h-auto conserva su
+          proporción natural; width/height reservan el espacio antes de
+          cargar para que no salte el layout (sin CLS). El mensaje principal
           también va en HTML real debajo (indexable y accesible). */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -57,7 +57,7 @@ export function Hero({
         alt="Ofrece o busca trabajo — conexión directa, sin CV"
         width={1936}
         height={544}
-        className="max-h-[45vh] w-full object-cover object-center"
+        className="h-auto w-full"
         fetchPriority="high"
       />
 
