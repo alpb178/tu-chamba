@@ -1,4 +1,9 @@
-import { BadRequestException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
+import { TraceType } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from './users.service';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
@@ -11,6 +16,7 @@ function buildService() {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      deleteMany: jest.fn(),
     },
   };
   const traces = { record: jest.fn() };
@@ -110,5 +116,108 @@ describe('UsersService.createAdmin', () => {
     expect(data.isAdmin).toBe(true);
     expect(data.emailVerified).toBe(true);
     expect(data).not.toHaveProperty('role');
+  });
+});
+
+describe('UsersService.adminUpdate', () => {
+  it('falla si el usuario no existe', async () => {
+    const { service, prisma } = buildService();
+    prisma.user.findUnique.mockResolvedValue(null);
+    await expect(
+      service.adminUpdate('u1', { name: 'Nuevo' }, actor),
+    ).rejects.toBeInstanceOf(NotFoundException);
+  });
+
+  it('rechaza cambiar a un correo ya registrado por otra cuenta', async () => {
+    const { service, prisma } = buildService();
+    prisma.user.findUnique
+      .mockResolvedValueOnce({ id: 'u1', email: 'viejo@t.com' }) // ensureExists
+      .mockResolvedValueOnce({ id: 'otro' }); // email tomado
+    await expect(
+      service.adminUpdate('u1', { email: 'tomado@t.com' }, actor),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('actualiza nombre, correo y teléfono, y deja traza USER_UPDATED', async () => {
+    const { service, prisma, traces } = buildService();
+    prisma.user.findUnique
+      .mockResolvedValueOnce({ id: 'u1', email: 'viejo@t.com' }) // ensureExists
+      .mockResolvedValueOnce(null); // correo nuevo libre
+    prisma.user.update.mockResolvedValue({ id: 'u1' });
+
+    await service.adminUpdate(
+      'u1',
+      { name: '  Ana  ', email: 'ana@t.com', phone: '  ' },
+      actor,
+    );
+    const data = prisma.user.update.mock.calls[0][0].data;
+    expect(data.name).toBe('Ana');
+    expect(data.email).toBe('ana@t.com');
+    expect(data.phone).toBeNull(); // teléfono vacío -> null
+    expect(traces.record).toHaveBeenCalledWith(
+      TraceType.USER_UPDATED,
+      expect.any(String),
+      actor,
+      { resource: 'user:u1' },
+    );
+  });
+});
+
+describe('UsersService.createAdmin', () => {
+  it('rechaza correo ya registrado', async () => {
+    const { service, prisma } = buildService();
+    prisma.user.findUnique.mockResolvedValue({ id: 'x' });
+    await expect(
+      service.createAdmin({ email: 'a@t.com', password: 'secret1' }, actor),
+    ).rejects.toBeInstanceOf(ConflictException);
+  });
+
+  it('usa el name indicado como usuario', async () => {
+    const { service, prisma } = buildService();
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue({ id: 'a1', email: 'a@t.com' });
+    await service.createAdmin(
+      { email: 'a@t.com', password: 'secret1', name: 'soporte' },
+      actor,
+    );
+    expect(prisma.user.create.mock.calls[0][0].data.name).toBe('soporte');
+  });
+
+  it('sin name, el usuario sale del prefijo del correo', async () => {
+    const { service, prisma } = buildService();
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue({ id: 'a1', email: 'nuevo-admin@t.com' });
+    await service.createAdmin(
+      { email: 'nuevo-admin@t.com', password: 'secret1' },
+      actor,
+    );
+    expect(prisma.user.create.mock.calls[0][0].data.name).toBe('nuevo-admin');
+  });
+});
+
+describe('UsersService.removeMany / removeAllClients', () => {
+  it('removeMany nunca borra al propio actor del lote', async () => {
+    const { service, prisma } = buildService();
+    prisma.user.deleteMany.mockResolvedValue({ count: 2 });
+    await service.removeMany(['u1', 'u2', actor.id], actor);
+    // El id del actor se filtra del lote.
+    expect(prisma.user.deleteMany).toHaveBeenCalledWith({
+      where: { id: { in: ['u1', 'u2'] } },
+    });
+  });
+
+  it('removeAllClients borra solo no-admins con traza resumen', async () => {
+    const { service, prisma, traces } = buildService();
+    prisma.user.deleteMany.mockResolvedValue({ count: 6 });
+    const res = await service.removeAllClients(actor);
+    expect(res).toEqual({ deleted: 6 });
+    expect(prisma.user.deleteMany).toHaveBeenCalledWith({
+      where: { isAdmin: false },
+    });
+    expect(traces.record).toHaveBeenCalledWith(
+      TraceType.USER_DELETED,
+      expect.stringContaining('6'),
+      actor,
+    );
   });
 });

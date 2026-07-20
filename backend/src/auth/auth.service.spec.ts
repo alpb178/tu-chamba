@@ -12,6 +12,7 @@ function buildService() {
     user: {
       findUnique: jest.fn(),
       findFirst: jest.fn(),
+      findMany: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
     },
@@ -115,6 +116,52 @@ describe('AuthService.login', () => {
     await expect(
       service.login({ email: 'ana@test.com', password: 'x' }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+});
+
+describe('AuthService.login por identifier (usuario o correo)', () => {
+  it('con @ busca por correo (findUnique)', async () => {
+    const { service, prisma } = buildService();
+    const hash = await bcrypt.hash('secret123', 4);
+    prisma.user.findUnique.mockResolvedValue({ ...baseUser, password: hash });
+
+    await service.login({ identifier: 'ana@test.com', password: 'secret123' });
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { email: 'ana@test.com' },
+    });
+    expect(prisma.user.findMany).not.toHaveBeenCalled();
+  });
+
+  it('sin @ busca por nombre sin distinguir mayúsculas', async () => {
+    const { service, prisma } = buildService();
+    const hash = await bcrypt.hash('secret123', 4);
+    prisma.user.findMany.mockResolvedValue([{ ...baseUser, password: hash }]);
+
+    const res = await service.login({ identifier: 'Ana', password: 'secret123' });
+    expect(res.user.email).toBe('ana@test.com');
+    expect(prisma.user.findMany.mock.calls[0][0].where).toEqual({
+      name: { equals: 'Ana', mode: 'insensitive' },
+    });
+  });
+
+  it('nombre ambiguo (2+ cuentas) pide usar el correo', async () => {
+    const { service, prisma } = buildService();
+    prisma.user.findMany.mockResolvedValue([
+      { ...baseUser, id: 'a' },
+      { ...baseUser, id: 'b' },
+    ]);
+    await expect(
+      service.login({ identifier: 'Ana', password: 'x' }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('usuario inexistente: credenciales inválidas (401) y traza de fallo', async () => {
+    const { service, prisma, traces } = buildService();
+    prisma.user.findMany.mockResolvedValue([]);
+    await expect(
+      service.login({ identifier: 'fantasma', password: 'x' }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+    expect(traces.record).toHaveBeenCalled();
   });
 });
 

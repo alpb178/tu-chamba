@@ -35,8 +35,9 @@ describe('VisitsService.recordPageView', () => {
     await expect(service.recordPageView('/listings')).resolves.toEqual({
       ok: true,
     });
+    // Sin sesión, la página vista queda anónima (userId null).
     expect(prisma.pageView.create).toHaveBeenCalledWith({
-      data: { path: '/listings' },
+      data: { path: '/listings', userId: null },
     });
   });
 
@@ -45,7 +46,16 @@ describe('VisitsService.recordPageView', () => {
 
     await service.recordPageView('/listings?department=LA_PAZ#top');
     expect(prisma.pageView.create).toHaveBeenCalledWith({
-      data: { path: '/listings' },
+      data: { path: '/listings', userId: null },
+    });
+  });
+
+  it('asocia la página vista al usuario cuando llega con sesión', async () => {
+    const { service, prisma } = buildService();
+
+    await service.recordPageView('/listings', 'user-1');
+    expect(prisma.pageView.create).toHaveBeenCalledWith({
+      data: { path: '/listings', userId: 'user-1' },
     });
   });
 
