@@ -1,6 +1,11 @@
 # Blueprint de Render para el backend (NestJS + Prisma + PostgreSQL).
 # Render lo detecta en la raíz del repo. Crea la base de datos y el servicio
 # web con sus variables ya cableadas. Importar en: Render → New → Blueprint.
+#
+# Este blueprint es la config CORRECTA del servicio: compila en el build y
+# arranca con `node dist/main` (el JS ya compilado). NO usa `yarn start` ni
+# `nest start`, que recompilarían TypeScript en cada arranque y agotan la
+# memoria del plan free (~256 MB de heap) provocando OOM al desplegar.
 
 databases:
   - name: tu-chamba-db
@@ -14,6 +19,9 @@ services:
     plan: free
     region: oregon
     rootDir: backend
+    # Rama que Render despliega. Producción vive en main (develop se mergea a
+    # main). Cámbiala si tu servicio de producción sigue otra rama.
+    branch: main
     # Las migraciones van en el build: en el plan free de Render, preDeployCommand
     # NO se ejecuta. migrate deploy es idempotente, así que correrlo en cada build
     # es seguro y garantiza que las tablas existan.
@@ -42,3 +50,9 @@ services:
         sync: false
       - key: NODE_VERSION
         value: "20"
+      # Tope de heap explícito para el build: `nest build` (tsc) necesita
+      # ~350 MB por los tipos generados de Prisma, pero en una máquina de
+      # 512 MB Node auto-limita el heap a ~256 MB → OOM. Este techo lo evita.
+      # Es solo un techo (no reserva memoria); inofensivo en runtime.
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=1024
