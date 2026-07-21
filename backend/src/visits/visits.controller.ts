@@ -25,7 +25,8 @@ export class VisitsController {
   @Post()
   record(@Body() dto: CreateVisitDto, @CurrentUser() user: AuthUser | null) {
     if (dto.adId) return this.visits.record(dto.adId);
+    if (dto.company) return this.visits.recordSiteClick(dto.company, dto.label);
     if (dto.path) return this.visits.recordPageView(dto.path, user?.id);
-    throw new BadRequestException('Se requiere adId o path');
+    throw new BadRequestException('Se requiere adId, company o path');
   }
 }

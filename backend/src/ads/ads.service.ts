@@ -184,7 +184,8 @@ export class AdsService {
     const [items, total] = await Promise.all([
       this.prisma.ad.findMany({
         where,
-        include: includeAuthor,
+        // includeCounts añade _count.visits para el contador de las tarjetas.
+        include: { ...includeAuthor, ...includeCounts },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,

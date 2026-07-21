@@ -18,6 +18,18 @@ export class VisitsService {
     return { ok: true };
   }
 
+  // Registra el clic en una tarjeta de "Sitios de interés" (empresa hermana
+  // del Grupo CorpSC). Silencioso: el tracking nunca rompe la navegación.
+  async recordSiteClick(company: string, label?: string) {
+    await this.prisma.siteClick.create({
+      data: {
+        company: company.slice(0, 64),
+        label: label ? label.slice(0, 120) : null,
+      },
+    });
+    return { ok: true };
+  }
+
   // Registra una página vista del portal. Se guarda solo la ruta, sin
   // query string. Si la visita llegó con sesión iniciada se asocia al
   // usuario (última visita y tiempo de estancia del panel admin); sin

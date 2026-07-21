@@ -323,6 +323,22 @@ model PageView {
   @@index([userId, createdAt])
 }
 
+// Clic en una tarjeta de "Sitios de interés" (empresas del Grupo CorpSC en la
+// home). Se registra desde el portal cuando el visitante abre el sitio de una
+// empresa hermana; alimenta la tabla de accesos del panel admin. Anónimo: solo
+// guardamos qué sitio se abrió y cuándo (sin datos personales).
+model SiteClick {
+  id        String   @id @default(uuid())
+  // Identificador de la empresa (slug de lib/companies), p. ej. "corpsc".
+  company   String
+  // Nombre visible en el momento del clic (desnormalizado para el panel).
+  label     String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([company])
+}
+
 // Traza del sistema: eventos relevantes para auditoría. El actor se
 // denormaliza (email) para que la traza sobreviva al borrado del usuario.
 // IP y user-agent se capturan automáticamente del request (ver

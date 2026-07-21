@@ -13,6 +13,7 @@ const NAV = [
   { href: '/users', label: 'Usuarios', icon: 'group' },
   { href: '/listings', label: 'Anuncios', icon: 'work' },
   { href: '/top-listings', label: 'Top anuncios', icon: 'trending_up' },
+  { href: '/site-clicks', label: 'Sitios de interés', icon: 'ads_click' },
   { href: '/reports', label: 'Anuncios reportados', icon: 'flag' },
   { href: '/reports/client-ads', label: 'Anuncios de clientes', icon: 'person_search' },
   { href: '/reports/user-activity', label: 'Actividad de usuarios', icon: 'history' },
