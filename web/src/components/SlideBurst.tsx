@@ -1,12 +1,15 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 // Ráfaga de destellos de un solo disparo que se reproduce sobre el carrusel
 // cada vez que cambia el slide (equivalente ligero, sin dependencias, al de
-// Iris Natural). Se re-monta con `key={trigger}` para relanzar la animación;
-// las partículas suben, se dispersan y desaparecen por CSS. No captura clics y
-// se desactiva si el usuario prefiere movimiento reducido.
+// Iris Natural). Las partículas suben, se dispersan y desaparecen por CSS. No
+// captura clics y se desactiva si el usuario prefiere movimiento reducido.
+//
+// Se renderiza SOLO en el cliente (tras montar): las posiciones son aleatorias
+// (Math.random) y pintarlas en el servidor provocaría un desajuste de
+// hidratación. En el primer render (servidor y cliente) devuelve null.
 export function SlideBurst({
   trigger,
   color = '#004AC6',
@@ -14,14 +17,16 @@ export function SlideBurst({
   trigger: number;
   color?: string;
 }) {
-  const [reduced, setReduced] = useState(false);
+  // false hasta montar en el cliente (y respetando prefers-reduced-motion),
+  // así el primer render coincide con el del servidor (ambos null).
+  const [ready, setReady] = useState(false);
   useEffect(() => {
-    setReduced(
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    setReady(
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     );
   }, []);
 
-  // Posiciones y trayectorias fijas durante la vida de la ráfaga.
+  // Posiciones/trayectorias nuevas en cada ráfaga (depende de `trigger`).
   const particles = useMemo(
     () =>
       Array.from({ length: 60 }, () => ({
@@ -33,10 +38,11 @@ export function SlideBurst({
         duration: 700 + Math.random() * 700,
         delay: Math.random() * 180,
       })),
-    [],
+    [trigger],
   );
 
-  if (reduced) return null;
+  // Sin ráfaga en el estado inicial ni en SSR / antes de montar.
+  if (!ready || trigger === 0) return null;
 
   return (
     <div
