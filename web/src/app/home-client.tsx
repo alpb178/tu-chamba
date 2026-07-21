@@ -1,6 +1,12 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
@@ -147,6 +153,18 @@ export function HomeClient({
   const [isMobile, setIsMobile] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const listTopRef = useRef<HTMLElement | null>(null);
+  // Posición de scroll a restaurar tras un cambio de filtros: al resetear a
+  // la primera página la lista se reemplaza y encoge, y el navegador saltaría
+  // el scroll. Preservamos la posición para que filtrar no lo mueva (igual
+  // que la búsqueda con scroll:false).
+  const pendingScrollRef = useRef<number | null>(null);
+
+  // Cambia los filtros sin mover el scroll (recuerda la posición actual).
+  const changeFilters = useCallback((f: Filters) => {
+    pendingScrollRef.current = window.scrollY;
+    setFilters(f);
+    setPage(1);
+  }, []);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
@@ -215,6 +233,16 @@ export function HomeClient({
     load();
   }, [load]);
 
+  // Tras reemplazar la lista por un cambio de filtros, restaura el scroll
+  // antes de pintar para que no salte (solo cuando hay posición pendiente;
+  // la paginación y el scroll infinito no la fijan).
+  useLayoutEffect(() => {
+    if (pendingScrollRef.current != null) {
+      window.scrollTo(0, pendingScrollRef.current);
+      pendingScrollRef.current = null;
+    }
+  }, [items]);
+
   // El botón de actualizar reinicia el listado desde la primera página.
   const refresh = useCallback(() => {
     if (page !== 1) setPage(1);
@@ -258,10 +286,7 @@ export function HomeClient({
             value={filters}
             facets={facets}
             total={data?.total}
-            onChange={(f) => {
-              setFilters(f);
-              setPage(1);
-            }}
+            onChange={changeFilters}
           />
 
           <section ref={listTopRef} className="flex-1 scroll-mt-24">
@@ -286,7 +311,7 @@ export function HomeClient({
                 </p>
                 <button
                   type="button"
-                  onClick={() => setFilters(NO_FILTERS)}
+                  onClick={() => changeFilters(NO_FILTERS)}
                   className="mt-1 rounded-lg border border-outline-variant px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Limpiar filtros
@@ -332,13 +357,7 @@ export function HomeClient({
                     </div>
                   </div>
                   {/* Filtros activos como chips removibles sobre la lista. */}
-                  <FilterChips
-                    filters={filters}
-                    onChange={(f) => {
-                      setFilters(f);
-                      setPage(1);
-                    }}
-                  />
+                  <FilterChips filters={filters} onChange={changeFilters} />
 
                   {/* Móvil: CTA de publicar al inicio de la lista. */}
                   <Link href={publishHref} className="mb-3 block md:hidden">
