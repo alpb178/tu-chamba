@@ -64,7 +64,7 @@ export default function MyAdsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-on-surface">Mis anuncios</h1>
         <Link href="/listings/new">
-          <Button>Publicar oferta de trabajo</Button>
+          <Button variant="accent">Publicar oferta de trabajo</Button>
         </Link>
       </div>
       {items.length === 0 ? (
@@ -79,7 +79,7 @@ export default function MyAdsPage() {
             escriben directo por WhatsApp.
           </p>
           <Link href="/listings/new" className="mt-1">
-            <Button>Publicar mi primera oferta de trabajo</Button>
+            <Button variant="accent">Publicar mi primera oferta de trabajo</Button>
           </Link>
         </div>
       ) : (
