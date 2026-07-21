@@ -14,9 +14,10 @@ export function Button({
     outline:
       'rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface-variant font-medium hover:border-primary hover:text-primary',
     danger: 'rounded-lg bg-error text-on-error font-bold hover:brightness-110',
-    // Píldora del CTA principal ("Publicar oferta de trabajo"), en amarillo.
+    // Píldora del CTA principal ("Publicar oferta de trabajo"), en el naranja
+    // de marca (mismo token que los filtros: secondary-container).
     accent:
-      'rounded-full bg-yellow-400 text-neutral-900 font-bold hover:bg-yellow-300 hover:shadow-lg',
+      'rounded-full bg-secondary-container text-on-secondary-container font-bold hover:brightness-105 hover:shadow-lg',
   }[variant];
   return (
     <button
