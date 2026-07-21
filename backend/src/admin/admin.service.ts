@@ -272,4 +272,40 @@ export class AdminService {
       ];
     });
   }
+
+  // Clics en las tarjetas de "Sitios de interés" (empresas del Grupo CorpSC),
+  // agregados por empresa: total de 30 días y de 7 días, más visitados primero.
+  async siteClicks() {
+    const since30 = new Date(Date.now() - 30 * DAY_MS);
+    const since7 = new Date(Date.now() - 7 * DAY_MS);
+
+    const [totals, recent, labels] = await Promise.all([
+      this.prisma.siteClick.groupBy({
+        by: ['company'],
+        where: { createdAt: { gte: since30 } },
+        _count: { _all: true },
+        orderBy: { _count: { company: 'desc' } },
+      }),
+      this.prisma.siteClick.groupBy({
+        by: ['company'],
+        where: { createdAt: { gte: since7 } },
+        _count: { _all: true },
+      }),
+      // Nombre visible más reciente registrado para cada empresa.
+      this.prisma.siteClick.groupBy({
+        by: ['company'],
+        _max: { label: true },
+      }),
+    ]);
+
+    const last7 = new Map(recent.map((r) => [r.company, r._count._all]));
+    const labelByCompany = new Map(labels.map((l) => [l.company, l._max.label]));
+
+    return totals.map((t) => ({
+      company: t.company,
+      label: labelByCompany.get(t.company) ?? t.company,
+      clicksLast30Days: t._count._all,
+      clicksLast7Days: last7.get(t.company) ?? 0,
+    }));
+  }
 }

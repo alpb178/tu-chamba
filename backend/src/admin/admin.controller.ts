@@ -40,6 +40,12 @@ export class AdminController {
     return this.admin.topAds();
   }
 
+  // Accesos a las tarjetas de "Sitios de interés" (empresas del grupo).
+  @Get('site-clicks')
+  siteClicks() {
+    return this.admin.siteClicks();
+  }
+
   // Actividad de los usuarios registrados (excluye administradores):
   // última visita y tiempo de estancia en el portal.
   @Get('user-activity')
