@@ -195,7 +195,14 @@ export function HomeClient({
       p.set('limit', '10');
       const res = await api<Paginated<Ad>>(`/listings?${p}`);
       setData(res);
-      setItems((prev) => (append ? [...prev, ...res.items] : res.items));
+      // Al acumular páginas en móvil se descartan ids ya presentes: si se
+      // publica un anuncio entre cargas, la paginación se desplaza y un mismo
+      // anuncio podría venir en dos páginas (clave duplicada en React).
+      setItems((prev) => {
+        if (!append) return res.items;
+        const seen = new Set(prev.map((a) => a.id));
+        return [...prev, ...res.items.filter((a) => !seen.has(a.id))];
+      });
     } catch (e) {
       setError((e as Error).message);
     } finally {
