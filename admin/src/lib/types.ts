@@ -336,6 +336,14 @@ export interface TopAd extends Ad {
   visitsLast7Days: number;
 }
 
+// Accesos a una tarjeta de "Sitios de interés" (empresa del Grupo CorpSC).
+export interface SiteClickRow {
+  company: string;
+  label: string;
+  clicksLast30Days: number;
+  clicksLast7Days: number;
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;

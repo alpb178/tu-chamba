@@ -43,6 +43,8 @@ export function AdCard({
   showStatus?: boolean;
 }) {
   const status = adEffectiveStatus(ad);
+  // Visitas al detalle del anuncio (contador social en la tarjeta).
+  const views = ad._count?.visits ?? 0;
   return (
     <Link
       href={`/listings/${ad.id}`}
@@ -80,6 +82,19 @@ export function AdCard({
               <span>
                 Publicado: {new Date(ad.createdAt).toLocaleDateString('es-BO')}
               </span>
+              {views > 0 && (
+                <>
+                  <span className="hidden h-1 w-1 rounded-full bg-outline sm:block" />
+                  <span
+                    className="flex items-center gap-1"
+                    title={`${views} ${views === 1 ? 'visita' : 'visitas'} a este anuncio`}
+                  >
+                    <Icon name="visibility" className="text-sm" />
+                    {views.toLocaleString('es-BO')}{' '}
+                    {views === 1 ? 'visita' : 'visitas'}
+                  </span>
+                </>
+              )}
             </div>
           </div>
         </div>
