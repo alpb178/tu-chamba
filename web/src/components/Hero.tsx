@@ -33,7 +33,9 @@ export function Hero({
     const p = new URLSearchParams();
     if (query.trim()) p.set('q', query.trim());
     if (dep) p.set('dep', dep);
-    router.push(p.size ? `/?${p}` : '/');
+    // scroll: false — la búsqueda no debe saltar al inicio de la página;
+    // los resultados se actualizan en su sitio.
+    router.push(p.size ? `/?${p}` : '/', { scroll: false });
   }
 
   // z-30 (bajo el navbar z-40): el desplegable del select sobresale por
