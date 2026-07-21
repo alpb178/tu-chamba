@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { api } from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import {
   Ad,
   CATEGORY_LABEL,
@@ -18,6 +20,7 @@ import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
 import { Pagination } from '@/components/Pagination';
 import { FeaturedBrands } from '@/components/FeaturedBrands';
 import { Icon } from '@/components/Icon';
+import { Button } from '@/components/ui';
 
 // Chips de los filtros activos sobre el listado: recuerdan qué está
 // aplicado y se quitan de un toque (clave en móvil, donde el panel de
@@ -125,6 +128,11 @@ export function HomeClient({
   search: string;
   dep: Department | '';
 }) {
+  const { user } = useAuth();
+  // CTA de publicar: sin sesión manda a registrarse y vuelve al formulario.
+  const publishHref = user
+    ? '/listings/new'
+    : `/register?next=${encodeURIComponent('/listings/new')}`;
   const [data, setData] = useState<Paginated<Ad> | null>(null);
   // Tarjetas visibles: en escritorio son las de la página actual; en móvil
   // se acumulan las páginas a medida que se hace scroll.
@@ -297,16 +305,24 @@ export function HomeClient({
                         en {DEPARTMENT_LABEL[dep]}
                       </span>
                     )}
-                    {/* Recarga la lista sin refrescar la página. */}
-                    <button
-                      type="button"
-                      onClick={refresh}
-                      aria-label="Actualizar la lista"
-                      title="Actualizar la lista"
-                      className="ml-auto flex h-9 w-9 items-center justify-center self-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    >
-                      <Icon name="refresh" className="text-xl" />
-                    </button>
+                    {/* Publicar (escritorio) + actualizar, a la derecha. */}
+                    <div className="ml-auto flex items-center gap-2 self-center">
+                      <Link href={publishHref} className="hidden md:inline-flex">
+                        <Button variant="accent" className="px-4 py-2">
+                          Publicar oferta de trabajo
+                        </Button>
+                      </Link>
+                      {/* Recarga la lista sin refrescar la página. */}
+                      <button
+                        type="button"
+                        onClick={refresh}
+                        aria-label="Actualizar la lista"
+                        title="Actualizar la lista"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      >
+                        <Icon name="refresh" className="text-xl" />
+                      </button>
+                    </div>
                   </div>
                   {/* Filtros activos como chips removibles sobre la lista. */}
                   <FilterChips
@@ -316,6 +332,13 @@ export function HomeClient({
                       setPage(1);
                     }}
                   />
+
+                  {/* Móvil: CTA de publicar al inicio de la lista. */}
+                  <Link href={publishHref} className="mb-3 block md:hidden">
+                    <Button variant="accent" className="w-full px-4 py-2.5">
+                      Publicar oferta de trabajo
+                    </Button>
+                  </Link>
 
                   {/* Una tarjeta por fila: en móvil las tarjetas necesitan
                       todo el ancho para respirar (título + salario + rating). */}

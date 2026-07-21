@@ -76,7 +76,7 @@ export function Footer() {
                 href="/listings/new"
                 className="text-sm font-bold text-primary hover:underline"
               >
-                Publicar anuncio
+                Publicar oferta de trabajo
               </Link>
             </FooterCol>
           </div>

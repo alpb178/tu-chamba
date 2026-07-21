@@ -223,7 +223,7 @@ function Form() {
   return (
     <div className="mx-auto max-w-xl rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
       <h1 className="mb-4 text-xl font-semibold text-on-surface">
-        {editId ? 'Editar anuncio' : 'Publicar anuncio'}
+        {editId ? 'Editar oferta de trabajo' : 'Publicar oferta de trabajo'}
       </h1>
       {notVerified && (
         <div className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">

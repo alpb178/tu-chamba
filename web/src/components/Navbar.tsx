@@ -169,7 +169,7 @@ export function Navbar() {
           <div className="flex items-center gap-4 border-l border-outline-variant pl-6">
             <Link href={publishHref}>
               <Button variant="accent" className="px-5 py-2.5">
-                Publicar anuncio
+                Publicar oferta de trabajo
               </Button>
             </Link>
 
@@ -324,7 +324,7 @@ export function Navbar() {
 
           <div className="flex flex-col gap-1">
             <Link href={publishHref} className="rounded-full bg-primary-container px-3 py-2 text-center text-sm font-bold text-on-primary-container">
-              Publicar anuncio
+              Publicar oferta de trabajo
             </Link>
             {user && (
               <>
