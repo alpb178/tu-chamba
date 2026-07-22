@@ -14,7 +14,7 @@ import { ReportAd } from './ReportAd';
 // Leaflet usa window: solo en cliente.
 const MapView = dynamic(() => import('./MapPicker').then((m) => m.MapView), {
   ssr: false,
-  loading: () => <div className="h-56 rounded-md bg-surface-container" />,
+  loading: () => <div className="h-56 bg-surface-container" />,
 });
 
 // Mapa del anuncio con botón para ampliarlo (modal) y enlace a Google Maps.
@@ -47,7 +47,7 @@ function LocationMap({
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="absolute right-2 top-2 z-[1001] flex items-center gap-1 rounded-md border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-sm hover:text-brand"
+          className="absolute right-2 top-2 z-[1001] flex items-center gap-1 border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-aceternity hover:text-brand"
         >
           <Icon name="open_in_full" className="text-sm" /> Ampliar
         </button>
@@ -79,7 +79,7 @@ function LocationMap({
           aria-label="Mapa ampliado"
         >
           <div
-            className="relative z-0 h-[80vh] w-full max-w-4xl overflow-hidden rounded-lg bg-surface-container-lowest"
+            className="relative z-0 h-[80vh] w-full max-w-4xl overflow-hidden bg-surface-container-lowest"
             onClick={(e) => e.stopPropagation()}
           >
             <MapView
@@ -94,7 +94,7 @@ function LocationMap({
               type="button"
               autoFocus
               onClick={() => setExpanded(false)}
-              className="absolute right-3 top-3 z-[1001] flex items-center gap-1 rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow hover:text-brand"
+              className="absolute right-3 top-3 z-[1001] flex items-center gap-1 border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow-aceternity hover:text-brand"
             >
               <Icon name="close" className="text-base" /> Cerrar
             </button>
@@ -121,7 +121,7 @@ function IconButton({
       onClick={onClick}
       title={label}
       aria-label={label}
-      className="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface-variant shadow-sm transition-colors hover:border-brand hover:text-brand"
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface-variant shadow-aceternity transition-colors hover:border-brand hover:text-brand"
     >
       {children}
     </button>
@@ -181,9 +181,9 @@ function CallIcon({ className = 'h-4 w-4' }: { className?: string }) {
 // iniciar sesión y vuelven al anuncio (next=). El teléfono en sí nunca
 // se muestra sin sesión.
 const WA_BUTTON_CLASS =
-  'flex w-full items-center justify-center gap-2 rounded-lg bg-[#25d366] px-4 py-2 text-sm font-bold text-white shadow-sm transition-all hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#25d366] focus-visible:ring-offset-2 active:scale-95';
+  'flex w-full items-center justify-center gap-2 bg-[#25d366] px-4 py-2 text-sm font-bold text-white shadow-aceternity transition-all hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#25d366] focus-visible:ring-offset-2 active:scale-95';
 const CALL_BUTTON_CLASS =
-  'flex w-full items-center justify-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-medium text-on-surface-variant transition-all hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-95';
+  'flex w-full items-center justify-center gap-2 border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-medium text-on-surface-variant transition-all hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-95';
 
 // Coordenadas aproximadas de una dirección (Nominatim, best effort).
 // Para anuncios sin pin: así el detalle siempre muestra el lugar en el mapa.

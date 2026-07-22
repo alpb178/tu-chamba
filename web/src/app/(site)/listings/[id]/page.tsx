@@ -73,7 +73,7 @@ export default async function AdDetailPage({ params }: Params) {
         )}
       </nav>
 
-      <div className="space-y-4 rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+      <div className="space-y-4 border border-outline-variant bg-surface-container-lowest p-6">
       {/* JobPosting para Google for Jobs: solo en ofertas vigentes. */}
       {status === 'ACTIVO' && (
         <script
@@ -83,7 +83,7 @@ export default async function AdDetailPage({ params }: Params) {
       )}
       <TrackVisit adId={ad.id} />
       {status !== 'ACTIVO' && (
-        <div className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <div className="bg-secondary-container px-3 py-2 text-sm text-on-secondary-container">
           Este anuncio está {STATUS_LABEL[status].toLowerCase()} y ya no se
           muestra en el portal.
         </div>

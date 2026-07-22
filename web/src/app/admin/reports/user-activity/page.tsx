@@ -25,7 +25,7 @@ const HEADERS = [
   '',
 ];
 
-const LIMIT = 20;
+const LIMIT = 10;
 
 // "125 min" -> "2 h 5 min"; menos de un minuto se muestra como "< 1 min".
 function formatMinutes(min: number) {

@@ -126,6 +126,9 @@ export function Navbar() {
 
   const [menuUsuario, setMenuUsuario] = useState(false);
   const [menuMovil, setMenuMovil] = useState(false);
+  // Barra compacta al hacer scroll (estética editorial de Iris): reduce el
+  // alto y refuerza la sombra una vez que la página se ha desplazado.
+  const [scrolled, setScrolled] = useState(false);
   const usuarioRef = useRef<HTMLDivElement>(null);
 
   // Cierra ambos menús al navegar.
@@ -133,6 +136,13 @@ export function Navbar() {
     setMenuUsuario(false);
     setMenuMovil(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Cierra el menú de usuario al hacer clic fuera o con Escape.
   useEffect(() => {
@@ -164,8 +174,18 @@ export function Navbar() {
   );
 
   return (
-    <header className="sticky top-0 z-40 bg-surface/90 shadow-md backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl 2xl:max-w-screen-2xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-12">
+    <header
+      className={`sticky top-0 z-40 border-b bg-surface/90 backdrop-blur-md transition-shadow duration-300 ${
+        scrolled
+          ? 'border-outline-variant shadow-md'
+          : 'border-transparent shadow-[0_1px_0_0_rgba(0,0,0,0.04)]'
+      }`}
+    >
+      <div
+        className={`mx-auto flex max-w-7xl 2xl:max-w-screen-2xl items-center justify-between gap-4 px-4 transition-all duration-300 sm:px-6 lg:px-12 ${
+          scrolled ? 'py-2.5' : 'py-4'
+        }`}
+      >
         <div className="flex flex-1 items-center gap-8">
           <Link href="/" className="flex shrink-0 items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -211,7 +231,7 @@ export function Navbar() {
             {menuUsuario && (
               <div
                 role="menu"
-                className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-xl ring-1 ring-black/5"
+                className="absolute right-0 z-50 mt-2 w-72 overflow-hidden border border-outline-variant bg-surface-container-lowest shadow-derek ring-1 ring-black/5"
               >
                 {user ? (
                   <>
@@ -307,7 +327,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setMenuMovil((o) => !o)}
-            className="rounded-md p-2 text-on-surface-variant hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="p-2 text-on-surface-variant hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             aria-label="Abrir menú"
             aria-expanded={menuMovil}
             aria-controls="menu-movil"
@@ -347,20 +367,20 @@ export function Navbar() {
             </Link>
             {user && (
               <>
-                <Link href="/my-listings" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/my-listings')}`}>
+                <Link href="/my-listings" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/my-listings')}`}>
                   Mis anuncios
                 </Link>
-                <Link href="/interests" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/interests')}`}>
+                <Link href="/interests" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/interests')}`}>
                   Anuncios de tu interés
                 </Link>
-                <Link href="/alerts" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/alerts')}`}>
+                <Link href="/alerts" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/alerts')}`}>
                   Alertas de empleo
                 </Link>
-                <Link href="/profile" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/profile')}`}>
+                <Link href="/profile" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/profile')}`}>
                   Mi perfil
                 </Link>
                 {user.isAdmin && (
-                  <Link href="/admin" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/admin')}`}>
+                  <Link href="/admin" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/admin')}`}>
                     Panel de administración
                   </Link>
                 )}
@@ -370,7 +390,7 @@ export function Navbar() {
               href={CORPSC.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-md px-3 py-2 text-sm text-on-surface-variant hover:bg-surface-container-low"
+              className="px-3 py-2 text-sm text-on-surface-variant hover:bg-surface-container-low"
             >
               {CORPSC.name} ↗
             </a>
@@ -379,13 +399,13 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={logout}
-                className="rounded-md px-3 py-2 text-left text-sm text-error hover:bg-error-container/40"
+                className="px-3 py-2 text-left text-sm text-error hover:bg-error-container/40"
               >
                 Cerrar sesión
               </button>
             ) : (
               <>
-                <Link href="/login" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/login')}`}>
+                <Link href="/login" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/login')}`}>
                   Ingresar
                 </Link>
                 <Link href="/register" className="rounded-full bg-primary-container px-3 py-2 text-center text-sm font-bold text-on-primary-container">

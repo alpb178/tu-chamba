@@ -17,7 +17,7 @@ import { Button, FormField, Input, Skeleton } from '@/components/admin/ui';
 import { CustomSelect } from '@/components/admin/CustomSelect';
 
 const TEXTAREA_CLASS =
-  'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary';
+  'w-full border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary';
 
 function AdForm() {
   const router = useRouter();
@@ -113,7 +113,7 @@ function AdForm() {
         ) : (
           <div
             aria-hidden="true"
-            className="space-y-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm"
+            className="space-y-4 border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity"
           >
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-16 w-full" />
@@ -124,7 +124,7 @@ function AdForm() {
       ) : (
       <form
         onSubmit={onSubmit}
-        className="space-y-4 rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm"
+        className="space-y-4 border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity"
       >
         <FormField label="Título del puesto">
           <Input

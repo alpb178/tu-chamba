@@ -32,7 +32,7 @@ const HEADERS = [
   '',
 ];
 
-const LIMIT = 20;
+const LIMIT = 10;
 
 // Moderación: el admin corrige la calificación o el comentario de la reseña.
 function EditReviewDialog({
@@ -80,7 +80,7 @@ function EditReviewDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <form
         onSubmit={submit}
-        className="w-full max-w-sm space-y-4 rounded-lg bg-surface-container-lowest p-6 shadow-lg"
+        className="w-full max-w-sm space-y-4 border border-outline-variant bg-surface-container-lowest p-6 shadow-derek"
       >
         <div>
           <h3 className="text-lg font-semibold text-on-surface">Editar reseña</h3>
@@ -101,7 +101,7 @@ function EditReviewDialog({
           </FormField>
           <FormField label="Comentario">
             <textarea
-              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary"
               rows={4}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -274,7 +274,7 @@ export default function ReviewsReportPage() {
                 <td className="max-w-xs truncate px-4 py-3">
                   {r.ad ? r.ad.description : <span className="text-on-surface-variant">Anuncio eliminado</span>}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 text-amber-500">
+                <td className="whitespace-nowrap px-4 py-3 text-secondary-container">
                   {'★'.repeat(r.rating)}
                   <span className="text-on-surface-variant"> {r.rating}/5</span>
                 </td>

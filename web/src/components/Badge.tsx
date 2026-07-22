@@ -10,7 +10,7 @@ const COLORS: Record<JobType, string> = {
 export function Badge({ jobType }: { jobType: JobType }) {
   return (
     <span
-      className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${COLORS[jobType]}`}
+      className={`inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${COLORS[jobType]}`}
     >
       {JOB_TYPE_LABEL[jobType]}
     </span>

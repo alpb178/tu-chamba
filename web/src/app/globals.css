@@ -2,11 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Tokens Material 3 como variables (tripletas RGB para poder aplicar
-   opacidad con Tailwind). El sitio es siempre claro por decisión de
-   producto; un tema oscuro futuro solo tendría que redefinirlas. */
+/* Paleta ORIGINAL de tu-chamba (azul primario + ámbar + verde) sobre una base
+   NEUTRA BLANCA: se conservan los tonos de marca y solo la familia de
+   superficies/fondos/bordes pasa de lavanda tenue a blanco + grises neutros.
+   Tripletas RGB para aplicar opacidad con Tailwind. Sitio siempre claro. */
 :root {
   color-scheme: light;
+  /* — Tonos de marca (originales de tu-chamba) — */
   --c-primary: 0 74 198;
   --c-on-primary: 255 255 255;
   --c-primary-container: 37 99 235;
@@ -23,23 +25,25 @@
   --c-on-error: 255 255 255;
   --c-error-container: 255 218 214;
   --c-on-error-container: 147 0 10;
-  --c-background: 250 248 255;
+  /* — Base neutra blanca (antes lavanda) — */
+  --c-background: 255 255 255;
   --c-on-background: 19 27 46;
-  --c-surface: 250 248 255;
+  --c-surface: 255 255 255;
   --c-on-surface: 19 27 46;
-  --c-surface-variant: 218 226 253;
+  --c-surface-variant: 245 245 245;
   --c-on-surface-variant: 67 70 85;
   --c-surface-container-lowest: 255 255 255;
-  --c-surface-container-low: 242 243 255;
-  --c-surface-container: 234 237 255;
-  --c-surface-container-high: 226 231 255;
-  --c-surface-container-highest: 218 226 253;
-  --c-surface-dim: 210 217 244;
+  --c-surface-container-low: 250 250 250;
+  --c-surface-container: 245 245 245;
+  --c-surface-container-high: 229 229 229;
+  --c-surface-container-highest: 212 212 212;
+  --c-surface-dim: 229 229 229;
   --c-inverse-surface: 40 48 68;
   --c-inverse-on-surface: 238 240 255;
   --c-inverse-primary: 180 197 255;
-  --c-outline: 115 118 134;
-  --c-outline-variant: 195 198 215;
+  --c-outline: 163 163 163;
+  --c-outline-variant: 229 229 229;
+  /* Alias de marca -> azul de tu-chamba. */
   --c-brand: 0 74 198;
   --c-brand-strong: 0 62 168;
   --c-brand-light: 219 225 255;
@@ -49,15 +53,45 @@
 @layer base {
   body {
     /* overflow-x-clip: el hero a sangre completa usa w-screen. */
-    @apply overflow-x-clip bg-background font-sans text-on-surface;
+    @apply overflow-x-clip bg-background font-sans text-on-surface antialiased;
   }
 
-  /* Los titulares llevan la display (Hanken Grotesk); el cuerpo, Inter. */
+  /* Tipografía editorial (lenguaje Iris Natural): titulares principales en
+     serif Merriweather con tracking negativo; los títulos funcionales (h3-h6)
+     en Libre Franklin, algo más apretados. */
   h1,
-  h2,
-  h3 {
+  h2 {
     @apply font-display;
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-sans;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Foco visible sólo para teclado (sin anillo al hacer clic con el mouse). */
+:focus-visible {
+  outline: 2px solid rgb(var(--c-primary));
+  outline-offset: 2px;
 }
 
 /* Campo de teléfono internacional (react-phone-number-input) con la
@@ -75,28 +109,4 @@
 .PhoneInputInput:focus {
   outline: none;
   box-shadow: none;
-}
-
-/* Ráfaga de destellos del carrusel de "Sitios de interés" (ver SlideBurst).
-   Las partículas suben y se dispersan (--burst-dx/dy) mientras se desvanecen. */
-@keyframes slide-burst {
-  from {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.9;
-  }
-  to {
-    transform: translate(var(--burst-dx, 0), var(--burst-dy, -40px)) scale(0);
-    opacity: 0;
-  }
-}
-.slide-burst-particle {
-  animation-name: slide-burst;
-  animation-timing-function: ease-out;
-  animation-fill-mode: forwards;
-}
-@media (prefers-reduced-motion: reduce) {
-  .slide-burst-particle {
-    animation: none;
-    display: none;
-  }
 }

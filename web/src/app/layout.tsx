@@ -1,16 +1,20 @@
 import type { Metadata } from 'next';
-import { Hanken_Grotesk, Inter } from 'next/font/google';
+import { Libre_Franklin, Merriweather } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth';
 
-// Tipografías del sistema de diseño: Inter (cuerpo) + Hanken Grotesk
-// (titulares), expuestas como variables CSS para Tailwind. Viven en el layout
+// Tipografías del sistema de diseño (estilo editorial portado de Iris Natural):
+// Libre Franklin para el cuerpo/UI y Merriweather (serif) para los titulares
+// editoriales. Se exponen como variables CSS para Tailwind y viven en el layout
 // raíz para que las compartan el sitio y el panel de administración.
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-const hanken = Hanken_Grotesk({
+const libreFranklin = Libre_Franklin({
   subsets: ['latin'],
-  weight: ['600', '700', '800'],
-  variable: '--font-hanken',
+  variable: '--font-libre-franklin',
+});
+const merriweather = Merriweather({
+  subsets: ['latin'],
+  weight: ['300', '400', '700', '900'],
+  variable: '--font-merriweather-garamond',
 });
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tu-chamba.corpsc.com';
@@ -29,7 +33,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`${inter.variable} ${hanken.variable}`}>
+    <html
+      lang="es"
+      className={`${libreFranklin.variable} ${merriweather.variable}`}
+    >
       <body>
         <AuthProvider>{children}</AuthProvider>
       </body>

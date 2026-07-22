@@ -1,58 +1,12 @@
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { DEPARTMENT_LABEL, Department } from '@/lib/types';
-import { CustomSelect } from './CustomSelect';
-import { Icon } from './Icon';
-
-// Todos los departamentos + "Todo el país" como opción vacía.
-const DEPARTMENT_OPTIONS = [
-  { value: '', label: 'Todo el país' },
-  ...Object.entries(DEPARTMENT_LABEL).map(([value, label]) => ({
-    value,
-    label,
-  })),
-];
-
-// Hero de la portada: imagen con degradado azul de marca y buscador
-// "glass" de dos campos (qué + departamento). Navega a /?q=&dep=.
-export function Hero({
-  initialQuery = '',
-  initialDep = '',
-}: {
-  initialQuery?: string;
-  initialDep?: Department | '';
-}) {
-  const router = useRouter();
-  const [query, setQuery] = useState(initialQuery);
-  const [dep, setDep] = useState<string>(initialDep);
-
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const p = new URLSearchParams();
-    if (query.trim()) p.set('q', query.trim());
-    if (dep) p.set('dep', dep);
-    // scroll: false — la búsqueda no debe saltar al inicio de la página;
-    // los resultados se actualizan en su sitio.
-    router.push(p.size ? `/?${p}` : '/', { scroll: false });
-  }
-
-  // z-30 (bajo el navbar z-40): el desplegable del select sobresale por
-  // encima del contenido siguiente.
+// Hero de la portada (variante "banner"): muestra el banner de marca de Tu
+// Chamba a sangre completa y sin recortar. El buscador de empleos vive en el
+// encabezado del listado (CatalogHeader), igual que en la variante editorial.
+export function Hero() {
   return (
-    <section
-      className="relative z-30 -mt-6 ml-[calc(50%-50vw)] w-screen"
-      style={{
-        background:
-          'linear-gradient(rgba(0, 74, 198, 0.95), rgba(0, 23, 75, 0.98))',
-      }}
-    >
-      {/* Banner de marca SIEMPRE a todo el ancho de la página, completo y sin
-          recortar (tiene texto hasta el borde inferior). h-auto conserva su
-          proporción natural; width/height reservan el espacio antes de
-          cargar para que no salte el layout (sin CLS). El mensaje principal
-          también va en HTML real debajo (indexable y accesible). */}
+    <section className="relative z-30 -mt-6 ml-[calc(50%-50vw)] w-screen">
+      {/* Banner a todo el ancho, completo (tiene texto hasta el borde). h-auto
+          conserva su proporción; width/height reservan el espacio para evitar
+          saltos de layout (sin CLS). */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src="/banner.jpeg"
@@ -62,49 +16,6 @@ export function Hero({
         className="h-auto w-full"
         fetchPriority="high"
       />
-
-      <div className="relative z-20 mx-auto w-full max-w-4xl px-4 pb-10 pt-5 text-center sm:pb-12">
-        <h1 className="font-display text-2xl font-bold leading-tight text-on-primary sm:text-3xl">
-          Encuentra trabajos diarios al instante en Bolivia
-        </h1>
-        <p className="mx-auto mb-6 mt-2 max-w-2xl text-base text-surface-container-low opacity-90">
-          Conecta directo con empleadores locales — sin CV, por WhatsApp.
-        </p>
-
-        {/* Buscador glass: qué + dónde. */}
-        <form
-          onSubmit={onSubmit}
-          className="mx-auto flex max-w-3xl flex-col gap-2 rounded-2xl border border-white/30 bg-white/70 p-3 shadow-lg backdrop-blur-md md:flex-row"
-        >
-          <div className="flex flex-grow items-center rounded-xl border border-outline-variant bg-white px-4 py-3 transition-all focus-within:ring-2 focus-within:ring-primary-container">
-            <Icon name="search" className="mr-3 text-outline" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="¿Qué trabajo buscas hoy?"
-              aria-label="Qué trabajo buscas"
-              className="w-full border-none bg-transparent text-base text-on-surface outline-none placeholder:text-outline focus:ring-0"
-            />
-          </div>
-          <div className="md:w-1/3">
-            <CustomSelect
-              value={dep}
-              onChange={setDep}
-              options={DEPARTMENT_OPTIONS}
-              placeholder="Todo el país"
-              icon="location_on"
-              className="rounded-xl px-4 py-3 text-base"
-            />
-          </div>
-          <button
-            type="submit"
-            className="flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3 font-bold text-on-primary shadow-lg transition-all hover:brightness-110 active:scale-95"
-          >
-            <span>Buscar</span>
-            <Icon name="search" />
-          </button>
-        </form>
-      </div>
     </section>
   );
 }

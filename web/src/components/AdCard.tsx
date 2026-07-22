@@ -12,8 +12,15 @@ import { Icon } from './Icon';
 
 const STATUS_STYLE = {
   ACTIVO: 'bg-tertiary-container text-on-tertiary-container',
-  VENCIDO: 'bg-amber-100 text-amber-800',
+  VENCIDO: 'bg-secondary-container text-on-secondary-container',
   DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
+};
+
+// Icono que marca el estado del anuncio (mismo criterio que el panel admin).
+const STATUS_ICON = {
+  ACTIVO: 'check_circle',
+  VENCIDO: 'schedule',
+  DADO_DE_BAJA: 'block',
 };
 
 // Icono Material Symbols por rubro para el tile de la tarjeta.
@@ -48,7 +55,7 @@ export function AdCard({
   return (
     <Link
       href={`/listings/${ad.id}`}
-      className="group relative block overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:p-6"
+      className="group relative block overflow-hidden border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity transition-all duration-300 hover:-translate-y-1 hover:shadow-derek hover:border-primary/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:p-6"
     >
       {/* Detalle decorativo que crece al pasar el cursor. */}
       <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150" />
@@ -58,7 +65,7 @@ export function AdCard({
         <div className="flex min-w-0 gap-3 md:gap-4">
           {/* El tile del rubro también se ve en móvil (ancla visual de la
               tarjeta ahora que va una por fila). */}
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-outline-variant bg-surface-container sm:h-16 sm:w-16">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-outline-variant bg-surface-container sm:h-16 sm:w-16">
             <Icon
               name={CATEGORY_ICON[ad.category ?? 'OTRO']}
               className="text-2xl text-primary sm:text-3xl"
@@ -104,8 +111,9 @@ export function AdCard({
             <Badge jobType={ad.jobType} />
             {showStatus && (
               <span
-                className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${STATUS_STYLE[status]}`}
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] ${STATUS_STYLE[status]}`}
               >
+                <Icon name={STATUS_ICON[status]} className="text-sm" />
                 {STATUS_LABEL[status]}
               </span>
             )}

@@ -41,7 +41,7 @@ function VerifyEmail() {
   }, [token, refresh]);
 
   return (
-    <div className="mx-auto max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-8 text-center">
+    <div className="mx-auto max-w-md border border-outline-variant bg-surface-container-lowest p-8 text-center">
       {status === 'verifying' && (
         <p className="text-on-surface-variant">Verificando tu correo...</p>
       )}
