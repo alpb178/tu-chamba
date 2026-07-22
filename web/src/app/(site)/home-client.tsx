@@ -154,13 +154,13 @@ function CatalogHeader({
       <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
         Catálogo
       </p>
-      <div className="mb-6 flex flex-col gap-4 border-b border-outline-variant pb-5 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-6 flex flex-col gap-4 border-b border-outline-variant pb-5">
         <Heading as="h2" size="sm">
           Ofertas de trabajo
         </Heading>
         <form
           onSubmit={submit}
-          className="flex w-full items-center border border-outline-variant bg-surface-container-lowest px-4 py-2.5 transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary sm:max-w-xs"
+          className="flex w-full items-center border border-outline-variant bg-surface-container-lowest px-4 py-2.5 transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary sm:max-w-md"
         >
           <Icon name="search" className="mr-2 text-outline" />
           <input
