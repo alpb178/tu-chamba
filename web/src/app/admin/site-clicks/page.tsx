@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { SiteClickRow } from '@/lib/admin/types';
 import { AdminTable, IconButton } from '@/components/admin/ui';
+import { Icon } from '@/components/admin/Icon';
 
 const HEADERS = ['#', 'Sitio', 'Clics (30 días)', 'Clics (7 días)'];
 
@@ -54,7 +55,12 @@ export default function SiteClicksPage() {
             <td className="px-4 py-3 font-medium text-on-surface-variant">
               {i + 1}
             </td>
-            <td className="px-4 py-3 font-medium text-on-surface">{r.label}</td>
+            <td className="px-4 py-3 font-medium text-on-surface">
+              <span className="inline-flex items-center gap-2">
+                <Icon name="language" className="text-lg text-on-surface-variant" />
+                {r.label}
+              </span>
+            </td>
             <td className="px-4 py-3 font-medium text-brand">
               {r.clicksLast30Days.toLocaleString('es-BO')}
             </td>

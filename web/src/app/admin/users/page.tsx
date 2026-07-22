@@ -15,10 +15,12 @@ import {
 } from '@/components/admin/ui';
 import { CustomSelect } from '@/components/admin/CustomSelect';
 import { EditUserDialog } from '@/components/admin/EditUserDialog';
+import { Icon } from '@/components/admin/Icon';
 import { PasswordInput } from '@/components/PasswordInput';
 import { useSelection } from '@/lib/admin/useSelection';
+import { FcGoogle } from 'react-icons/fc';
 
-const HEADERS = ['Nombre', 'Correo', 'Teléfono', 'Acceso', 'Anuncios', ''];
+const HEADERS = ['Nombre', 'Correo', 'Teléfono', 'Registro', 'Acceso', 'Anuncios', ''];
 
 type UserRow = User & { _count?: { ads: number } };
 
@@ -254,6 +256,17 @@ export default function UsersPage() {
             <td className="px-4 py-3">{u.name}</td>
             <td className="px-4 py-3 text-on-surface-variant">{u.email}</td>
             <td className="px-4 py-3 text-on-surface-variant">{u.phone}</td>
+            <td className="px-4 py-3">
+              {u.provider === 'google' ? (
+                <span className="inline-flex items-center gap-1.5 text-on-surface-variant">
+                  <FcGoogle className="text-base" /> Google
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-on-surface-variant">
+                  <Icon name="mail" className="text-base" /> Correo
+                </span>
+              )}
+            </td>
             <td className="px-4 py-3">
               <div className="w-36">
                 <CustomSelect

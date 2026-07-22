@@ -3,23 +3,35 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { Button, FormField, Input } from './ui';
+import { PasswordInput } from '@/components/PasswordInput';
 
-// Edición de los datos de la cuenta de un usuario desde el panel
-// (la contraseña solo la cambia el propio usuario desde su perfil).
+// Edición de los datos de la cuenta de un usuario desde el panel. La
+// contraseña solo se puede cambiar en cuentas locales (las de Google no
+// tienen contraseña local).
 export function EditUserDialog({
   user,
   onClose,
   onSaved,
 }: {
-  user: { id: string; name: string; email: string; phone: string | null } | null;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    provider?: 'google' | 'email';
+  } | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Cuenta de Google: sin contraseña local, no se muestra el campo.
+  const isGoogle = user?.provider === 'google';
 
   // Al abrir con otro usuario, el formulario arranca con sus datos.
   useEffect(() => {
@@ -27,6 +39,7 @@ export function EditUserDialog({
     setName(user.name);
     setEmail(user.email);
     setPhone(user.phone ?? '');
+    setPassword('');
     setError(null);
   }, [user]);
 
@@ -40,7 +53,13 @@ export function EditUserDialog({
     try {
       await api(`/users/${user.id}`, {
         method: 'PATCH',
-        body: JSON.stringify({ name, email, phone }),
+        // La contraseña solo se envía si se escribió una nueva.
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          ...(!isGoogle && password ? { password } : {}),
+        }),
       });
       onSaved();
     } catch (err) {
@@ -87,6 +106,21 @@ export function EditUserDialog({
               placeholder="Sin teléfono"
             />
           </FormField>
+          {isGoogle ? (
+            <p className="text-xs text-on-surface-variant">
+              Cuenta de Google: la contraseña se gestiona en Google, no aquí.
+            </p>
+          ) : (
+            <FormField label="Nueva contraseña">
+              <PasswordInput
+                autoComplete="new-password"
+                placeholder="Dejar en blanco para no cambiarla"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                minLength={6}
+              />
+            </FormField>
+          )}
         </div>
         {error && <p className="text-sm text-error">{error}</p>}
         <div className="flex justify-end gap-2">

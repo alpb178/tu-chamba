@@ -96,6 +96,9 @@ export interface User {
   phone: string | null;
   // Único distintivo entre usuarios: acceso a este panel.
   isAdmin: boolean;
+  // Método de registro: 'google' (sin contraseña local) o 'email'. El backend
+  // lo deriva de googleId; solo las cuentas 'email' permiten cambiar la clave.
+  provider?: 'google' | 'email';
   createdAt: string;
   updatedAt: string;
 }
