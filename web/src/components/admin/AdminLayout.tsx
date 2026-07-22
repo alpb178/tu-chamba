@@ -171,8 +171,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-outline-variant bg-surface px-4 sm:px-6">
-          {/* Logo a la izquierda de la pantalla (junto al riel). */}
-          <Link href="/admin" className="flex min-w-0 items-center" aria-label="Ir al dashboard">
+          {/* Logo a la izquierda de la pantalla (junto al riel). Lleva al
+              portal principal de la aplicación. */}
+          <Link href="/" className="flex min-w-0 items-center" aria-label="Ir al portal principal">
             <span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/logo-full.png" alt="Tu Chamba" className="h-7 w-auto" />
