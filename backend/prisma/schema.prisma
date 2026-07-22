@@ -352,6 +352,10 @@ model Trace {
   actorEmail  String?
   ip          String?
   userAgent   String?
+  // País (ISO-2) resuelto por geo-IP o cabecera de CDN, y fuente/origen del
+  // request (utm_source o el host del Referer). Ambos opcionales.
+  country     String?
+  source      String?
   resource    String?
   result      TraceResult @default(OK)
   // Milisegundos desde el inicio del request hasta que ocurrió el evento.

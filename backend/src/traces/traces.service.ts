@@ -4,6 +4,30 @@ import { PrismaService } from '../prisma/prisma.service';
 import { QueryTraceDto } from './dto/query-trace.dto';
 import { requestContext } from './request-context';
 
+// geo-IP offline (geoip-lite) cargado de forma perezosa: si el paquete o sus
+// datos no están disponibles, el país simplemente queda nulo (best-effort).
+let geoip: { lookup(ip: string): { country?: string } | null } | null | undefined;
+function countryFromIp(ip?: string | null): string | null {
+  if (!ip) return null;
+  if (geoip === undefined) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      geoip = require('geoip-lite');
+    } catch {
+      geoip = null;
+    }
+  }
+  if (!geoip) return null;
+  try {
+    // Normaliza IPv4 mapeada en IPv6 ("::ffff:200.87.100.1") y toma la primera
+    // IP si viniera una lista (X-Forwarded-For).
+    const clean = ip.replace(/^::ffff:/, '').split(',')[0].trim();
+    return geoip.lookup(clean)?.country ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // Actor de la traza: alcanza con id y email (se denormaliza el email).
 export interface TraceActor {
   id?: string | null;
@@ -39,6 +63,9 @@ export class TracesService {
           actorEmail: actor?.email ?? null,
           ip: ctx?.ip ?? null,
           userAgent: ctx?.userAgent ?? null,
+          // País: cabecera de CDN si la hay; si no, geo-IP a partir de la IP.
+          country: ctx?.country ?? countryFromIp(ctx?.ip),
+          source: ctx?.source ?? null,
           resource: opts?.resource ?? null,
           result: opts?.result ?? TraceResult.OK,
           durationMs: ctx ? Date.now() - ctx.startedAt : null,
