@@ -1,131 +1,183 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { DEPARTMENT_LABEL, Department } from '@/lib/types';
-import { CustomSelect } from './CustomSelect';
-import { Icon } from './Icon';
+import { ArrowRight, Briefcase, ChevronLeft, ChevronRight } from 'lucide-react';
+import { SlideBurst } from './fx/SlideBurst';
 
-// Todos los departamentos + "Todo el país" como opción vacía.
-const DEPARTMENT_OPTIONS = [
-  { value: '', label: 'Todo el país' },
-  ...Object.entries(DEPARTMENT_LABEL).map(([value, label]) => ({
-    value,
-    label,
-  })),
-];
+// Imágenes de la columna derecha (marco decorativo). Por ahora una sola; el
+// carrusel admite más — conviene sustituirla por fotos limpias sin texto
+// incrustado (idealmente cuadradas), p. ej. en /public/hero/1.jpeg, etc.
+const CAROUSEL_IMAGES = ['/banner.jpeg'];
 
-// Hero de la portada: imagen con degradado azul de marca y buscador
-// "glass" de dos campos (qué + departamento). Navega a /?q=&dep=.
-export function Hero({
-  initialQuery = '',
-  initialDep = '',
-}: {
-  initialQuery?: string;
-  initialDep?: Department | '';
-}) {
-  const router = useRouter();
-  const [query, setQuery] = useState(initialQuery);
-  const [dep, setDep] = useState<string>(initialDep);
+// Carrusel de la imagen del hero (autoavance + flechas/puntos si hay >1).
+// Portado del hero de Iris Natural y adaptado a los tokens M3 de tu-chamba.
+const HeroCarousel = ({ images }: { images: string[] }) => {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const p = new URLSearchParams();
-    if (query.trim()) p.set('q', query.trim());
-    if (dep) p.set('dep', dep);
-    // scroll: false — la búsqueda no debe saltar al inicio de la página;
-    // los resultados se actualizan en su sitio.
-    router.push(p.size ? `/?${p}` : '/', { scroll: false });
-  }
+  useEffect(() => {
+    if (images.length <= 1 || paused) return;
+    const id = setInterval(
+      () => setIndex((p) => (p + 1) % images.length),
+      5000
+    );
+    return () => clearInterval(id);
+  }, [images.length, paused]);
 
-  // z-30 (bajo el navbar z-40): el desplegable del select sobresale por
-  // encima del contenido siguiente.
+  const goPrev = () =>
+    setIndex((p) => (p - 1 + images.length) % images.length);
+  const goNext = () => setIndex((p) => (p + 1) % images.length);
+
+  return (
+    <div
+      className="relative h-full w-full overflow-hidden bg-background"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      aria-roledescription="carousel"
+    >
+      {images.map((src, i) => (
+        <div
+          key={src}
+          className={`absolute inset-0 transition-opacity duration-700 ease-out ${
+            i === index ? 'opacity-100' : 'opacity-0'
+          }`}
+          aria-hidden={i !== index}
+        >
+          <Image
+            src={src}
+            alt="Ofrece o busca trabajo en Bolivia con Tu Chamba"
+            fill
+            sizes="(max-width: 1024px) 90vw, 448px"
+            className="object-cover object-center"
+            priority={i === 0}
+          />
+        </div>
+      ))}
+
+      {/* Ráfaga de destellos al cambiar de slide (debajo de flechas/indicadores) */}
+      <SlideBurst trigger={index} className="z-[5]" />
+
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={goPrev}
+            aria-label="Anterior"
+            className="absolute left-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-on-surface/10 text-on-surface backdrop-blur-sm transition hover:bg-on-surface/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={goNext}
+            aria-label="Siguiente"
+            className="absolute right-2 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-on-surface/10 text-on-surface backdrop-blur-sm transition hover:bg-on-surface/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </>
+      )}
+
+      <div className="absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
+        {images.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setIndex(i)}
+            aria-label={`Imagen ${i + 1}`}
+            aria-current={i === index}
+            className={`h-1.5 rounded-full transition-all ${
+              i === index ? 'w-6 bg-primary' : 'w-1.5 bg-on-surface/30'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Hero de la portada, estilo editorial split (portado del BrandHero de Iris
+// Natural): a la izquierda el mensaje + CTA; a la derecha una imagen dentro de
+// un marco decorativo con paneles rotados en los colores de marca. El buscador
+// de empleos vive ahora en el encabezado del listado de resultados.
+export function Hero() {
   return (
     <section
       className="relative z-30 -mt-6 ml-[calc(50%-50vw)] w-screen"
-      style={{
-        background:
-          'linear-gradient(rgba(0, 74, 198, 0.95), rgba(0, 23, 75, 0.98))',
-      }}
+      aria-label="Tu Chamba — bienvenida"
     >
-      {/* Banner de marca SIEMPRE a todo el ancho de la página, completo y sin
-          recortar (tiene texto hasta el borde inferior). h-auto conserva su
-          proporción natural; width/height reservan el espacio antes de
-          cargar para que no salte el layout (sin CLS). El mensaje principal
-          también va en HTML real debajo (indexable y accesible). */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/banner.jpeg"
-        alt="Ofrece o busca trabajo — conexión directa, sin CV"
-        width={1936}
-        height={544}
-        className="h-auto w-full"
-        fetchPriority="high"
-      />
-
-      <div className="relative z-20 mx-auto w-full max-w-4xl px-4 pb-10 pt-6 text-center sm:pb-14">
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-secondary-container"
-        >
-          Trabajo diario en Bolivia
-        </motion.p>
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.08 }}
-          className="font-display text-3xl font-semibold leading-[1.1] tracking-tight text-on-primary text-balance sm:text-4xl md:text-5xl"
-        >
-          Encuentra trabajos diarios al instante
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.16 }}
-          className="mx-auto mb-7 mt-3 max-w-2xl text-base text-surface-container-low opacity-90"
-        >
-          Conecta directo con empleadores locales — sin CV, por WhatsApp.
-        </motion.p>
-
-        {/* Buscador glass: qué + dónde. Esquinas rectas (estética editorial). */}
-        <motion.form
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.24 }}
-          onSubmit={onSubmit}
-          className="mx-auto flex max-w-3xl flex-col gap-2 border border-white/30 bg-white/70 p-3 shadow-derek backdrop-blur-md md:flex-row"
-        >
-          <div className="flex flex-grow items-center border border-outline-variant bg-white px-4 py-3 transition-all focus-within:ring-2 focus-within:ring-primary-container">
-            <Icon name="search" className="mr-3 text-outline" />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="¿Qué trabajo buscas hoy?"
-              aria-label="Qué trabajo buscas"
-              className="w-full border-none bg-transparent text-base text-on-surface outline-none placeholder:text-outline focus:ring-0"
-            />
-          </div>
-          <div className="md:w-1/3">
-            <CustomSelect
-              value={dep}
-              onChange={setDep}
-              options={DEPARTMENT_OPTIONS}
-              placeholder="Todo el país"
-              icon="location_on"
-              className="px-4 py-3 text-base"
-            />
-          </div>
-          <button
-            type="submit"
-            className="flex items-center justify-center gap-2 bg-primary px-8 py-3 font-bold uppercase tracking-[0.12em] text-on-primary shadow-lg transition-all hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 active:scale-95"
+      <div className="mx-auto grid w-full max-w-screen-2xl grid-cols-1 lg:grid-cols-2">
+        <div className="order-2 flex flex-col justify-center gap-6 px-6 py-12 sm:px-10 sm:py-16 lg:order-1 lg:px-16 lg:py-24">
+          <motion.p
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-xs font-semibold uppercase tracking-[0.22em] text-primary"
           >
-            <span>Buscar</span>
-            <Icon name="search" />
-          </button>
-        </motion.form>
+            Tu Chamba · Empleos en Bolivia
+          </motion.p>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+            className="font-display text-4xl font-semibold leading-[1.05] tracking-tight text-on-surface sm:text-5xl lg:text-6xl"
+          >
+            Encuentra trabajos diarios al instante
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="max-w-xl text-base leading-relaxed text-on-surface-variant sm:text-lg"
+          >
+            Conecta directo con empleadores locales — sin CV, por WhatsApp.
+            Publica u ofrece trabajo en toda Bolivia.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="flex flex-wrap items-center gap-6"
+          >
+            <Link
+              href="#ofertas"
+              className="group inline-flex items-center gap-3 bg-on-surface px-7 py-4 text-xs font-semibold uppercase tracking-[0.16em] text-inverse-on-surface transition-colors hover:bg-on-surface/90"
+            >
+              Explorar ofertas
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <Link
+              href="/listings/new"
+              className="inline-flex items-center gap-2 text-sm font-medium text-on-surface underline-offset-4 hover:underline"
+            >
+              <Briefcase className="h-4 w-4 text-primary" />
+              Publicar oferta de trabajo
+            </Link>
+          </motion.div>
+        </div>
+
+        <div className="order-1 flex items-center justify-center px-6 py-8 lg:order-2 lg:px-10 lg:py-16">
+          <div className="relative w-full max-w-md">
+            {/* Paneles decorativos rotados en los colores de marca (azul + ámbar). */}
+            <div
+              aria-hidden
+              className="absolute -inset-6 -rotate-3 rounded-3xl bg-gradient-to-r from-primary/25 to-secondary-container/30"
+            />
+            <div
+              aria-hidden
+              className="absolute -inset-6 rotate-3 rounded-3xl bg-gradient-to-r from-secondary-container/25 to-primary/20"
+            />
+            <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-outline-variant bg-background shadow-derek">
+              <HeroCarousel images={CAROUSEL_IMAGES} />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -8,6 +8,7 @@ import {
   useState,
 } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import {
@@ -26,7 +27,7 @@ import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
 import { Pagination } from '@/components/Pagination';
 import { FeaturedBrands } from '@/components/FeaturedBrands';
 import { Icon } from '@/components/Icon';
-import { Button } from '@/components/ui';
+import { Button, Heading } from '@/components/ui';
 
 // Chips de los filtros activos sobre el listado: recuerdan qué está
 // aplicado y se quitan de un toque (clave en móvil, donde el panel de
@@ -122,6 +123,56 @@ function BackToTop() {
     >
       <Icon name="arrow_upward" className="text-xl" />
     </button>
+  );
+}
+
+// Encabezado del catálogo con buscador de texto (estilo del listado de Iris):
+// reemplaza al buscador que antes vivía en el hero. Empuja ?q= a la URL
+// (fuente de verdad que resuelve page.tsx) sin mover el scroll. Es también el
+// ancla #ofertas a la que salta el CTA "Explorar ofertas" del hero.
+function CatalogHeader({
+  search,
+  dep,
+}: {
+  search: string;
+  dep: Department | '';
+}) {
+  const router = useRouter();
+  const [q, setQ] = useState(search);
+  useEffect(() => setQ(search), [search]);
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const p = new URLSearchParams();
+    if (q.trim()) p.set('q', q.trim());
+    if (dep) p.set('dep', dep);
+    router.push(p.size ? `/?${p}` : '/', { scroll: false });
+  }
+
+  return (
+    <div id="ofertas" className="scroll-mt-24">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
+        Catálogo
+      </p>
+      <div className="mb-6 flex flex-col gap-4 border-b border-outline-variant pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <Heading as="h2" size="sm">
+          Ofertas de trabajo
+        </Heading>
+        <form
+          onSubmit={submit}
+          className="flex w-full items-center border border-outline-variant bg-surface-container-lowest px-4 py-2.5 transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary sm:max-w-xs"
+        >
+          <Icon name="search" className="mr-2 text-outline" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Buscar ofertas"
+            aria-label="Buscar ofertas"
+            className="w-full bg-transparent text-sm text-on-surface outline-none placeholder:text-outline"
+          />
+        </form>
+      </div>
+    </div>
   );
 }
 
@@ -276,11 +327,13 @@ export function HomeClient({
 
   return (
     <div className="space-y-8">
-      <Hero initialQuery={search} initialDep={dep} />
+      <Hero />
 
       {/* Si el listado no carga (p. ej. servidor caído), ocultamos filtros y
           resultados: la portada queda solo con el hero y los destacados. */}
       {!error && (
+        <>
+        <CatalogHeader search={search} dep={dep} />
         <div className="flex flex-col gap-6 md:flex-row md:items-start">
           <FiltersSidebar
             value={filters}
@@ -326,17 +379,13 @@ export function HomeClient({
                 }`}
               >
                   <div className="mb-4 flex flex-wrap items-baseline gap-2">
-                    <h2 className="font-display text-2xl font-semibold text-on-surface">
+                    <p className="text-sm font-medium text-on-surface-variant">
                       {data.total}{' '}
                       {data.total === 1
                         ? 'oferta encontrada'
                         : 'ofertas encontradas'}
-                    </h2>
-                    {dep && (
-                      <span className="text-sm text-on-surface-variant">
-                        en {DEPARTMENT_LABEL[dep]}
-                      </span>
-                    )}
+                      {dep && ` en ${DEPARTMENT_LABEL[dep]}`}
+                    </p>
                     {/* Publicar (escritorio) + actualizar, a la derecha. */}
                     <div className="ml-auto flex items-center gap-2 self-center">
                       <Link href={publishHref} className="hidden md:inline-flex">
@@ -410,6 +459,7 @@ export function HomeClient({
             )}
           </section>
         </div>
+        </>
       )}
 
       <FeaturedBrands />
