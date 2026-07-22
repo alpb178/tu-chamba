@@ -28,6 +28,8 @@ const HEADERS = [
   'Descripción',
   'Actor',
   'IP',
+  'País',
+  'Fuente',
   'Navegador',
   'Móvil',
   'Resultado',
@@ -36,8 +38,17 @@ const HEADERS = [
 
 const LIMIT = 10;
 
+// Bandera emoji a partir del ISO-2 (letras -> símbolos indicadores regionales).
+function countryFlag(iso: string): string {
+  if (!/^[A-Za-z]{2}$/.test(iso)) return '';
+  const A = 0x1f1e6;
+  return String.fromCodePoint(
+    ...[...iso.toUpperCase()].map((c) => A + c.charCodeAt(0) - 65),
+  );
+}
+
 // Navegador y "¿móvil?" se derivan del user-agent (el backend solo guarda el
-// UA crudo). País y fuente no están en el modelo de trazas todavía.
+// UA crudo).
 function browserName(ua: string | null): string {
   if (!ua) return '—';
   if (/Edg\//.test(ua)) return 'Edge';
@@ -247,6 +258,22 @@ export default function TracesPage() {
                 <td className="px-4 py-3 text-on-surface-variant">{t.actorEmail ?? '—'}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant">
                   {t.ip ?? '—'}
+                </td>
+                <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant">
+                  {t.country ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <span aria-hidden>{countryFlag(t.country)}</span>
+                      {t.country}
+                    </span>
+                  ) : (
+                    '—'
+                  )}
+                </td>
+                <td
+                  className="max-w-[12rem] truncate px-4 py-3 text-on-surface-variant"
+                  title={t.source ?? undefined}
+                >
+                  {t.source ?? 'Directo'}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant" title={t.userAgent ?? undefined}>
                   {browserName(t.userAgent)}

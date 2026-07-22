@@ -202,6 +202,9 @@ export interface Trace {
   actorEmail: string | null;
   ip: string | null;
   userAgent: string | null;
+  // País (ISO-2) y fuente/origen del request (utm_source o host del Referer).
+  country: string | null;
+  source: string | null;
   // Recurso afectado en formato "tipo:id" (ej. "ad:<uuid>").
   resource: string | null;
   result: TraceResult;
