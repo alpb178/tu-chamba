@@ -30,11 +30,19 @@ export class UsersService {
     private traces: TracesService,
   ) {}
 
-  findAll() {
-    return this.prisma.user.findMany({
-      select: { ...selectSafe, _count: { select: { ads: true } } },
+  async findAll() {
+    const users = await this.prisma.user.findMany({
+      // googleId se usa solo para derivar el método de registro; no se expone
+      // en crudo al panel.
+      select: { ...selectSafe, googleId: true, _count: { select: { ads: true } } },
       orderBy: { createdAt: 'desc' },
     });
+    return users.map(({ googleId, ...u }) => ({
+      ...u,
+      // 'google' = cuenta creada con Google (sin contraseña local);
+      // 'email' = registro con correo y contraseña.
+      provider: googleId ? 'google' : 'email',
+    }));
   }
 
   // Perfil propio: datos personales y, opcionalmente, la contraseña.
@@ -79,18 +87,33 @@ export class UsersService {
       if (taken) throw new ConflictException('El correo ya está registrado');
     }
 
+    // Cambio de contraseña desde el panel: solo para cuentas locales. Las de
+    // Google no tienen contraseña local, así que no se permite fijarla.
+    let hashed: string | undefined;
+    if (dto.password) {
+      if (user.googleId) {
+        throw new BadRequestException(
+          'Las cuentas de Google no usan contraseña local',
+        );
+      }
+      hashed = await bcrypt.hash(dto.password, 10);
+    }
+
     const updated = await this.prisma.user.update({
       where: { id },
       data: {
         ...(dto.name != null ? { name: dto.name.trim() } : {}),
         ...(dto.email != null ? { email: dto.email.trim() } : {}),
         ...(dto.phone != null ? { phone: dto.phone.trim() || null } : {}),
+        ...(hashed ? { password: hashed } : {}),
       },
       select: selectSafe,
     });
     await this.traces.record(
       TraceType.USER_UPDATED,
-      `Usuario ${user.email} editado por ${actor.email}`,
+      `Usuario ${user.email} editado por ${actor.email}${
+        hashed ? ' (contraseña actualizada)' : ''
+      }`,
       actor,
       { resource: `user:${id}` },
     );
