@@ -19,7 +19,7 @@ import { Icon } from '@/components/admin/Icon';
 import { Pagination } from '@/components/admin/Pagination';
 import { PasswordInput } from '@/components/PasswordInput';
 import { useSelection } from '@/lib/admin/useSelection';
-import { FcGoogle } from 'react-icons/fc';
+import { IconBrandGoogle } from '@tabler/icons-react';
 
 // Filas de 10 en 10, con paginación en cliente (el endpoint devuelve todo).
 const PAGE_SIZE = 10;
@@ -349,7 +349,7 @@ export default function UsersPage() {
                 <span
                   className={`${BADGE_BASE} bg-surface-container text-on-surface-variant`}
                 >
-                  <FcGoogle className="text-sm" /> Google
+                  <IconBrandGoogle className="h-4 w-4" stroke={1.75} /> Google
                 </span>
               ) : (
                 <span
