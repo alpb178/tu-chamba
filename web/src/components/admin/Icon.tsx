@@ -1,5 +1,6 @@
 import type { IconType } from 'react-icons';
 import {
+  MdAdminPanelSettings,
   MdAdsClick,
   MdBarChart,
   MdCheck,
@@ -34,6 +35,7 @@ import {
 // sin dependencia del CDN de Google Fonts. Se conservan los nombres de
 // Material como API (mismo criterio que en el portal web).
 const ICONS: Record<string, IconType> = {
+  admin_panel_settings: MdAdminPanelSettings,
   ads_click: MdAdsClick,
   check: MdCheck,
   chevron_left: MdChevronLeft,

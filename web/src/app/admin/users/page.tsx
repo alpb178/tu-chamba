@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 
 import { api } from '@/lib/api';
 import { User } from '@/lib/admin/types';
@@ -16,11 +16,19 @@ import {
 import { CustomSelect } from '@/components/admin/CustomSelect';
 import { EditUserDialog } from '@/components/admin/EditUserDialog';
 import { Icon } from '@/components/admin/Icon';
+import { Pagination } from '@/components/admin/Pagination';
 import { PasswordInput } from '@/components/PasswordInput';
 import { useSelection } from '@/lib/admin/useSelection';
 import { FcGoogle } from 'react-icons/fc';
 
-const HEADERS = ['Nombre', 'Correo', 'Teléfono', 'Registro', 'Acceso', 'Anuncios', ''];
+// Filas de 10 en 10, con paginación en cliente (el endpoint devuelve todo).
+const PAGE_SIZE = 10;
+
+const HEADERS = ['Usuario', 'Correo', 'Rol', 'Origen', 'Registro', 'Anuncios'];
+
+// Estilo de chip para los badges de Rol y Origen (esquinas redondas solo aquí).
+const BADGE_BASE =
+  'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em]';
 
 type UserRow = User & { _count?: { ads: number } };
 
@@ -151,11 +159,37 @@ export default function UsersPage() {
   const [creating, setCreating] = useState(false);
   const [confirmBulk, setConfirmBulk] = useState(false);
   const [confirmAll, setConfirmAll] = useState(false);
-  const { selected, allInPage, toggleOne, togglePage, clear } = useSelection(
-    users.map((u) => u.id),
-  );
+
+  // Búsqueda (nombre/correo), filtro de rol y página, todo en cliente.
+  const [q, setQ] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
+  const [page, setPage] = useState(1);
+
   // El borrado total conserva a los administradores.
   const clientCount = users.filter((u) => !u.isAdmin).length;
+
+  // Filtrado por término (nombre + correo) y por rol (derivado de isAdmin).
+  const filtered = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return users.filter((u) => {
+      if (roleFilter === 'ADMIN' && !u.isAdmin) return false;
+      if (roleFilter === 'USUARIO' && u.isAdmin) return false;
+      if (!term) return true;
+      return `${u.name ?? ''} ${u.email ?? ''}`.toLowerCase().includes(term);
+    });
+  }, [users, q, roleFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  // Si al borrar/filtrar la página actual queda fuera de rango, retrocede.
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  // La selección "de la página" opera solo sobre las filas visibles.
+  const pageIds = useMemo(() => pageRows.map((u) => u.id), [pageRows]);
+  const { selected, allInPage, toggleOne, togglePage, clear } = useSelection(pageIds);
 
   function load() {
     setLoading(true);
@@ -167,6 +201,16 @@ export default function UsersPage() {
   }
 
   useEffect(load, []);
+
+  // Al cambiar la búsqueda o el filtro, vuelve a la primera página.
+  function onSearch(v: string) {
+    setQ(v);
+    setPage(1);
+  }
+  function onRole(v: string) {
+    setRoleFilter(v);
+    setPage(1);
+  }
 
   // Concede o revoca el acceso a este panel (único distintivo entre usuarios).
   async function setAdmin(id: string, isAdmin: boolean) {
@@ -203,9 +247,35 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold text-on-surface">Usuarios</h1>
-        <div className="flex gap-2">
+      <h1 className="text-2xl font-semibold text-on-surface">Usuarios</h1>
+
+      {/* Barra superior: buscar + filtro de rol a la izquierda, acciones a la derecha. */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative w-full sm:w-64">
+          <Icon
+            name="search"
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg text-outline"
+          />
+          <Input
+            type="search"
+            className="pl-9"
+            value={q}
+            onChange={(e) => onSearch(e.target.value)}
+            placeholder="Buscar por nombre o correo…"
+          />
+        </div>
+        <div className="w-full sm:w-44">
+          <CustomSelect
+            value={roleFilter}
+            onChange={onRole}
+            options={[
+              { value: '', label: 'Todos' },
+              { value: 'ADMIN', label: 'Admin' },
+              { value: 'USUARIO', label: 'Usuario' },
+            ]}
+          />
+        </div>
+        <div className="ml-auto flex gap-2">
           {selected.size > 0 && (
             <Button variant="danger" onClick={() => setConfirmBulk(true)}>
               Eliminar seleccionados ({selected.size})
@@ -230,6 +300,7 @@ export default function UsersPage() {
           />
         </div>
       </div>
+
       <AdminTable
         headers={[
           <SelectCheckbox
@@ -239,12 +310,19 @@ export default function UsersPage() {
             onChange={togglePage}
           />,
           ...HEADERS,
+          <span key="acc" className="block text-right">
+            Acciones
+          </span>,
         ]}
         loading={loading}
         error={error}
-        empty="No hay usuarios."
+        empty={
+          users.length === 0
+            ? 'No hay usuarios.'
+            : 'Ningún usuario coincide con la búsqueda.'
+        }
       >
-        {users.map((u) => (
+        {pageRows.map((u) => (
           <tr key={u.id}>
             <td className="px-4 py-3">
               <SelectCheckbox
@@ -253,35 +331,46 @@ export default function UsersPage() {
                 onChange={() => toggleOne(u.id)}
               />
             </td>
-            <td className="px-4 py-3">{u.name}</td>
+            <td className="px-4 py-3 font-medium text-on-surface">{u.name}</td>
             <td className="px-4 py-3 text-on-surface-variant">{u.email}</td>
-            <td className="px-4 py-3 text-on-surface-variant">{u.phone}</td>
             <td className="px-4 py-3">
-              {u.provider === 'google' ? (
-                <span className="inline-flex items-center gap-1.5 text-on-surface-variant">
-                  <FcGoogle className="text-base" /> Google
-                </span>
+              {u.isAdmin ? (
+                <span className={`${BADGE_BASE} bg-brand-light text-primary`}>Admin</span>
               ) : (
-                <span className="inline-flex items-center gap-1.5 text-on-surface-variant">
-                  <Icon name="mail" className="text-base" /> Correo
+                <span
+                  className={`${BADGE_BASE} bg-surface-container text-on-surface-variant`}
+                >
+                  Usuario
                 </span>
               )}
             </td>
             <td className="px-4 py-3">
-              <div className="w-36">
-                <CustomSelect
-                  value={u.isAdmin ? 'ADMIN' : 'USUARIO'}
-                  onChange={(v) => setAdmin(u.id, v === 'ADMIN')}
-                  options={[
-                    { value: 'USUARIO', label: 'Usuario' },
-                    { value: 'ADMIN', label: 'Admin' },
-                  ]}
-                />
-              </div>
+              {u.provider === 'google' ? (
+                <span
+                  className={`${BADGE_BASE} bg-surface-container text-on-surface-variant`}
+                >
+                  <FcGoogle className="text-sm" /> Google
+                </span>
+              ) : (
+                <span
+                  className={`${BADGE_BASE} bg-surface-container text-on-surface-variant`}
+                >
+                  <Icon name="mail" className="text-sm" /> Correo
+                </span>
+              )}
+            </td>
+            <td className="px-4 py-3 text-on-surface-variant">
+              {new Date(u.createdAt).toLocaleDateString('es-BO')}
             </td>
             <td className="px-4 py-3 text-on-surface-variant">{u._count?.ads ?? 0}</td>
             <td className="px-4 py-3 text-right">
               <div className="flex justify-end gap-1.5">
+                <IconButton
+                  icon="admin_panel_settings"
+                  label={u.isAdmin ? 'Quitar admin' : 'Hacer admin'}
+                  variant={u.isAdmin ? 'primary' : 'outline'}
+                  onClick={() => setAdmin(u.id, !u.isAdmin)}
+                />
                 <IconButton icon="edit" label="Editar" onClick={() => setToEdit(u)} />
                 <IconButton
                   icon="delete"
@@ -294,6 +383,14 @@ export default function UsersPage() {
           </tr>
         ))}
       </AdminTable>
+
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={filtered.length}
+        limit={PAGE_SIZE}
+        onPage={setPage}
+      />
 
       <EditUserDialog
         user={toEdit}
