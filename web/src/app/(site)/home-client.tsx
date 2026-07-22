@@ -29,7 +29,7 @@ import { AdListSkeleton } from '@/components/Skeleton';
 import { Pagination } from '@/components/Pagination';
 import { FeaturedBrands } from '@/components/FeaturedBrands';
 import { Icon } from '@/components/Icon';
-import { Button, Heading } from '@/components/ui';
+import { Button, Heading, Subheading } from '@/components/ui';
 
 // Chips de los filtros activos sobre el listado: recuerdan qué está
 // aplicado y se quitan de un toque (clave en móvil, donde el panel de
@@ -154,16 +154,17 @@ function CatalogHeader({
 
   return (
     <div id="ofertas" className="scroll-mt-24">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-primary">
-        Catálogo
-      </p>
       <div className="mb-6 flex flex-col gap-4 border-b border-outline-variant pb-5">
-        <Heading as="h2" size="sm">
-          Ofertas de trabajo
+        <Heading as="h1" size="md">
+          Encuentra trabajos diarios al instante
         </Heading>
+        <Subheading className="mx-0 text-left">
+          Conecta directo con empleadores locales — sin CV, por WhatsApp.
+          Publica u ofrece trabajo en toda Bolivia.
+        </Subheading>
         <form
           onSubmit={submit}
-          className="flex w-full items-center border border-outline-variant bg-surface-container-lowest px-4 py-2.5 transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary sm:max-w-md"
+          className="mt-1 flex w-full items-center border border-outline-variant bg-surface-container-lowest px-4 py-3 transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
         >
           <Icon name="search" className="mr-2 text-outline" />
           <input
@@ -171,7 +172,7 @@ function CatalogHeader({
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar ofertas"
             aria-label="Buscar ofertas"
-            className="w-full bg-transparent text-sm text-on-surface outline-none placeholder:text-outline"
+            className="w-full bg-transparent text-base text-on-surface outline-none placeholder:text-outline"
           />
         </form>
       </div>
