@@ -49,15 +49,45 @@
 @layer base {
   body {
     /* overflow-x-clip: el hero a sangre completa usa w-screen. */
-    @apply overflow-x-clip bg-background font-sans text-on-surface;
+    @apply overflow-x-clip bg-background font-sans text-on-surface antialiased;
   }
 
-  /* Los titulares llevan la display (Hanken Grotesk); el cuerpo, Inter. */
+  /* Tipografía editorial (lenguaje Iris Natural): titulares principales en
+     serif Merriweather con tracking negativo; los títulos funcionales (h3-h6)
+     en Libre Franklin, algo más apretados. */
   h1,
-  h2,
-  h3 {
+  h2 {
     @apply font-display;
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-sans;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Foco visible sólo para teclado (sin anillo al hacer clic con el mouse). */
+:focus-visible {
+  outline: 2px solid rgb(var(--c-primary));
+  outline-offset: 2px;
 }
 
 /* Campo de teléfono internacional (react-phone-number-input) con la
