@@ -125,10 +125,10 @@ const ShootingStars: React.FC = () => {
           x2="100%"
           y2="100%"
         >
-          <stop offset="0%" style={{ stopColor: '#004AC6', stopOpacity: 0 }} />
+          <stop offset="0%" style={{ stopColor: '#6DBA74', stopOpacity: 0 }} />
           <stop
             offset="100%"
-            style={{ stopColor: '#FEA619', stopOpacity: 1 }}
+            style={{ stopColor: '#FF5C85', stopOpacity: 1 }}
           />
         </linearGradient>
       </defs>
