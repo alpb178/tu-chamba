@@ -34,7 +34,7 @@ const HeroCarousel = ({ images }: { images: string[] }) => {
 
   return (
     <div
-      className="relative h-full w-full overflow-hidden bg-background"
+      className="relative h-full w-full overflow-hidden bg-surface-container"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       aria-roledescription="carousel"
@@ -51,8 +51,8 @@ const HeroCarousel = ({ images }: { images: string[] }) => {
             src={src}
             alt="Ofrece o busca trabajo en Bolivia con Tu Chamba"
             fill
-            sizes="(max-width: 1024px) 90vw, 448px"
-            className="object-cover object-center"
+            sizes="(max-width: 1024px) 90vw, 512px"
+            className="object-contain object-center"
             priority={i === 0}
           />
         </div>
@@ -174,7 +174,7 @@ export function Hero() {
               aria-hidden
               className="absolute -inset-6 rotate-3 rounded-3xl bg-gradient-to-r from-secondary-container/25 to-primary/20"
             />
-            <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-outline-variant bg-background shadow-derek">
+            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-outline-variant bg-surface-container shadow-derek">
               <HeroCarousel images={CAROUSEL_IMAGES} />
             </div>
           </div>
