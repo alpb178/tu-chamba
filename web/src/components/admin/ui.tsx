@@ -11,14 +11,16 @@ export function Button({
   variant?: 'primary' | 'outline' | 'danger';
 }) {
   const styles = {
-    primary: 'bg-primary text-on-primary font-bold hover:brightness-110',
+    primary:
+      'bg-primary text-on-primary font-semibold shadow-aceternity hover:-translate-y-0.5 hover:shadow-md hover:brightness-110',
     outline:
-      'border border-outline-variant bg-surface-container-lowest text-on-surface-variant font-medium hover:border-primary hover:text-primary',
-    danger: 'bg-error text-on-error font-bold hover:brightness-110',
+      'border border-outline-variant bg-surface-container-lowest text-on-surface-variant font-medium hover:-translate-y-0.5 hover:border-primary hover:text-primary',
+    danger:
+      'bg-error text-on-error font-semibold shadow-aceternity hover:-translate-y-0.5 hover:shadow-md hover:brightness-110',
   }[variant];
   return (
     <button
-      className={`rounded-lg px-3 py-1.5 text-sm transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${styles} ${className}`}
+      className={`px-3 py-1.5 text-sm transition-all duration-300 active:translate-y-0 active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${styles} ${className}`}
       {...props}
     />
   );
@@ -49,7 +51,7 @@ export function IconButton({
       type="button"
       title={label}
       aria-label={label}
-      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${styles} ${className}`}
+      className={`flex h-8 w-8 shrink-0 items-center justify-center transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${styles} ${className}`}
       {...props}
     >
       <Icon name={icon} className="text-lg" />
@@ -75,7 +77,7 @@ export function SelectCheckbox({
 export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
+      className={`w-full border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none transition-colors placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
       {...props}
     />
   );
@@ -99,7 +101,7 @@ const BADGE_COLORS: Record<JobType, string> = {
 
 export function Badge({ type }: { type: JobType }) {
   return (
-    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-bold ${BADGE_COLORS[type]}`}>
+    <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] ${BADGE_COLORS[type]}`}>
       {JOB_TYPE_LABEL[type]}
     </span>
   );
@@ -121,7 +123,7 @@ export function ConfirmDialog({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-sm rounded-lg bg-surface-container-lowest p-6 shadow-lg">
+      <div className="w-full max-w-sm border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity">
         <h3 className="text-lg font-semibold text-on-surface">{title}</h3>
         <p className="mt-2 text-sm text-on-surface-variant">{message}</p>
         <div className="mt-4 flex justify-end gap-2">
@@ -145,7 +147,7 @@ export function DataTable({
   children: ReactNode;
 }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+    <div className="overflow-x-auto border border-outline-variant bg-surface-container-lowest shadow-aceternity">
       <table className="w-full text-left text-sm">
         <thead className="border-b border-outline-variant bg-surface-container-low text-on-surface-variant">
           <tr>
@@ -228,7 +230,7 @@ export function StatCard({
     </>
   );
   const base =
-    'rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm';
+    'border border-outline-variant bg-surface-container-lowest p-5 shadow-aceternity';
   if (!href) return <div className={base}>{body}</div>;
   return (
     <Link
@@ -278,7 +280,7 @@ export function TableSkeleton({
 
 export function StatCardSkeleton() {
   return (
-    <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-5">
+    <div className="border border-outline-variant bg-surface-container-lowest p-5">
       <Skeleton className="h-4 w-32" />
       <Skeleton className="mt-2 h-8 w-16" />
     </div>
@@ -287,7 +289,7 @@ export function StatCardSkeleton() {
 
 export function ChartCardSkeleton({ height = 'h-40' }: { height?: string }) {
   return (
-    <div className="rounded-lg border border-outline-variant bg-surface-container-lowest p-5">
+    <div className="border border-outline-variant bg-surface-container-lowest p-5">
       <Skeleton className="h-4 w-56" />
       <Skeleton className={`mt-4 w-full ${height}`} />
     </div>

@@ -1,5 +1,17 @@
-import { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
+import {
+  ButtonHTMLAttributes,
+  ComponentType,
+  ElementType,
+  HTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+} from 'react';
 import { Icon } from './Icon';
+import { cn } from '@/lib/cn';
+
+// Primitivas de UI del sitio con el lenguaje editorial portado de Iris Natural:
+// esquinas rectas, sombra "aceternity", ligera elevación al hover y píldoras
+// reservadas a los CTA de marca. Mantiene la paleta M3 (azul + ámbar).
 
 export function Button({
   className = '',
@@ -10,18 +22,23 @@ export function Button({
 }) {
   const styles = {
     primary:
-      'rounded-lg bg-primary text-on-primary font-bold hover:brightness-110',
+      'bg-primary text-on-primary font-semibold shadow-aceternity hover:-translate-y-0.5 hover:shadow-md hover:brightness-110',
     outline:
-      'rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface-variant font-medium hover:border-primary hover:text-primary',
-    danger: 'rounded-lg bg-error text-on-error font-bold hover:brightness-110',
-    // Píldora del CTA principal ("Publicar oferta de trabajo"), en el naranja
-    // de marca (mismo token que los filtros: secondary-container).
+      'border border-outline-variant bg-surface-container-lowest text-on-surface-variant font-medium hover:-translate-y-0.5 hover:border-primary hover:text-primary',
+    danger:
+      'bg-error text-on-error font-semibold shadow-aceternity hover:-translate-y-0.5 hover:shadow-md hover:brightness-110',
+    // Píldora del CTA principal ("Publicar oferta de trabajo"), en el ámbar de
+    // marca (mismo token que los filtros). Única forma redondeada.
     accent:
-      'rounded-full bg-secondary-container text-on-secondary-container font-bold hover:brightness-105 hover:shadow-lg',
+      'rounded-full bg-secondary-container text-on-secondary-container font-bold uppercase tracking-[0.12em] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-lg',
   }[variant];
   return (
     <button
-      className={`px-4 py-2 text-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${styles} ${className}`}
+      className={cn(
+        'px-5 py-2.5 text-sm transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100',
+        styles,
+        className
+      )}
       {...props}
     />
   );
@@ -51,7 +68,11 @@ export function IconButton({
       type="button"
       title={label}
       aria-label={label}
-      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100 ${styles} ${className}`}
+      className={cn(
+        'flex h-9 w-9 shrink-0 items-center justify-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-95 disabled:opacity-50 disabled:active:scale-100',
+        styles,
+        className
+      )}
       {...props}
     >
       <Icon name={icon} className="text-lg" />
@@ -59,10 +80,16 @@ export function IconButton({
   );
 }
 
-export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
+export function Input({
+  className = '',
+  ...props
+}: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-base text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
+      className={cn(
+        'w-full border border-outline-variant bg-surface-container-lowest px-3 py-2 text-base text-on-surface outline-none transition-colors placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary',
+        className
+      )}
       {...props}
     />
   );
@@ -90,5 +117,87 @@ export function FormField({
       </span>
       {children}
     </label>
+  );
+}
+
+// ——— Primitivas editoriales (portadas de Iris Natural) ———
+
+// Tarjeta base con borde, sombra aceternity y esquinas rectas.
+export function Card({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        'border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity',
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+// Titular editorial (serif Merriweather) con tamaños escalables. Usa la
+// utilidad text-balance en lugar de react-wrap-balancer.
+export function Heading({
+  className,
+  as: Tag = 'h2',
+  children,
+  size = 'md',
+  ...props
+}: {
+  className?: string;
+  as?: ElementType;
+  children: ReactNode;
+  size?: 'sm' | 'md' | 'xl' | '2xl';
+} & HTMLAttributes<HTMLHeadingElement>) {
+  const sizeVariants = {
+    sm: 'text-xl md:text-2xl md:leading-snug',
+    md: 'text-3xl md:text-4xl md:leading-tight',
+    xl: 'text-4xl md:text-6xl md:leading-none',
+    '2xl': 'text-5xl md:text-7xl md:leading-none',
+  };
+  const Component = Tag as ComponentType<HTMLAttributes<HTMLElement>>;
+  return (
+    <Component
+      className={cn(
+        'font-display font-semibold tracking-tight text-on-surface text-balance',
+        sizeVariants[size],
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </Component>
+  );
+}
+
+// Subtítulo/entradilla de sección.
+export function Subheading({
+  className,
+  as: Tag = 'p',
+  children,
+  ...props
+}: {
+  className?: string;
+  as?: ElementType;
+  children: ReactNode;
+} & HTMLAttributes<HTMLParagraphElement>) {
+  const Component = Tag as ComponentType<HTMLAttributes<HTMLElement>>;
+  return (
+    <Component
+      className={cn(
+        'text-sm font-normal text-on-surface-variant text-balance md:text-base',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </Component>
   );
 }
