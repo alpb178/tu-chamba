@@ -2,54 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Paleta portada de Iris Natural mapeada sobre los tokens M3 (tripletas RGB
-   para aplicar opacidad con Tailwind): verde primario #6DBA74, acento rosa
-   #FF5C85 y grises neutros (shadcn). Al reasignar los VALORES —no los nombres—
-   todo el sitio y el panel adoptan el color de Iris sin renombrar clases.
-   Sitio siempre claro. */
+/* Paleta ORIGINAL de tu-chamba (azul primario + ámbar + verde) sobre una base
+   NEUTRA BLANCA: se conservan los tonos de marca y solo la familia de
+   superficies/fondos/bordes pasa de lavanda tenue a blanco + grises neutros.
+   Tripletas RGB para aplicar opacidad con Tailwind. Sitio siempre claro. */
 :root {
   color-scheme: light;
-  /* Verde de marca de Iris (texto oscuro encima para contraste AA). */
-  --c-primary: 109 186 116;
-  --c-on-primary: 23 23 23;
-  --c-primary-container: 158 217 160;
-  --c-on-primary-container: 23 23 23;
-  /* Acento rosa de Iris (#FF5C85), con texto oscuro para contraste. */
-  --c-secondary: 255 92 133;
-  --c-on-secondary: 23 23 23;
-  --c-secondary-container: 255 92 133;
-  --c-on-secondary-container: 23 23 23;
-  /* Verde de éxito/verificado (comparte tono con el primario). */
-  --c-tertiary: 109 186 116;
-  --c-on-tertiary: 23 23 23;
-  --c-tertiary-container: 158 217 160;
-  --c-on-tertiary-container: 23 23 23;
-  --c-error: 220 38 38;
+  /* — Tonos de marca (originales de tu-chamba) — */
+  --c-primary: 0 74 198;
+  --c-on-primary: 255 255 255;
+  --c-primary-container: 37 99 235;
+  --c-on-primary-container: 238 239 255;
+  --c-secondary: 133 83 0;
+  --c-on-secondary: 255 255 255;
+  --c-secondary-container: 254 166 25;
+  --c-on-secondary-container: 104 64 0;
+  --c-tertiary: 0 98 66;
+  --c-on-tertiary: 255 255 255;
+  --c-tertiary-container: 0 125 85;
+  --c-on-tertiary-container: 189 255 219;
+  --c-error: 186 26 26;
   --c-on-error: 255 255 255;
-  --c-error-container: 254 226 226;
-  --c-on-error-container: 153 27 27;
-  /* Neutros shadcn (blanco + grises). */
+  --c-error-container: 255 218 214;
+  --c-on-error-container: 147 0 10;
+  /* — Base neutra blanca (antes lavanda) — */
   --c-background: 255 255 255;
-  --c-on-background: 17 17 17;
+  --c-on-background: 19 27 46;
   --c-surface: 255 255 255;
-  --c-on-surface: 17 17 17;
+  --c-on-surface: 19 27 46;
   --c-surface-variant: 245 245 245;
-  --c-on-surface-variant: 115 115 115;
+  --c-on-surface-variant: 67 70 85;
   --c-surface-container-lowest: 255 255 255;
   --c-surface-container-low: 250 250 250;
   --c-surface-container: 245 245 245;
   --c-surface-container-high: 229 229 229;
   --c-surface-container-highest: 212 212 212;
   --c-surface-dim: 229 229 229;
-  --c-inverse-surface: 17 17 17;
-  --c-inverse-on-surface: 250 250 250;
-  --c-inverse-primary: 158 217 160;
+  --c-inverse-surface: 40 48 68;
+  --c-inverse-on-surface: 238 240 255;
+  --c-inverse-primary: 180 197 255;
   --c-outline: 163 163 163;
   --c-outline-variant: 229 229 229;
-  /* Alias de marca -> verde de Iris. */
-  --c-brand: 109 186 116;
-  --c-brand-strong: 85 153 92;
-  --c-brand-light: 234 242 236;
+  /* Alias de marca -> azul de tu-chamba. */
+  --c-brand: 0 74 198;
+  --c-brand-strong: 0 62 168;
+  --c-brand-light: 219 225 255;
 }
 
 

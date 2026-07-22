@@ -77,7 +77,7 @@ export function SelectCheckbox({
 export function Input({ className = '', ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
-      className={`w-full border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none transition-colors placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
+      className={`w-full border border-outline-variant bg-surface-container-lowest px-3 py-2 text-sm text-on-surface outline-none transition-colors placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/20 ${className}`}
       {...props}
     />
   );
@@ -158,7 +158,9 @@ export function DataTable({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-outline-variant/60">{children}</tbody>
+        <tbody className="divide-y divide-outline-variant/60 [&>tr]:transition-colors [&>tr:hover]:bg-surface-container-low">
+          {children}
+        </tbody>
       </table>
     </div>
   );

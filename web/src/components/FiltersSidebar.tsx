@@ -10,8 +10,8 @@ import {
   JobType,
   JOB_TYPE_LABEL,
 } from '@/lib/types';
+import { cn } from '@/lib/cn';
 import { Skeleton } from './Skeleton';
-import { Icon } from './Icon';
 
 export interface Filters {
   jobType: JobType[];
@@ -27,40 +27,37 @@ export const NO_FILTERS: Filters = {
   category: [],
 };
 
-// Sección colapsable: el encabezado abierto se pinta como píldora ámbar
-// (estilo del mock); cerrado queda como fila discreta con icono.
+// Sección colapsable (estilo editorial de Iris): título en versalitas con un
+// "+" que gira a "×" al abrir, separadas por una línea inferior. Radio 0.
 function Section({
   title,
-  icon,
   children,
+  defaultOpen = true,
 }: {
   title: string;
-  icon: string;
   children: React.ReactNode;
+  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(true);
   return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-          open
-            ? 'bg-secondary-container font-bold text-on-secondary-container'
-            : 'text-on-surface-variant hover:bg-surface-container-high'
-        }`}
-      >
-        <Icon name={icon} className="text-sm" />
-        <span className="flex-1">{title}</span>
-        <Icon name={open ? 'expand_less' : 'expand_more'} className="text-sm" />
-      </button>
-      {open && <div className="mt-3 space-y-2 pl-2">{children}</div>}
-    </div>
+    <details
+      open={defaultOpen}
+      className="group border-b border-outline-variant py-5 [&_summary::-webkit-details-marker]:hidden"
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between text-xs font-semibold uppercase tracking-[0.14em] text-on-surface">
+        {title}
+        <span
+          className="text-on-surface transition-transform group-open:rotate-45"
+          aria-hidden
+        >
+          +
+        </span>
+      </summary>
+      <div className="pt-4">{children}</div>
+    </details>
   );
 }
 
-// Fila de opción con checkbox y contador.
+// Fila de opción con checkbox cuadrado (radio 0) y contador de facetas.
 function Option({
   label,
   count,
@@ -73,21 +70,40 @@ function Option({
   onToggle: () => void;
 }) {
   return (
-    // py-1.5 + checkbox de 20px: objetivo táctil cómodo en móvil.
-    <label className="group flex cursor-pointer items-center justify-between py-1.5 text-base text-on-surface-variant transition-colors hover:text-on-surface">
-      <span className="flex items-center gap-3">
+    <li>
+      <label className="group flex cursor-pointer items-center gap-3 py-1">
+        <span
+          className={cn(
+            'flex h-4 w-4 shrink-0 items-center justify-center border transition-colors',
+            checked
+              ? 'border-on-surface bg-on-surface text-inverse-on-surface'
+              : 'border-on-surface/30 bg-background group-hover:border-on-surface',
+          )}
+          aria-hidden
+        >
+          {checked && (
+            <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none">
+              <path
+                d="M2.5 6.5L5 9L9.5 3.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="square"
+              />
+            </svg>
+          )}
+        </span>
         <input
           type="checkbox"
+          className="sr-only"
           checked={checked}
           onChange={onToggle}
-          className="h-5 w-5 rounded border-outline accent-primary"
         />
-        <span className="transition-colors group-hover:text-primary">
-          {label}
-        </span>
-      </span>
-      {count != null && <span className="text-xs text-outline">{count}</span>}
-    </label>
+        <span className="flex-1 text-sm text-on-surface">{label}</span>
+        {count != null && (
+          <span className="text-xs text-on-surface-variant">{count}</span>
+        )}
+      </label>
+    </li>
   );
 }
 
@@ -180,12 +196,14 @@ function SalaryRange({
     };
   }
 
+  // Manija: único elemento redondeado (rounded-full), como en Iris. La pista y
+  // el tramo activo van con esquinas rectas (radio 0).
   const thumbClass =
     'absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand bg-surface-container-lowest shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50';
 
   return (
-    <div>
-      <div className="mb-2 flex items-center justify-between text-sm text-on-surface-variant">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between text-sm text-on-surface">
         <span>Bs {lo.toLocaleString('es-BO')}</span>
         <span>Bs {hi.toLocaleString('es-BO')}</span>
       </div>
@@ -197,9 +215,9 @@ function SalaryRange({
         onPointerCancel={onPointerEnd}
         className="relative h-5 cursor-pointer touch-none"
       >
-        <div className="absolute top-1/2 h-1 w-full -translate-y-1/2 rounded bg-surface-container-high" />
+        <div className="absolute top-1/2 h-1 w-full -translate-y-1/2 bg-outline-variant" />
         <div
-          className="absolute top-1/2 h-1 -translate-y-1/2 rounded bg-brand"
+          className="absolute top-1/2 h-1 -translate-y-1/2 bg-brand"
           style={{ left: `${pct(lo)}%`, right: `${100 - pct(hi)}%` }}
         />
         <div
@@ -229,26 +247,18 @@ function SalaryRange({
   );
 }
 
-// Ancho de la columna: crece con la pantalla (más aire en monitores grandes).
-const SIDEBAR_WIDTH = 'w-full shrink-0 md:w-64 xl:w-72 2xl:w-80';
-
-// Barra lateral de filtros: jornada, categoría, departamento y salario.
-// En móvil se colapsa tras un botón "Filtros" con el conteo de activos.
+// Contenido de la barra lateral de filtros: jornada, categoría, departamento y
+// salario. Es puro contenido (sin ancho ni posición propios): la columna de
+// ~220px en escritorio y el drawer móvil los gestiona el listado (home-client).
 export function FiltersSidebar({
   value,
   facets,
   onChange,
-  total,
 }: {
   value: Filters;
   facets: Facets | null;
   onChange: (f: Filters) => void;
-  // Resultados con los filtros actuales: alimenta el botón "Ver N
-  // resultados" que cierra el panel en móvil.
-  total?: number | null;
 }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-
   function toggle<T>(list: T[], item: T): T[] {
     return list.includes(item)
       ? list.filter((x) => x !== item)
@@ -258,13 +268,9 @@ export function FiltersSidebar({
   // Mientras cargan las facetas, la barra muestra su silueta.
   if (!facets) {
     return (
-      <aside
-        aria-hidden="true"
-        className={`${SIDEBAR_WIDTH} hidden border border-outline-variant bg-surface-container-low p-5 md:block`}
-      >
-        <Skeleton className="h-4 w-16" />
+      <aside aria-hidden="true" className="text-sm">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="mt-5 space-y-3">
+          <div key={i} className="space-y-3 border-b border-outline-variant py-5">
             <Skeleton className="h-3 w-28" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
@@ -285,97 +291,71 @@ export function FiltersSidebar({
   const departments = Object.keys(DEPARTMENT_LABEL) as Department[];
 
   return (
-    <div className={`${SIDEBAR_WIDTH} md:sticky md:top-24`}>
-      {/* Móvil: botón que muestra/oculta los filtros. */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen((o) => !o)}
-        aria-expanded={mobileOpen}
-        aria-controls="filtros-panel"
-        className="flex w-full items-center gap-2 border border-outline-variant bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface shadow-sm md:hidden"
-      >
-        <Icon name="tune" className="text-lg" />
-        Filtros
-        {hasFilters && (
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-secondary-container px-1.5 text-xs font-bold text-on-secondary-container">
-            {activeCount}
-          </span>
-        )}
-        <Icon
-          name="expand_more"
-          className={`ml-auto text-outline transition-transform ${
-            mobileOpen ? 'rotate-180' : ''
-          }`}
-        />
-      </button>
-
-      <aside
-        id="filtros-panel"
-        className={`${
-          mobileOpen ? 'mt-2 block' : 'hidden'
-        } space-y-5 border border-outline-variant bg-surface-container-low p-5 shadow-sm md:mt-0 md:block`}
-      >
-      <div className="flex items-start justify-between">
-        <div>
-          <h2 className="font-display text-lg font-semibold text-on-surface">
-            Filtros
-          </h2>
-          <p className="text-xs text-on-surface-variant">Refina tu búsqueda</p>
-        </div>
+    <aside aria-label="Filtros" className="text-sm">
+      <div className="flex items-center justify-between pb-1">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-on-surface">
+          Filtros
+        </p>
         {hasFilters ? (
           <button
             type="button"
             onClick={() => onChange(NO_FILTERS)}
-            className="text-xs font-bold text-primary hover:underline"
+            className="text-xs font-semibold uppercase tracking-[0.12em] text-on-surface-variant underline-offset-4 hover:text-on-surface hover:underline"
           >
             Limpiar
           </button>
         ) : null}
       </div>
 
-      <Section title="Tipo de jornada" icon="schedule">
-        {(Object.keys(JOB_TYPE_LABEL) as JobType[]).map((t) => (
-          <Option
-            key={t}
-            label={JOB_TYPE_LABEL[t]}
-            count={facets?.jobType[t] ?? 0}
-            checked={value.jobType.includes(t)}
-            onToggle={() =>
-              onChange({ ...value, jobType: toggle(value.jobType, t) })
-            }
-          />
-        ))}
+      <Section title="Tipo de jornada">
+        <ul className="space-y-2">
+          {(Object.keys(JOB_TYPE_LABEL) as JobType[]).map((t) => (
+            <Option
+              key={t}
+              label={JOB_TYPE_LABEL[t]}
+              count={facets?.jobType[t] ?? 0}
+              checked={value.jobType.includes(t)}
+              onToggle={() =>
+                onChange({ ...value, jobType: toggle(value.jobType, t) })
+              }
+            />
+          ))}
+        </ul>
       </Section>
 
-      <Section title="Categoría" icon="category">
-        {categories.map((c) => (
-          <Option
-            key={c}
-            label={CATEGORY_LABEL[c]}
-            count={facets?.category[c] ?? 0}
-            checked={value.category.includes(c)}
-            onToggle={() =>
-              onChange({ ...value, category: toggle(value.category, c) })
-            }
-          />
-        ))}
+      <Section title="Categoría">
+        <ul className="space-y-2">
+          {categories.map((c) => (
+            <Option
+              key={c}
+              label={CATEGORY_LABEL[c]}
+              count={facets?.category[c] ?? 0}
+              checked={value.category.includes(c)}
+              onToggle={() =>
+                onChange({ ...value, category: toggle(value.category, c) })
+              }
+            />
+          ))}
+        </ul>
       </Section>
 
-      <Section title="Departamento" icon="location_on">
-        {departments.map((d) => (
-          <Option
-            key={d}
-            label={DEPARTMENT_LABEL[d]}
-            count={facets?.department[d] ?? 0}
-            checked={value.department.includes(d)}
-            onToggle={() =>
-              onChange({ ...value, department: toggle(value.department, d) })
-            }
-          />
-        ))}
+      <Section title="Departamento">
+        <ul className="space-y-2">
+          {departments.map((d) => (
+            <Option
+              key={d}
+              label={DEPARTMENT_LABEL[d]}
+              count={facets?.department[d] ?? 0}
+              checked={value.department.includes(d)}
+              onToggle={() =>
+                onChange({ ...value, department: toggle(value.department, d) })
+              }
+            />
+          ))}
+        </ul>
       </Section>
 
-      <Section title="Salario (Bs)" icon="payments">
+      <Section title="Salario (Bs)">
         {facets.salaryMax > facets.salaryMin ? (
           <SalaryRange
             min={facets.salaryMin}
@@ -392,26 +372,13 @@ export function FiltersSidebar({
           />
         ) : (
           // Sin rango no hay nada que filtrar: se informa en vez de ocultar.
-          <p className="text-xs text-outline">
+          <p className="text-xs text-on-surface-variant">
             {facets.salaryMax > 0
               ? `Todas las ofertas actuales pagan Bs ${facets.salaryMax.toLocaleString('es-BO')}.`
               : 'Sin ofertas con salario publicado.'}
           </p>
         )}
       </Section>
-
-      {/* Móvil: cierra el panel mostrando cuántos resultados esperan
-          debajo (el listado ya se actualizó en vivo). */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen(false)}
-        className="w-full bg-primary px-4 py-2.5 text-sm font-bold text-on-primary transition-all hover:brightness-110 active:scale-95 md:hidden"
-      >
-        {total != null
-          ? `Ver ${total} ${total === 1 ? 'resultado' : 'resultados'}`
-          : 'Ver resultados'}
-      </button>
-      </aside>
-    </div>
+    </aside>
   );
 }

@@ -21,7 +21,7 @@ let enginePromise: Promise<void> | null = null;
  */
 export const SlideBurst = ({
   trigger,
-  color = '#6DBA74',
+  color = '#004AC6',
   className,
 }: {
   trigger: number;

@@ -7,10 +7,10 @@ import { ChartCardSkeleton, StatCard, StatCardSkeleton } from '@/components/admi
 import { ChartCard, DailyColumns, DailyLine, HourlyColumns } from '@/components/admin/charts';
 
 // Tonos de la rama azul de la marca (uno por entidad, validados en claro).
-const ADS_COLOR = '#6DBA74';
-const SITE_VISITS_COLOR = '#3f6f52';
-const AD_VISITS_COLOR = '#9ED9A0';
-const USERS_COLOR = '#FF5C85';
+const ADS_COLOR = '#004ac6';
+const SITE_VISITS_COLOR = '#2563eb';
+const AD_VISITS_COLOR = '#60a5fa';
+const USERS_COLOR = '#4338ca';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);

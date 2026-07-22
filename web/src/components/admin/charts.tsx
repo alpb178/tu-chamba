@@ -11,7 +11,7 @@ import { Icon } from './Icon';
 // Azul de marca por defecto de las gráficas. Corresponde al token
 // --c-primary (0 74 198); va como literal porque el SVG/canvas no resuelve
 // variables CSS de forma fiable en el atributo color.
-const BRAND_GREEN = '#6DBA74'; // token --c-primary (verde de Iris)
+const BRAND_BLUE = '#004AC6'; // token --c-primary (azul de tu-chamba)
 
 // 'YYYY-MM-DD' → 'd/M' sin pasar por Date (evita desfases de zona horaria).
 function dayLabel(date: string) {
@@ -23,7 +23,7 @@ function dayLabel(date: string) {
 // el resto de valores vive en el tooltip.
 export function DailyColumns({
   data,
-  color = BRAND_GREEN,
+  color = BRAND_BLUE,
   unit,
 }: {
   data: DayPoint[];
@@ -91,7 +91,7 @@ export function DailyColumns({
 // DailyColumns. Solo se etiqueta la hora pico; el eje marca cada 3 horas.
 export function HourlyColumns({
   data,
-  color = BRAND_GREEN,
+  color = BRAND_BLUE,
   unit,
 }: {
   data: HourPoint[];
@@ -158,7 +158,7 @@ export function HourlyColumns({
 // puntos son divs absolutos, así nada se deforma al cambiar el ancho.
 export function DailyLine({
   data,
-  color = BRAND_GREEN,
+  color = BRAND_BLUE,
   unit,
 }: {
   data: DayPoint[];
@@ -261,7 +261,7 @@ export function DailyLine({
 // Barras horizontales con el valor en la punta (una sola serie/tono).
 export function HorizontalBars({
   data,
-  color = BRAND_GREEN,
+  color = BRAND_BLUE,
 }: {
   data: { label: string; total: number }[];
   color?: string;
