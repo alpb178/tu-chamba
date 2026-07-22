@@ -33,7 +33,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+    <div className="mx-auto max-w-md border border-outline-variant bg-surface-container-lowest p-6">
       <h1 className="mb-4 text-xl font-semibold text-on-surface">Ingresar</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label="Correo">

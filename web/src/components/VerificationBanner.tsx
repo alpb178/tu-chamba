@@ -27,14 +27,14 @@ export function VerificationBanner() {
   }
 
   return (
-    <div className="border-b border-amber-200 bg-amber-50">
-      <div className="mx-auto flex max-w-7xl 2xl:max-w-screen-2xl flex-col gap-1 px-4 py-2 text-sm sm:px-6 lg:px-12 text-amber-900 sm:flex-row sm:items-center sm:justify-between">
+    <div className="border-b border-outline-variant bg-secondary-container">
+      <div className="mx-auto flex max-w-7xl 2xl:max-w-screen-2xl flex-col gap-1 px-4 py-2 text-sm sm:px-6 lg:px-12 text-on-secondary-container sm:flex-row sm:items-center sm:justify-between">
         <span>
           Verifica tu correo <strong>{user.email}</strong> para activar tu
           cuenta y poder publicar.
         </span>
         {sent ? (
-          <span className="font-medium text-amber-800">
+          <span className="font-medium text-on-secondary-container">
             Te reenviamos el enlace. Revisa tu correo.
           </span>
         ) : (
@@ -42,7 +42,7 @@ export function VerificationBanner() {
             type="button"
             onClick={resend}
             disabled={sending}
-            className="shrink-0 font-medium underline hover:text-amber-700:text-amber-300 disabled:opacity-50"
+            className="shrink-0 font-medium underline hover:opacity-80 disabled:opacity-50"
           >
             {sending ? 'Enviando...' : 'Reenviar enlace'}
           </button>

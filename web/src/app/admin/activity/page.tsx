@@ -8,7 +8,6 @@ import {
   ErrorStatus,
   ERROR_SEVERITY_LABEL,
   ERROR_STATUS_LABEL,
-  formatUserAgent,
   Paginated,
   PerformanceMetrics,
   ServiceState,
@@ -44,16 +43,16 @@ const SERVICE_LABEL: Record<string, string> = {
 };
 
 const STATE_STYLE: Record<ServiceState, { dot: string; label: string }> = {
-  up: { dot: 'bg-green-500', label: 'Disponible' },
-  warning: { dot: 'bg-amber-500', label: 'Con advertencias' },
-  down: { dot: 'bg-red-500', label: 'Fuera de servicio' },
+  up: { dot: 'bg-tertiary', label: 'Disponible' },
+  warning: { dot: 'bg-secondary-container', label: 'Con advertencias' },
+  down: { dot: 'bg-error', label: 'Fuera de servicio' },
   not_applicable: { dot: 'bg-outline', label: 'No aplica' },
 };
 
 const SEVERITY_STYLE: Record<ErrorSeverity, string> = {
-  WARNING: 'bg-amber-100 text-amber-800',
-  ERROR: 'bg-red-100 text-red-800',
-  CRITICAL: 'bg-red-600 text-white',
+  WARNING: 'bg-secondary-container text-on-secondary-container',
+  ERROR: 'bg-error-container text-on-error-container',
+  CRITICAL: 'bg-error text-on-error',
 };
 
 const TYPES = Object.keys(TRACE_TYPE_LABEL) as TraceType[];
@@ -111,7 +110,7 @@ function ServicesSection() {
           return (
             <div
               key={s.key}
-              className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"
+              className="border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium text-on-surface">
@@ -131,7 +130,7 @@ function ServicesSection() {
             <div
               key={i}
               aria-hidden="true"
-              className="space-y-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"
+              className="space-y-2 border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
             >
               <Skeleton className="h-5 w-32" />
               <Skeleton className="h-3 w-full" />
@@ -192,7 +191,7 @@ function MetricsSection() {
           {Array.from({ length: 9 }, (_, i) => (
             <div
               key={i}
-              className="space-y-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"
+              className="space-y-2 border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
             >
               <Skeleton className="h-3 w-24" />
               <Skeleton className="h-6 w-16" />
@@ -204,7 +203,7 @@ function MetricsSection() {
           {tiles.map((t) => (
             <div
               key={t.label}
-              className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"
+              className="border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
             >
               <p className="text-xs text-on-surface-variant">{t.label}</p>
               <p className="mt-1 text-xl font-semibold text-on-surface">{t.value}</p>
@@ -275,7 +274,7 @@ function ErrorsSection() {
         <h2 className="text-lg font-semibold text-on-surface">
           Registro de errores
           {data && data.pending > 0 && (
-            <span className="ml-2 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
+            <span className="ml-2 rounded-full bg-error-container px-2.5 py-0.5 text-xs font-medium text-on-error-container">
               {data.pending} sin resolver
             </span>
           )}
@@ -421,7 +420,7 @@ function ErrorsSection() {
 
 // ——— Feed de actividad ———
 
-const FEED_HEADERS = ['Fecha', 'Evento', 'Descripción', 'Detalle', ''];
+const FEED_HEADERS = ['Fecha', 'Evento', 'Descripción', ''];
 
 function FeedSection() {
   const [data, setData] = useState<Paginated<Trace> | null>(null);
@@ -438,7 +437,7 @@ function FeedSection() {
   );
 
   const load = useCallback(() => {
-    const params = new URLSearchParams({ page: String(page), limit: '15' });
+    const params = new URLSearchParams({ page: String(page), limit: '10' });
     if (type) params.set('type', type);
     if (result) params.set('result', result);
     if (actor.trim()) params.set('actor', actor.trim());
@@ -576,7 +575,7 @@ function FeedSection() {
               <span className="flex items-center gap-2 whitespace-nowrap">
                 <span
                   className={`h-2.5 w-2.5 shrink-0 rounded-full ${
-                    t.result === 'ERROR' ? 'bg-red-500' : 'bg-green-500'
+                    t.result === 'ERROR' ? 'bg-error' : 'bg-tertiary'
                   }`}
                 />
                 <span className="rounded-full bg-surface-container-high px-2 py-0.5 text-xs font-medium text-on-surface-variant">
@@ -585,14 +584,6 @@ function FeedSection() {
               </span>
             </td>
             <td className="max-w-md px-4 py-3">{t.description}</td>
-            <td className="px-4 py-3 text-xs text-on-surface-variant">
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                {t.actorEmail && <span>{t.actorEmail}</span>}
-                {t.resource && <span className="font-mono">{t.resource}</span>}
-                {t.durationMs != null && <span>{t.durationMs} ms</span>}
-                {t.userAgent && <span>{formatUserAgent(t.userAgent)}</span>}
-              </div>
-            </td>
             <td className="px-4 py-3 text-right">
               <div className="flex justify-end">
                 <IconButton

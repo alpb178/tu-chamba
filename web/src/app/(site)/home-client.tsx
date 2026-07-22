@@ -4,10 +4,13 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Grid2X2, Grid3X3, SlidersHorizontal, X } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 import {
@@ -22,11 +25,11 @@ import {
 import { Hero } from '@/components/Hero';
 import { FiltersSidebar, Filters, NO_FILTERS } from '@/components/FiltersSidebar';
 import { AdCard } from '@/components/AdCard';
-import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
+import { AdListSkeleton } from '@/components/Skeleton';
 import { Pagination } from '@/components/Pagination';
 import { FeaturedBrands } from '@/components/FeaturedBrands';
 import { Icon } from '@/components/Icon';
-import { Button } from '@/components/ui';
+import { Button, Heading, Subheading } from '@/components/ui';
 
 // Chips de los filtros activos sobre el listado: recuerdan qué está
 // aplicado y se quitan de un toque (clave en móvil, donde el panel de
@@ -74,24 +77,25 @@ function FilterChips({
   if (chips.length === 0) return null;
 
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-1.5">
+    // Chips con borde (estilo editorial de Iris): esquinas rectas, sin relleno.
+    <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
       {chips.map((c) => (
         <button
           key={c.key}
           type="button"
           onClick={() => onChange(c.next)}
           title={`Quitar el filtro ${c.label}`}
-          className="flex items-center gap-1 rounded-full bg-secondary-container px-3 py-1.5 text-xs font-medium text-on-secondary-container transition-all hover:brightness-95 active:scale-95"
+          className="inline-flex items-center gap-1.5 border border-on-surface/20 bg-background px-3 py-1.5 font-medium text-on-surface transition-colors hover:border-on-surface"
         >
           {c.label}
-          <Icon name="close" className="text-sm" />
+          <X className="h-3 w-3" aria-hidden />
         </button>
       ))}
       {chips.length > 1 && (
         <button
           type="button"
           onClick={() => onChange(NO_FILTERS)}
-          className="px-2 py-1.5 text-xs font-bold text-primary hover:underline"
+          className="text-xs font-semibold uppercase tracking-[0.14em] text-on-surface-variant underline-offset-4 hover:text-on-surface hover:underline"
         >
           Limpiar todo
         </button>
@@ -122,6 +126,229 @@ function BackToTop() {
     >
       <Icon name="arrow_upward" className="text-xl" />
     </button>
+  );
+}
+
+// Encabezado del catálogo con buscador de texto (estilo del listado de Iris):
+// reemplaza al buscador que antes vivía en el hero. Empuja ?q= a la URL
+// (fuente de verdad que resuelve page.tsx) sin mover el scroll. Es también el
+// ancla #ofertas a la que salta el CTA "Explorar ofertas" del hero.
+function CatalogHeader({
+  search,
+  dep,
+}: {
+  search: string;
+  dep: Department | '';
+}) {
+  const router = useRouter();
+  const [q, setQ] = useState(search);
+  useEffect(() => setQ(search), [search]);
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const p = new URLSearchParams();
+    if (q.trim()) p.set('q', q.trim());
+    if (dep) p.set('dep', dep);
+    router.push(p.size ? `/?${p}` : '/', { scroll: false });
+  }
+
+  return (
+    <div id="ofertas" className="scroll-mt-24">
+      <div className="mb-6 flex flex-col gap-4 border-b border-outline-variant pb-5">
+        <Heading as="h1" size="md">
+          Encuentra trabajos diarios al instante
+        </Heading>
+        <Subheading className="mx-0 text-left">
+          Conecta directo con empleadores locales — sin CV, por WhatsApp.{' '}
+          <Link
+            href="/listings/new"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Publica u ofrece trabajo en toda Bolivia.
+          </Link>
+        </Subheading>
+        <form
+          onSubmit={submit}
+          className="mt-1 flex w-full items-center border border-outline-variant bg-surface-container-lowest px-4 py-3 transition-colors focus-within:border-primary focus-within:ring-1 focus-within:ring-primary"
+        >
+          <Icon name="search" className="mr-2 text-outline" />
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Buscar ofertas"
+            aria-label="Buscar ofertas"
+            className="w-full bg-transparent text-base text-on-surface outline-none placeholder:text-outline"
+          />
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// El backend de /listings no admite parámetro de orden, así que el orden se
+// aplica en cliente sobre las tarjetas ya cargadas (la página actual en
+// escritorio; el acumulado del scroll infinito en móvil). No toca la API.
+type SortOption = 'recientes' | 'antiguos' | 'salario-desc' | 'salario-asc';
+
+const SORT_LABEL: Record<SortOption, string> = {
+  recientes: 'Más recientes',
+  antiguos: 'Más antiguos',
+  'salario-desc': 'Salario: mayor a menor',
+  'salario-asc': 'Salario: menor a mayor',
+};
+
+// Ordena una copia de las ofertas según la opción elegida. El salario puede
+// venir nulo (a convenir): se manda al final en ambos sentidos.
+function sortAds(list: Ad[], sort: SortOption): Ad[] {
+  const salaryOf = (a: Ad) =>
+    a.salary != null && a.salary !== '' ? Number(a.salary) : null;
+  const out = [...list];
+  switch (sort) {
+    case 'antiguos':
+      out.sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+      break;
+    case 'salario-desc':
+      out.sort((a, b) => {
+        const sa = salaryOf(a);
+        const sb = salaryOf(b);
+        if (sa == null) return sb == null ? 0 : 1;
+        if (sb == null) return -1;
+        return sb - sa;
+      });
+      break;
+    case 'salario-asc':
+      out.sort((a, b) => {
+        const sa = salaryOf(a);
+        const sb = salaryOf(b);
+        if (sa == null) return sb == null ? 0 : 1;
+        if (sb == null) return -1;
+        return sa - sb;
+      });
+      break;
+    case 'recientes':
+    default:
+      out.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      );
+  }
+  return out;
+}
+
+// Barra de herramientas sobre el listado (estilo Iris): conteo de resultados,
+// selector de orden y control de densidad; en móvil abre el drawer de filtros.
+function Toolbar({
+  total,
+  dep,
+  sort,
+  setSort,
+  density,
+  setDensity,
+  onOpenFilters,
+  publishHref,
+  onRefresh,
+}: {
+  total: number | null;
+  dep: Department | '';
+  sort: SortOption;
+  setSort: (s: SortOption) => void;
+  density: 'comfortable' | 'compact';
+  setDensity: (d: 'comfortable' | 'compact') => void;
+  onOpenFilters: () => void;
+  publishHref: string;
+  onRefresh: () => void;
+}) {
+  return (
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="flex items-center gap-4">
+        {/* Móvil: abre el drawer de filtros. */}
+        <button
+          type="button"
+          onClick={onOpenFilters}
+          className="inline-flex items-center gap-2 border border-on-surface/20 px-3 py-2 font-semibold uppercase tracking-[0.14em] text-on-surface md:hidden"
+          aria-label="Abrir filtros"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          Filtros
+        </button>
+        {total != null && (
+          <p className="text-on-surface">
+            <span className="font-semibold">{total}</span>{' '}
+            <span className="text-on-surface-variant">
+              {total === 1 ? 'oferta' : 'ofertas'}
+              {dep && ` en ${DEPARTMENT_LABEL[dep]}`}
+            </span>
+          </p>
+        )}
+      </div>
+
+      <div className="flex items-center gap-4">
+        <label className="inline-flex items-center gap-2 text-on-surface-variant">
+          Ordenar
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortOption)}
+            className="border-0 bg-transparent font-semibold text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            {(Object.keys(SORT_LABEL) as SortOption[]).map((s) => (
+              <option key={s} value={s}>
+                {SORT_LABEL[s]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {/* Densidad: cambia las clases del grid (una vs. dos columnas en
+            pantallas anchas). Solo tiene efecto en escritorio. */}
+        <div className="hidden items-center gap-1 md:flex" role="group">
+          <button
+            type="button"
+            aria-label="Vista cómoda"
+            aria-pressed={density === 'comfortable'}
+            onClick={() => setDensity('comfortable')}
+            className={
+              density === 'comfortable'
+                ? 'p-1.5 text-on-surface'
+                : 'p-1.5 text-on-surface-variant transition-colors hover:text-on-surface'
+            }
+          >
+            <Grid2X2 className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            aria-label="Vista compacta"
+            aria-pressed={density === 'compact'}
+            onClick={() => setDensity('compact')}
+            className={
+              density === 'compact'
+                ? 'p-1.5 text-on-surface'
+                : 'p-1.5 text-on-surface-variant transition-colors hover:text-on-surface'
+            }
+          >
+            <Grid3X3 className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Publicar (escritorio) + actualizar el listado. */}
+        <Link href={publishHref} className="hidden md:inline-flex">
+          <Button variant="accent" className="px-4 py-2">
+            Publicar oferta de trabajo
+          </Button>
+        </Link>
+        <button
+          type="button"
+          onClick={onRefresh}
+          aria-label="Actualizar la lista"
+          title="Actualizar la lista"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        >
+          <Icon name="refresh" className="text-xl" />
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -158,6 +385,16 @@ export function HomeClient({
   // el scroll. Preservamos la posición para que filtrar no lo mueva (igual
   // que la búsqueda con scroll:false).
   const pendingScrollRef = useRef<number | null>(null);
+  // Drawer de filtros en móvil (estilo Iris), orden y densidad del listado.
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [sort, setSort] = useState<SortOption>('recientes');
+  const [density, setDensity] = useState<'comfortable' | 'compact'>(
+    'comfortable',
+  );
+
+  // Orden aplicado en cliente sobre las tarjetas ya cargadas (el backend no
+  // ordena). En escritorio ordena la página actual; en móvil, el acumulado.
+  const sortedItems = useMemo(() => sortAds(items, sort), [items, sort]);
 
   // Cambia los filtros sin mover el scroll (recuerda la posición actual).
   const changeFilters = useCallback((f: Filters) => {
@@ -276,32 +513,52 @@ export function HomeClient({
 
   return (
     <div className="space-y-8">
-      <Hero initialQuery={search} initialDep={dep} />
+      <Hero />
 
       {/* Si el listado no carga (p. ej. servidor caído), ocultamos filtros y
           resultados: la portada queda solo con el hero y los destacados. */}
       {!error && (
-        <div className="flex flex-col gap-6 md:flex-row md:items-start">
-          <FiltersSidebar
-            value={filters}
-            facets={facets}
-            total={data?.total}
-            onChange={changeFilters}
-          />
+        <>
+        <CatalogHeader search={search} dep={dep} />
+        {/* Layout tipo Iris: columna de filtros de ~220px + listado. */}
+        <div className="grid grid-cols-1 gap-x-8 md:grid-cols-[220px_1fr]">
+          {/* Escritorio: barra lateral fija al hacer scroll. */}
+          <div className="hidden self-start md:sticky md:top-24 md:block">
+            <FiltersSidebar
+              value={filters}
+              facets={facets}
+              onChange={changeFilters}
+            />
+          </div>
 
-          <section ref={listTopRef} className="flex-1 scroll-mt-24">
+          <section ref={listTopRef} className="min-w-0 scroll-mt-24">
+            {/* Barra de herramientas: conteo, orden, densidad, publicar y
+                actualizar; en móvil abre el drawer de filtros. */}
+            <Toolbar
+              total={data?.total ?? null}
+              dep={dep}
+              sort={sort}
+              setSort={setSort}
+              density={density}
+              setDensity={setDensity}
+              onOpenFilters={() => setMobileFiltersOpen(true)}
+              publishHref={publishHref}
+              onRefresh={refresh}
+            />
+
+            {/* Filtros activos como chips removibles sobre la lista (visibles
+                también en el estado vacío para poder quitarlos). */}
+            <FilterChips filters={filters} onChange={changeFilters} />
+
             {/* Skeleton solo en la primera carga; en las recargas la lista
                 anterior queda atenuada (transición suave, sin parpadeo). */}
             {!data ? (
-              <>
-                <Skeleton className="mb-3 h-4 w-44" />
-                <AdListSkeleton />
-              </>
+              <AdListSkeleton />
             ) : items.length === 0 ? (
               loading ? (
                 <AdListSkeleton />
               ) : (
-              <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-14 text-center">
+              <div className="flex flex-col items-center gap-3 border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-14 text-center">
                 <Icon name="search" className="text-4xl text-outline" />
                 <p className="text-base text-on-surface">
                   No se encontraron ofertas con estos filtros.
@@ -312,7 +569,7 @@ export function HomeClient({
                 <button
                   type="button"
                   onClick={() => changeFilters(NO_FILTERS)}
-                  className="mt-1 rounded-lg border border-outline-variant px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="mt-1 border border-outline-variant px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Limpiar filtros
                 </button>
@@ -325,40 +582,6 @@ export function HomeClient({
                   loading ? 'pointer-events-none opacity-60' : ''
                 }`}
               >
-                  <div className="mb-4 flex flex-wrap items-baseline gap-2">
-                    <h2 className="font-display text-2xl font-semibold text-on-surface">
-                      {data.total}{' '}
-                      {data.total === 1
-                        ? 'oferta encontrada'
-                        : 'ofertas encontradas'}
-                    </h2>
-                    {dep && (
-                      <span className="text-sm text-on-surface-variant">
-                        en {DEPARTMENT_LABEL[dep]}
-                      </span>
-                    )}
-                    {/* Publicar (escritorio) + actualizar, a la derecha. */}
-                    <div className="ml-auto flex items-center gap-2 self-center">
-                      <Link href={publishHref} className="hidden md:inline-flex">
-                        <Button variant="accent" className="px-4 py-2">
-                          Publicar oferta de trabajo
-                        </Button>
-                      </Link>
-                      {/* Recarga la lista sin refrescar la página. */}
-                      <button
-                        type="button"
-                        onClick={refresh}
-                        aria-label="Actualizar la lista"
-                        title="Actualizar la lista"
-                        className="flex h-9 w-9 items-center justify-center rounded-full border border-outline-variant text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                      >
-                        <Icon name="refresh" className="text-xl" />
-                      </button>
-                    </div>
-                  </div>
-                  {/* Filtros activos como chips removibles sobre la lista. */}
-                  <FilterChips filters={filters} onChange={changeFilters} />
-
                   {/* Móvil: CTA de publicar al inicio de la lista. */}
                   <Link href={publishHref} className="mb-3 block md:hidden">
                     <Button variant="accent" className="w-full px-4 py-2.5">
@@ -366,10 +589,19 @@ export function HomeClient({
                     </Button>
                   </Link>
 
-                  {/* Una tarjeta por fila: en móvil las tarjetas necesitan
-                      todo el ancho para respirar (título + salario + rating). */}
-                  <div className="grid grid-cols-1 gap-3 md:gap-4">
-                    {items.map((a) => (
+                  {/* Grid del listado: una columna (cómoda) o dos columnas en
+                      pantallas anchas (compacta). Las tarjetas de oferta ocupan
+                      toda la fila, así que la densidad solo cambia el nº de
+                      columnas en escritorio. Se pintan las ofertas ordenadas en
+                      cliente (sortedItems). */}
+                  <div
+                    className={`grid gap-3 md:gap-4 ${
+                      density === 'compact'
+                        ? 'grid-cols-1 xl:grid-cols-2'
+                        : 'grid-cols-1'
+                    }`}
+                  >
+                    {sortedItems.map((a) => (
                       <AdCard key={a.id} ad={a} />
                     ))}
                   </div>
@@ -410,6 +642,55 @@ export function HomeClient({
             )}
           </section>
         </div>
+
+        {/* Móvil: filtros en un drawer (estilo Iris) con backdrop difuminado. */}
+        {mobileFiltersOpen && (
+          <div
+            className="fixed inset-0 z-50 flex md:hidden"
+            role="dialog"
+            aria-modal="true"
+          >
+            <button
+              type="button"
+              className="flex-1 bg-on-surface/40 backdrop-blur-sm"
+              onClick={() => setMobileFiltersOpen(false)}
+              aria-label="Cerrar filtros"
+            />
+            <div className="flex h-full w-[88vw] max-w-sm flex-col bg-background shadow-xl">
+              <div className="flex items-center justify-between border-b border-outline-variant px-5 py-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-on-surface">
+                  Filtros
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setMobileFiltersOpen(false)}
+                  aria-label="Cerrar"
+                  className="p-1"
+                >
+                  <X className="h-5 w-5 text-on-surface" />
+                </button>
+              </div>
+              <div className="flex-1 overflow-y-auto px-5">
+                <FiltersSidebar
+                  value={filters}
+                  facets={facets}
+                  onChange={changeFilters}
+                />
+              </div>
+              <div className="border-t border-outline-variant p-5">
+                <button
+                  type="button"
+                  onClick={() => setMobileFiltersOpen(false)}
+                  className="w-full bg-on-surface py-3 text-xs font-semibold uppercase tracking-[0.14em] text-inverse-on-surface"
+                >
+                  Ver {data?.total ?? 0}{' '}
+                  {(data?.total ?? 0) === 1 ? 'resultado' : 'resultados'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        </>
       )}
 
       <FeaturedBrands />

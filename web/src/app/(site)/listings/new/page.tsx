@@ -22,7 +22,7 @@ import { PhoneField } from '@/components/PhoneField';
 // Leaflet usa window: solo en cliente.
 const MapPicker = dynamic(
   () => import('@/components/MapPicker').then((m) => m.MapPicker),
-  { ssr: false, loading: () => <div className="h-64 rounded-md bg-surface-container" /> },
+  { ssr: false, loading: () => <div className="h-64 bg-surface-container" /> },
 );
 
 // Pasos del wizard: publicar de una sola página abrumaba (11 campos);
@@ -221,12 +221,12 @@ function Form() {
   }
 
   return (
-    <div className="mx-auto max-w-xl rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+    <div className="mx-auto max-w-xl border border-outline-variant bg-surface-container-lowest p-6">
       <h1 className="mb-4 text-xl font-semibold text-on-surface">
         {editId ? 'Editar oferta de trabajo' : 'Publicar oferta de trabajo'}
       </h1>
       {notVerified && (
-        <div className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <div className="mb-4 bg-secondary-container px-3 py-2 text-sm text-on-secondary-container">
           Verifica tu correo para poder publicar. Revisa el enlace que te
           enviamos o reenvíalo desde el aviso superior.
         </div>
@@ -256,7 +256,7 @@ function Form() {
             </FormField>
             <FormField label="Descripción del puesto" required>
               <textarea
-                className="w-full rounded-md border border-outline-variant px-3 py-2 text-base outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                className="w-full border border-outline-variant px-3 py-2 text-base outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 rows={4}
                 placeholder="Tareas, experiencia deseada, zona de trabajo…"
                 value={form.description}
@@ -269,7 +269,7 @@ function Form() {
             </FormField>
             <FormField label="Requisitos del candidato" required={!isAdmin}>
               <textarea
-                className="w-full rounded-md border border-outline-variant px-3 py-2 text-base outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+                className="w-full border border-outline-variant px-3 py-2 text-base outline-none focus:border-brand focus:ring-1 focus:ring-brand"
                 rows={3}
                 placeholder="Experiencia, disponibilidad, documentación..."
                 value={form.requirements}
@@ -383,7 +383,7 @@ function Form() {
                 }))}
               />
             </FormField>
-            <p className="rounded-md bg-surface-container-low px-3 py-2 text-xs text-on-surface-variant">
+            <p className="bg-surface-container-low px-3 py-2 text-xs text-on-surface-variant">
               Los interesados te contactarán por WhatsApp o llamada a este
               número. El teléfono solo se muestra a usuarios con sesión.
             </p>
@@ -394,7 +394,7 @@ function Form() {
 
         {/* Aviso SIEMPRE visible (no tooltip): en móvil no hay hover. */}
         {missingByStep[step].length > 0 && (
-          <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          <p className="bg-secondary-container px-3 py-2 text-xs text-on-secondary-container">
             Te falta completar: {missingByStep[step].join(', ')}.
           </p>
         )}

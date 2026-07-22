@@ -65,7 +65,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       <div aria-hidden="true" className="flex min-h-screen">
         <aside className="flex w-16 shrink-0 flex-col items-center gap-2 border-r border-outline-variant bg-surface-container-low py-4">
           {Array.from({ length: NAV.length }, (_, i) => (
-            <Skeleton key={i} className="h-10 w-10 rounded-lg" />
+            <Skeleton key={i} className="h-10 w-10" />
           ))}
         </aside>
         <div className="flex-1">
@@ -108,8 +108,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       <aside
         onMouseLeave={() => setHoverEnabled(true)}
         className={`group fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden border-r border-outline-variant bg-surface-container-low transition-[width,box-shadow] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
-          hoverEnabled ? 'hover:w-64 hover:shadow-xl focus-within:w-64' : ''
-        } ${expanded ? 'w-64 shadow-xl' : 'w-16'}`}
+          hoverEnabled ? 'hover:w-64 hover:shadow-derek focus-within:w-64' : ''
+        } ${expanded ? 'w-64 shadow-derek' : 'w-16'}`}
       >
         {/* Cabecera del riel: ☰ fija el menú en táctil. */}
         <div className="flex h-16 shrink-0 items-center gap-2 border-b border-outline-variant px-3">
@@ -118,7 +118,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             onClick={() => setPinned((v) => !v)}
             aria-label={expanded ? 'Cerrar el menú' : 'Abrir el menú'}
             aria-expanded={expanded}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
+            className="flex h-10 w-10 shrink-0 items-center justify-center text-on-surface-variant transition-colors hover:bg-surface-container-high hover:text-primary"
           >
             <Icon name={expanded ? 'close' : 'menu'} className="text-2xl" />
           </button>
@@ -146,7 +146,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                 setHoverEnabled(false);
                 e.currentTarget.blur();
               }}
-              className={`flex h-10 items-center gap-3 rounded-lg px-2 transition-all ${
+              className={`flex h-10 items-center gap-3 px-2 transition-all ${
                 pathname === n.href
                   ? 'bg-secondary-container font-bold text-on-secondary-container'
                   : 'text-on-surface-variant hover:bg-surface-container-high'
@@ -209,7 +209,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                 />
                 <div
                   role="menu"
-                  className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg"
+                  className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden border border-outline-variant bg-surface-container-lowest shadow-derek"
                 >
                   <div className="border-b border-outline-variant px-4 py-3">
                     <p className="truncate text-sm font-medium text-on-surface">{user.name}</p>

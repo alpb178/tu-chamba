@@ -106,7 +106,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
               'El inicio con Google aún no está disponible. Usa tu correo y contraseña.',
             )
           }
-          className="flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-sm font-medium text-on-surface transition-all hover:border-primary active:scale-[0.99]"
+          className="flex h-11 w-full items-center justify-center gap-3 border border-outline-variant bg-surface-container-lowest text-sm font-medium text-on-surface transition-all hover:border-primary active:scale-[0.99]"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
             <path

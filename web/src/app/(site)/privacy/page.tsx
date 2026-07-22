@@ -30,7 +30,7 @@ function Section({
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-3xl space-y-8 rounded-xl border border-outline-variant bg-surface-container-lowest p-6 sm:p-10">
+    <div className="mx-auto max-w-3xl space-y-8 border border-outline-variant bg-surface-container-lowest p-6 sm:p-10">
       <header className="space-y-2">
         <h1 className="font-display text-2xl font-semibold text-on-surface">
           Política de privacidad

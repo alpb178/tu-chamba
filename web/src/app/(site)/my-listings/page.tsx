@@ -53,7 +53,7 @@ export default function MyAdsPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <Skeleton className="h-7 w-40" />
-          <Skeleton className="h-9 w-36 rounded-md" />
+          <Skeleton className="h-9 w-36" />
         </div>
         <AdListSkeleton count={3} />
       </div>
@@ -69,7 +69,7 @@ export default function MyAdsPage() {
       </div>
       {items.length === 0 ? (
         // Estado vacío con camino claro: publicar el primer anuncio.
-        <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-14 text-center">
+        <div className="flex flex-col items-center gap-3 border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-14 text-center">
           <Icon name="publish" className="text-4xl text-outline" />
           <p className="text-base text-on-surface">
             Aún no has publicado anuncios.

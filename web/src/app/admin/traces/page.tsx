@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import {
-  formatUserAgent,
   Paginated,
   Trace,
   TraceResult,
@@ -19,6 +18,7 @@ import {
   SelectCheckbox,
 } from '@/components/admin/ui';
 import { CustomSelect } from '@/components/admin/CustomSelect';
+import { Icon } from '@/components/admin/Icon';
 import { Pagination } from '@/components/admin/Pagination';
 import { useSelection } from '@/lib/admin/useSelection';
 
@@ -29,37 +29,52 @@ const HEADERS = [
   'Actor',
   'IP',
   'Navegador',
-  'Recurso',
+  'Móvil',
   'Resultado',
   '',
 ];
 
-const LIMIT = 20;
+const LIMIT = 10;
+
+// Navegador y "¿móvil?" se derivan del user-agent (el backend solo guarda el
+// UA crudo). País y fuente no están en el modelo de trazas todavía.
+function browserName(ua: string | null): string {
+  if (!ua) return '—';
+  if (/Edg\//.test(ua)) return 'Edge';
+  if (/OPR\//.test(ua)) return 'Opera';
+  if (/Chrome\//.test(ua)) return 'Chrome';
+  if (/Firefox\//.test(ua)) return 'Firefox';
+  if (/Safari\//.test(ua)) return 'Safari';
+  return 'Otro';
+}
+function isMobileUA(ua: string | null): boolean {
+  return ua ? /Mobile|Android|iPhone|iPad/.test(ua) : false;
+}
 
 // Chips por familia de evento: sesión/registro, altas, cambios y bajas.
 const TYPE_STYLE: Record<TraceType, string> = {
-  LOGIN: 'bg-blue-100 text-blue-800',
-  LOGOUT: 'bg-blue-100 text-blue-800',
-  REGISTER: 'bg-blue-100 text-blue-800',
-  EMAIL_VERIFIED: 'bg-green-100 text-green-800',
-  ADMIN_CREATED: 'bg-purple-100 text-purple-800',
-  ROLE_UPDATED: 'bg-amber-100 text-amber-800',
-  USER_DELETED: 'bg-red-100 text-red-800',
-  AD_CREATED: 'bg-green-100 text-green-800',
-  AD_UPDATED: 'bg-amber-100 text-amber-800',
+  LOGIN: 'bg-primary-container text-on-primary-container',
+  LOGOUT: 'bg-primary-container text-on-primary-container',
+  REGISTER: 'bg-primary-container text-on-primary-container',
+  EMAIL_VERIFIED: 'bg-tertiary-container text-on-tertiary-container',
+  ADMIN_CREATED: 'bg-secondary text-on-secondary',
+  ROLE_UPDATED: 'bg-secondary-container text-on-secondary-container',
+  USER_DELETED: 'bg-error-container text-on-error-container',
+  AD_CREATED: 'bg-tertiary-container text-on-tertiary-container',
+  AD_UPDATED: 'bg-secondary-container text-on-secondary-container',
   AD_VIEWED: 'bg-surface-container-high text-on-surface-variant',
-  AD_IMPORTED: 'bg-green-100 text-green-800',
-  AD_UNPUBLISHED: 'bg-amber-100 text-amber-800',
-  AD_REPUBLISHED: 'bg-green-100 text-green-800',
-  AD_DELETED: 'bg-red-100 text-red-800',
-  REPORT_CREATED: 'bg-purple-100 text-purple-800',
-  REPORT_RESOLVED: 'bg-purple-100 text-purple-800',
-  REPORT_DELETED: 'bg-red-100 text-red-800',
-  REVIEW_CREATED: 'bg-green-100 text-green-800',
-  REVIEW_UPDATED: 'bg-amber-100 text-amber-800',
-  REVIEW_DELETED: 'bg-red-100 text-red-800',
-  USER_UPDATED: 'bg-amber-100 text-amber-800',
-  TRACE_DELETED: 'bg-red-100 text-red-800',
+  AD_IMPORTED: 'bg-tertiary-container text-on-tertiary-container',
+  AD_UNPUBLISHED: 'bg-secondary-container text-on-secondary-container',
+  AD_REPUBLISHED: 'bg-tertiary-container text-on-tertiary-container',
+  AD_DELETED: 'bg-error-container text-on-error-container',
+  REPORT_CREATED: 'bg-secondary text-on-secondary',
+  REPORT_RESOLVED: 'bg-secondary text-on-secondary',
+  REPORT_DELETED: 'bg-error-container text-on-error-container',
+  REVIEW_CREATED: 'bg-tertiary-container text-on-tertiary-container',
+  REVIEW_UPDATED: 'bg-secondary-container text-on-secondary-container',
+  REVIEW_DELETED: 'bg-error-container text-on-error-container',
+  USER_UPDATED: 'bg-secondary-container text-on-secondary-container',
+  TRACE_DELETED: 'bg-error-container text-on-error-container',
 };
 
 const TYPES = Object.keys(TRACE_TYPE_LABEL) as TraceType[];
@@ -234,17 +249,23 @@ export default function TracesPage() {
                   {t.ip ?? '—'}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant" title={t.userAgent ?? undefined}>
-                  {formatUserAgent(t.userAgent)}
+                  {browserName(t.userAgent)}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-on-surface-variant">
-                  {t.resource ?? '—'}
+                <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Icon
+                      name={isMobileUA(t.userAgent) ? 'smartphone' : 'computer'}
+                      className="text-base"
+                    />
+                    {isMobileUA(t.userAgent) ? 'Sí' : 'No'}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   <span
                     className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       t.result === 'OK'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-tertiary-container text-on-tertiary-container'
+                        : 'bg-error-container text-on-error-container'
                     }`}
                   >
                     {t.result === 'OK' ? 'Correcto' : 'Error'}
