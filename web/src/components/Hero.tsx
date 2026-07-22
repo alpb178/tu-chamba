@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { DEPARTMENT_LABEL, Department } from '@/lib/types';
 import { CustomSelect } from './CustomSelect';
 import { Icon } from './Icon';
@@ -63,20 +64,41 @@ export function Hero({
         fetchPriority="high"
       />
 
-      <div className="relative z-20 mx-auto w-full max-w-4xl px-4 pb-10 pt-5 text-center sm:pb-12">
-        <h1 className="font-display text-2xl font-bold leading-tight text-on-primary sm:text-3xl">
-          Encuentra trabajos diarios al instante en Bolivia
-        </h1>
-        <p className="mx-auto mb-6 mt-2 max-w-2xl text-base text-surface-container-low opacity-90">
-          Conecta directo con empleadores locales — sin CV, por WhatsApp.
-        </p>
-
-        {/* Buscador glass: qué + dónde. */}
-        <form
-          onSubmit={onSubmit}
-          className="mx-auto flex max-w-3xl flex-col gap-2 rounded-2xl border border-white/30 bg-white/70 p-3 shadow-lg backdrop-blur-md md:flex-row"
+      <div className="relative z-20 mx-auto w-full max-w-4xl px-4 pb-10 pt-6 text-center sm:pb-14">
+        <motion.p
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-secondary-container"
         >
-          <div className="flex flex-grow items-center rounded-xl border border-outline-variant bg-white px-4 py-3 transition-all focus-within:ring-2 focus-within:ring-primary-container">
+          Trabajo diario en Bolivia
+        </motion.p>
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.08 }}
+          className="font-display text-3xl font-semibold leading-[1.1] tracking-tight text-on-primary text-balance sm:text-4xl md:text-5xl"
+        >
+          Encuentra trabajos diarios al instante
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.16 }}
+          className="mx-auto mb-7 mt-3 max-w-2xl text-base text-surface-container-low opacity-90"
+        >
+          Conecta directo con empleadores locales — sin CV, por WhatsApp.
+        </motion.p>
+
+        {/* Buscador glass: qué + dónde. Esquinas rectas (estética editorial). */}
+        <motion.form
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.24 }}
+          onSubmit={onSubmit}
+          className="mx-auto flex max-w-3xl flex-col gap-2 border border-white/30 bg-white/70 p-3 shadow-derek backdrop-blur-md md:flex-row"
+        >
+          <div className="flex flex-grow items-center border border-outline-variant bg-white px-4 py-3 transition-all focus-within:ring-2 focus-within:ring-primary-container">
             <Icon name="search" className="mr-3 text-outline" />
             <input
               value={query}
@@ -93,17 +115,17 @@ export function Hero({
               options={DEPARTMENT_OPTIONS}
               placeholder="Todo el país"
               icon="location_on"
-              className="rounded-xl px-4 py-3 text-base"
+              className="px-4 py-3 text-base"
             />
           </div>
           <button
             type="submit"
-            className="flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-3 font-bold text-on-primary shadow-lg transition-all hover:brightness-110 active:scale-95"
+            className="flex items-center justify-center gap-2 bg-primary px-8 py-3 font-bold uppercase tracking-[0.12em] text-on-primary shadow-lg transition-all hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 active:scale-95"
           >
             <span>Buscar</span>
             <Icon name="search" />
           </button>
-        </form>
+        </motion.form>
       </div>
     </section>
   );

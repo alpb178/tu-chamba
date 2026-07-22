@@ -5,8 +5,13 @@ import { Icon } from './Icon';
 
 const SUPPORT_EMAIL = 'alesx2soporte@gmail.com';
 
+// Footer invertido (fondo tinta, texto claro) al estilo editorial de Iris.
 const linkClass =
-  'text-sm text-on-surface-variant transition hover:text-primary focus:outline-none focus-visible:underline';
+  'text-sm text-inverse-on-surface/70 transition hover:text-inverse-on-surface focus:outline-none focus-visible:underline';
+
+// Micro-etiqueta de columna: mayúsculas con tracking amplio.
+const colTitleClass =
+  'mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-inverse-on-surface/60';
 
 function FooterCol({
   title,
@@ -17,27 +22,49 @@ function FooterCol({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <span className="mb-2 text-xs font-bold uppercase tracking-widest text-on-surface">
-        {title}
-      </span>
+      <span className={colTitleClass}>{title}</span>
       {children}
     </div>
   );
 }
 
+// Botón social circular con leve elevación al hover.
+function SocialLink({
+  href,
+  label,
+  icon,
+  external = true,
+}: {
+  href: string;
+  label: string;
+  icon: string;
+  external?: boolean;
+}) {
+  return (
+    <a
+      href={href}
+      aria-label={label}
+      {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+      className="flex h-10 w-10 items-center justify-center rounded-full border border-inverse-on-surface/20 text-inverse-on-surface/80 transition-all hover:-translate-y-0.5 hover:border-inverse-on-surface/50 hover:text-inverse-on-surface"
+    >
+      <Icon name={icon} />
+    </a>
+  );
+}
+
 export function Footer() {
   return (
-    <footer className="mt-12 w-full border-t border-outline-variant bg-surface-container-highest py-12">
+    <footer className="mt-24 w-full bg-on-surface py-14 text-inverse-on-surface">
       <div className="mx-auto max-w-7xl 2xl:max-w-screen-2xl px-4 sm:px-6 lg:px-12">
-        <div className="mb-8 flex flex-col items-start justify-between gap-8 md:flex-row">
+        <div className="mb-10 flex flex-col items-start justify-between gap-8 md:flex-row">
           <div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo-full.png"
               alt="Tu Chamba"
-              className="mb-4 h-10 w-auto"
+              className="mb-4 h-10 w-auto brightness-0 invert"
             />
-            <p className="max-w-sm text-sm text-on-surface-variant">
+            <p className="max-w-sm text-sm text-inverse-on-surface/70">
               La plataforma líder en Bolivia para encontrar y publicar empleos
               de forma rápida y segura.
             </p>
@@ -74,7 +101,7 @@ export function Footer() {
             <FooterCol title="Empresas">
               <Link
                 href="/listings/new"
-                className="text-sm font-bold text-primary hover:underline"
+                className="text-sm font-bold text-secondary-container transition hover:brightness-110"
               >
                 Publicar oferta de trabajo
               </Link>
@@ -85,9 +112,9 @@ export function Footer() {
         {/* Landing SEO por departamento (se conserva del footer anterior). */}
         <nav
           aria-label="Empleos por departamento"
-          className="border-t border-outline-variant/30 pt-6"
+          className="border-t border-inverse-on-surface/15 pt-6"
         >
-          <span className="mb-3 block text-xs font-bold uppercase tracking-widest text-on-surface">
+          <span className={`block ${colTitleClass}`}>
             Empleos por departamento
           </span>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
@@ -103,37 +130,24 @@ export function Footer() {
           </div>
         </nav>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-outline-variant/30 pt-8 md:flex-row">
-          <p className="text-xs text-on-surface-variant">
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-inverse-on-surface/15 pt-8 md:flex-row">
+          <p className="text-xs text-inverse-on-surface/60">
             © {new Date().getFullYear()} TuChamba. Todos los derechos
             reservados.
           </p>
-          <div className="flex gap-6">
-            <a
-              href={CORPSC.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Sitio de CorpSC"
-              className="text-on-surface-variant transition-colors hover:text-primary"
-            >
-              <Icon name="public" />
-            </a>
-            <a
+          <div className="flex gap-3">
+            <SocialLink href={CORPSC.url} label="Sitio de CorpSC" icon="public" />
+            <SocialLink
               href={`mailto:${SUPPORT_EMAIL}`}
-              aria-label="Escríbenos por correo"
-              className="text-on-surface-variant transition-colors hover:text-primary"
-            >
-              <Icon name="mail" />
-            </a>
-            <a
+              label="Escríbenos por correo"
+              icon="mail"
+              external={false}
+            />
+            <SocialLink
               href="https://www.facebook.com/corpsc"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Síguenos en Facebook"
-              className="text-on-surface-variant transition-colors hover:text-primary"
-            >
-              <Icon name="facebook" />
-            </a>
+              label="Síguenos en Facebook"
+              icon="facebook"
+            />
           </div>
         </div>
       </div>
