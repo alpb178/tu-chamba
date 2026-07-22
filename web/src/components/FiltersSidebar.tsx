@@ -45,7 +45,7 @@ function Section({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className={`flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+        className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs font-semibold uppercase tracking-wider transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
           open
             ? 'bg-secondary-container font-bold text-on-secondary-container'
             : 'text-on-surface-variant hover:bg-surface-container-high'
@@ -260,7 +260,7 @@ export function FiltersSidebar({
     return (
       <aside
         aria-hidden="true"
-        className={`${SIDEBAR_WIDTH} hidden rounded-xl border border-outline-variant bg-surface-container-low p-5 md:block`}
+        className={`${SIDEBAR_WIDTH} hidden border border-outline-variant bg-surface-container-low p-5 md:block`}
       >
         <Skeleton className="h-4 w-16" />
         {[0, 1, 2].map((i) => (
@@ -292,7 +292,7 @@ export function FiltersSidebar({
         onClick={() => setMobileOpen((o) => !o)}
         aria-expanded={mobileOpen}
         aria-controls="filtros-panel"
-        className="flex w-full items-center gap-2 rounded-xl border border-outline-variant bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface shadow-sm md:hidden"
+        className="flex w-full items-center gap-2 border border-outline-variant bg-surface-container-low px-4 py-3 text-sm font-bold text-on-surface shadow-sm md:hidden"
       >
         <Icon name="tune" className="text-lg" />
         Filtros
@@ -313,7 +313,7 @@ export function FiltersSidebar({
         id="filtros-panel"
         className={`${
           mobileOpen ? 'mt-2 block' : 'hidden'
-        } space-y-5 rounded-xl border border-outline-variant bg-surface-container-low p-5 shadow-sm md:mt-0 md:block`}
+        } space-y-5 border border-outline-variant bg-surface-container-low p-5 shadow-sm md:mt-0 md:block`}
       >
       <div className="flex items-start justify-between">
         <div>
@@ -405,7 +405,7 @@ export function FiltersSidebar({
       <button
         type="button"
         onClick={() => setMobileOpen(false)}
-        className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-on-primary transition-all hover:brightness-110 active:scale-95 md:hidden"
+        className="w-full bg-primary px-4 py-2.5 text-sm font-bold text-on-primary transition-all hover:brightness-110 active:scale-95 md:hidden"
       >
         {total != null
           ? `Ver ${total} ${total === 1 ? 'resultado' : 'resultados'}`

@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import { Company, COMPANIES } from '@/lib/companies';
 import { api } from '@/lib/api';
 import { Icon } from './Icon';
-import { Tilt3D } from './Tilt3D';
-import { SlideBurst } from './SlideBurst';
+import { Heading } from './ui';
+import { Tilt3D } from './fx/Tilt3D';
+import { SlideBurst } from './fx/SlideBurst';
 
 // Registra el acceso a la tarjeta de una empresa del grupo (métrica del panel
 // admin). Best-effort: los enlaces abren en pestaña nueva, así que el fetch
@@ -24,7 +25,7 @@ function trackSiteClick(company: Company) {
 function BrandCard({ company }: { company: Company }) {
   const track = () => trackSiteClick(company);
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-sm transition-shadow hover:shadow-md">
+    <article className="flex h-full flex-col overflow-hidden border border-outline-variant bg-surface-container-lowest shadow-aceternity transition-shadow hover:shadow-derek">
       <a
         href={company.url}
         target="_blank"
@@ -58,7 +59,7 @@ function BrandCard({ company }: { company: Company }) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={track}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-inverse-surface px-4 py-2.5 text-sm font-bold text-on-primary transition-colors hover:bg-on-background focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className="inline-flex w-full items-center justify-center gap-2 bg-inverse-surface px-4 py-2.5 text-sm font-bold uppercase tracking-[0.1em] text-on-primary transition-all hover:-translate-y-0.5 hover:bg-on-background focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           aria-label={`Visitar el sitio de ${company.name} (se abre en una pestaña nueva)`}
         >
           Visitar sitio
@@ -148,8 +149,16 @@ export function FeaturedBrands() {
   }, []);
 
   return (
-    <section aria-label="Sitios de interés" className="mt-12">
-      <div className="mb-6 flex items-center justify-end gap-4">
+    <section aria-label="Sitios de interés" className="mt-20">
+      <div className="mb-6 flex items-end justify-between gap-4">
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-secondary-container">
+            Grupo CorpSC
+          </p>
+          <Heading as="h2" size="sm">
+            Sitios de interés
+          </Heading>
+        </div>
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
           <button
             type="button"

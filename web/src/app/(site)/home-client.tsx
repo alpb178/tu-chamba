@@ -301,7 +301,7 @@ export function HomeClient({
               loading ? (
                 <AdListSkeleton />
               ) : (
-              <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-14 text-center">
+              <div className="flex flex-col items-center gap-3 border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-14 text-center">
                 <Icon name="search" className="text-4xl text-outline" />
                 <p className="text-base text-on-surface">
                   No se encontraron ofertas con estos filtros.
@@ -312,7 +312,7 @@ export function HomeClient({
                 <button
                   type="button"
                   onClick={() => changeFilters(NO_FILTERS)}
-                  className="mt-1 rounded-lg border border-outline-variant px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="mt-1 border border-outline-variant px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   Limpiar filtros
                 </button>
