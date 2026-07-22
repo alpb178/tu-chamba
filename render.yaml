@@ -31,7 +31,8 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
-      # Dominios de los frontends (web y admin). Se rellena a mano en el dashboard.
+      # Dominios del frontend (web; el panel vive en /admin de la misma app).
+      # Se rellena a mano en el dashboard.
       - key: CORS_ORIGINS
         sync: false
       # Google Indexing API (service account con acceso en Search Console).

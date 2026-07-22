@@ -60,6 +60,15 @@ function IconoExterno() {
   );
 }
 
+function IconoAdmin() {
+  return (
+    <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6l7-3z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 12l1.8 1.8L15 10" />
+    </svg>
+  );
+}
+
 function IconoSalir() {
   return (
     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
@@ -234,6 +243,16 @@ export function Navbar() {
                       </ItemMenu>
                     </div>
 
+                    {/* Acceso al panel: solo para administradores. */}
+                    {user.isAdmin && (
+                      <div className="border-t border-outline-variant/60 pb-1">
+                        <TituloSeccion>Administración</TituloSeccion>
+                        <ItemMenu href="/admin" icono={<IconoAdmin />}>
+                          Panel de administración
+                        </ItemMenu>
+                      </div>
+                    )}
+
                     <div className="border-t border-outline-variant/60 pb-1">
                       <TituloSeccion>Enlaces</TituloSeccion>
                       <ItemMenu href={CORPSC.url} externo icono={<IconoExterno />}>
@@ -340,6 +359,11 @@ export function Navbar() {
                 <Link href="/profile" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/profile')}`}>
                   Mi perfil
                 </Link>
+                {user.isAdmin && (
+                  <Link href="/admin" className={`rounded-md px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/admin')}`}>
+                    Panel de administración
+                  </Link>
+                )}
               </>
             )}
             <a
