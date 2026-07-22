@@ -438,7 +438,7 @@ function FeedSection() {
   );
 
   const load = useCallback(() => {
-    const params = new URLSearchParams({ page: String(page), limit: '15' });
+    const params = new URLSearchParams({ page: String(page), limit: '10' });
     if (type) params.set('type', type);
     if (result) params.set('result', result);
     if (actor.trim()) params.set('actor', actor.trim());

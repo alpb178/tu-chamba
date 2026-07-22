@@ -32,7 +32,7 @@ const HEADERS = [
   '',
 ];
 
-const LIMIT = 20;
+const LIMIT = 10;
 
 // Moderación: el admin corrige la calificación o el comentario de la reseña.
 function EditReviewDialog({

@@ -34,7 +34,7 @@ const HEADERS = [
   '',
 ];
 
-const LIMIT = 20;
+const LIMIT = 10;
 
 // Chips por familia de evento: sesión/registro, altas, cambios y bajas.
 const TYPE_STYLE: Record<TraceType, string> = {

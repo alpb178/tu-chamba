@@ -37,7 +37,7 @@ const HEADERS = [
   '',
 ];
 
-const LIMIT = 20;
+const LIMIT = 10;
 
 const STATUS_STYLE: Record<EffectiveStatus, string> = {
   ACTIVO: 'bg-tertiary-container text-on-tertiary-container',

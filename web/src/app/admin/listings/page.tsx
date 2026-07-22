@@ -39,7 +39,7 @@ const STATUS_STYLE: Record<EffectiveStatus, string> = {
 
 const CHECKBOX_CLASS = 'h-4 w-4 cursor-pointer accent-primary';
 
-const LIMIT = 20;
+const LIMIT = 10;
 
 export default function AdsAdminPage() {
   const router = useRouter();
