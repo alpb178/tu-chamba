@@ -8,7 +8,6 @@ import {
   ErrorStatus,
   ERROR_SEVERITY_LABEL,
   ERROR_STATUS_LABEL,
-  formatUserAgent,
   Paginated,
   PerformanceMetrics,
   ServiceState,
@@ -421,7 +420,7 @@ function ErrorsSection() {
 
 // ——— Feed de actividad ———
 
-const FEED_HEADERS = ['Fecha', 'Evento', 'Descripción', 'Detalle', ''];
+const FEED_HEADERS = ['Fecha', 'Evento', 'Descripción', ''];
 
 function FeedSection() {
   const [data, setData] = useState<Paginated<Trace> | null>(null);
@@ -585,14 +584,6 @@ function FeedSection() {
               </span>
             </td>
             <td className="max-w-md px-4 py-3">{t.description}</td>
-            <td className="px-4 py-3 text-xs text-on-surface-variant">
-              <div className="flex flex-wrap gap-x-4 gap-y-1">
-                {t.actorEmail && <span>{t.actorEmail}</span>}
-                {t.resource && <span className="font-mono">{t.resource}</span>}
-                {t.durationMs != null && <span>{t.durationMs} ms</span>}
-                {t.userAgent && <span>{formatUserAgent(t.userAgent)}</span>}
-              </div>
-            </td>
             <td className="px-4 py-3 text-right">
               <div className="flex justify-end">
                 <IconButton

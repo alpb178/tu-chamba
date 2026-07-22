@@ -1,6 +1,11 @@
 import { ButtonHTMLAttributes, Children, InputHTMLAttributes, ReactNode } from 'react';
 import Link from 'next/link';
-import { JobType, JOB_TYPE_LABEL } from '@/lib/admin/types';
+import {
+  JobType,
+  JOB_TYPE_LABEL,
+  EffectiveStatus,
+  STATUS_LABEL,
+} from '@/lib/admin/types';
 import { Icon } from './Icon';
 
 export function Button({
@@ -103,6 +108,31 @@ export function Badge({ type }: { type: JobType }) {
   return (
     <span className={`inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em] ${BADGE_COLORS[type]}`}>
       {JOB_TYPE_LABEL[type]}
+    </span>
+  );
+}
+
+// Estado efectivo del anuncio marcado con icono + etiqueta (mismo criterio en
+// todas las tablas): Activo (check verde), Vencido (reloj ámbar), Dado de baja
+// (bloqueo gris).
+const STATUS_ICON: Record<EffectiveStatus, string> = {
+  ACTIVO: 'check_circle',
+  VENCIDO: 'schedule',
+  DADO_DE_BAJA: 'block',
+};
+const STATUS_STYLE: Record<EffectiveStatus, string> = {
+  ACTIVO: 'bg-tertiary-container text-on-tertiary-container',
+  VENCIDO: 'bg-secondary-container text-on-secondary-container',
+  DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
+};
+
+export function AdStatusBadge({ status }: { status: EffectiveStatus }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] ${STATUS_STYLE[status]}`}
+    >
+      <Icon name={STATUS_ICON[status]} className="text-sm" />
+      {STATUS_LABEL[status]}
     </span>
   );
 }

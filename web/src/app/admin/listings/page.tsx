@@ -6,12 +6,17 @@ import { api } from '@/lib/api';
 import {
   Ad,
   CATEGORY_LABEL,
-  STATUS_LABEL,
-  EffectiveStatus,
   adEffectiveStatus,
   Paginated,
 } from '@/lib/admin/types';
-import { AdminTable, Badge, Button, ConfirmDialog, IconButton } from '@/components/admin/ui';
+import {
+  AdminTable,
+  AdStatusBadge,
+  Badge,
+  Button,
+  ConfirmDialog,
+  IconButton,
+} from '@/components/admin/ui';
 import { Icon } from '@/components/admin/Icon';
 import { Pagination } from '@/components/admin/Pagination';
 
@@ -30,12 +35,6 @@ const HEADERS = [
   'Autor',
   '',
 ];
-
-const STATUS_STYLE: Record<EffectiveStatus, string> = {
-  ACTIVO: 'bg-tertiary-container text-on-tertiary-container',
-  VENCIDO: 'bg-secondary-container text-on-secondary-container',
-  DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
-};
 
 const CHECKBOX_CLASS = 'h-4 w-4 cursor-pointer accent-primary';
 
@@ -208,11 +207,7 @@ export default function AdsAdminPage() {
                 <Badge type={ad.jobType} />
               </td>
               <td className="px-4 py-3">
-                <span
-                  className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}
-                >
-                  {STATUS_LABEL[status]}
-                </span>
+                <AdStatusBadge status={status} />
               </td>
               <td className="px-4 py-3 text-on-surface-variant">
                 {new Date(ad.createdAt).toLocaleDateString('es-BO')}

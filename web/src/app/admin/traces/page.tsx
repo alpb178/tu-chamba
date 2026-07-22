@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import {
-  formatUserAgent,
   Paginated,
   Trace,
   TraceResult,
@@ -19,6 +18,7 @@ import {
   SelectCheckbox,
 } from '@/components/admin/ui';
 import { CustomSelect } from '@/components/admin/CustomSelect';
+import { Icon } from '@/components/admin/Icon';
 import { Pagination } from '@/components/admin/Pagination';
 import { useSelection } from '@/lib/admin/useSelection';
 
@@ -29,12 +29,27 @@ const HEADERS = [
   'Actor',
   'IP',
   'Navegador',
-  'Recurso',
+  'Móvil',
   'Resultado',
   '',
 ];
 
 const LIMIT = 10;
+
+// Navegador y "¿móvil?" se derivan del user-agent (el backend solo guarda el
+// UA crudo). País y fuente no están en el modelo de trazas todavía.
+function browserName(ua: string | null): string {
+  if (!ua) return '—';
+  if (/Edg\//.test(ua)) return 'Edge';
+  if (/OPR\//.test(ua)) return 'Opera';
+  if (/Chrome\//.test(ua)) return 'Chrome';
+  if (/Firefox\//.test(ua)) return 'Firefox';
+  if (/Safari\//.test(ua)) return 'Safari';
+  return 'Otro';
+}
+function isMobileUA(ua: string | null): boolean {
+  return ua ? /Mobile|Android|iPhone|iPad/.test(ua) : false;
+}
 
 // Chips por familia de evento: sesión/registro, altas, cambios y bajas.
 const TYPE_STYLE: Record<TraceType, string> = {
@@ -234,10 +249,16 @@ export default function TracesPage() {
                   {t.ip ?? '—'}
                 </td>
                 <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant" title={t.userAgent ?? undefined}>
-                  {formatUserAgent(t.userAgent)}
+                  {browserName(t.userAgent)}
                 </td>
-                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-on-surface-variant">
-                  {t.resource ?? '—'}
+                <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Icon
+                      name={isMobileUA(t.userAgent) ? 'smartphone' : 'computer'}
+                      className="text-base"
+                    />
+                    {isMobileUA(t.userAgent) ? 'Sí' : 'No'}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   <span

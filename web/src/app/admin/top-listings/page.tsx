@@ -5,13 +5,12 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import {
   CATEGORY_LABEL,
-  STATUS_LABEL,
-  EffectiveStatus,
   adEffectiveStatus,
   TopAd,
 } from '@/lib/admin/types';
 import {
   AdminTable,
+  AdStatusBadge,
   Badge,
   Button,
   ConfirmDialog,
@@ -31,12 +30,6 @@ const HEADERS = [
   'Visitas totales',
   '',
 ];
-
-const STATUS_STYLE: Record<EffectiveStatus, string> = {
-  ACTIVO: 'bg-tertiary-container text-on-tertiary-container',
-  VENCIDO: 'bg-secondary-container text-on-secondary-container',
-  DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
-};
 
 export default function TopAdsPage() {
   const router = useRouter();
@@ -148,11 +141,7 @@ export default function TopAdsPage() {
                   <Badge type={ad.jobType} />
                 </td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[status]}`}
-                  >
-                    {STATUS_LABEL[status]}
-                  </span>
+                  <AdStatusBadge status={status} />
                 </td>
                 <td className="px-4 py-3 text-on-surface-variant">
                   {ad.createdBy?.name ?? '—'}

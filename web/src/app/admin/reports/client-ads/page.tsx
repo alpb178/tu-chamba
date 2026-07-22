@@ -16,6 +16,7 @@ import {
 } from '@/lib/admin/types';
 import {
   AdminTable,
+  AdStatusBadge,
   Button,
   ConfirmDialog,
   IconButton,
@@ -38,12 +39,6 @@ const HEADERS = [
 ];
 
 const LIMIT = 10;
-
-const STATUS_STYLE: Record<EffectiveStatus, string> = {
-  ACTIVO: 'bg-tertiary-container text-on-tertiary-container',
-  VENCIDO: 'bg-secondary-container text-on-secondary-container',
-  DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
-};
 
 // Reporte de anuncios publicados por clientes (excluye a los administradores).
 export default function ClientAdsReportPage() {
@@ -233,11 +228,7 @@ export default function ClientAdsReportPage() {
                     {new Date(ad.createdAt).toLocaleDateString('es-BO')}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-block whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLE[st]}`}
-                    >
-                      {STATUS_LABEL[st]}
-                    </span>
+                    <AdStatusBadge status={st} />
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-1.5">

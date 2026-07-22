@@ -1,4 +1,6 @@
+import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { IconBrandFacebook } from '@tabler/icons-react';
 import { CORPSC } from '@/lib/companies';
 import { DEPARTMENT_LABEL, DEPARTMENT_SLUG, Department } from '@/lib/types';
 import { Icon } from './Icon';
@@ -33,11 +35,14 @@ function SocialLink({
   href,
   label,
   icon,
+  iconNode,
   external = true,
 }: {
   href: string;
   label: string;
-  icon: string;
+  // Icono por nombre (sistema Icon) o un nodo propio (p. ej. icono de marca).
+  icon?: string;
+  iconNode?: ReactNode;
   external?: boolean;
 }) {
   return (
@@ -47,7 +52,7 @@ function SocialLink({
       {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       className="flex h-10 w-10 items-center justify-center rounded-full border border-inverse-on-surface/20 text-inverse-on-surface/80 transition-all hover:-translate-y-0.5 hover:border-inverse-on-surface/50 hover:text-inverse-on-surface"
     >
-      <Icon name={icon} />
+      {iconNode ?? (icon ? <Icon name={icon} /> : null)}
     </a>
   );
 }
@@ -146,7 +151,7 @@ export function Footer() {
             <SocialLink
               href="https://www.facebook.com/corpsc"
               label="Síguenos en Facebook"
-              icon="facebook"
+              iconNode={<IconBrandFacebook className="h-5 w-5" stroke={1.75} />}
             />
           </div>
         </div>

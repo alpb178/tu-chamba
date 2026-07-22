@@ -16,6 +16,13 @@ const STATUS_STYLE = {
   DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
 };
 
+// Icono que marca el estado del anuncio (mismo criterio que el panel admin).
+const STATUS_ICON = {
+  ACTIVO: 'check_circle',
+  VENCIDO: 'schedule',
+  DADO_DE_BAJA: 'block',
+};
+
 // Icono Material Symbols por rubro para el tile de la tarjeta.
 const CATEGORY_ICON: Record<Category, string> = {
   VENTAS: 'storefront',
@@ -104,8 +111,9 @@ export function AdCard({
             <Badge jobType={ad.jobType} />
             {showStatus && (
               <span
-                className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${STATUS_STYLE[status]}`}
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] ${STATUS_STYLE[status]}`}
               >
+                <Icon name={STATUS_ICON[status]} className="text-sm" />
                 {STATUS_LABEL[status]}
               </span>
             )}
