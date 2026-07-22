@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Company, COMPANIES } from '@/lib/companies';
 import { api } from '@/lib/api';
 import { Icon } from './Icon';
-import { Heading } from './ui';
 import { Tilt3D } from './fx/Tilt3D';
 import { SlideBurst } from './fx/SlideBurst';
 
@@ -150,15 +149,7 @@ export function FeaturedBrands() {
 
   return (
     <section aria-label="Sitios de interés" className="mt-20">
-      <div className="mb-6 flex items-end justify-between gap-4">
-        <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-secondary-container">
-            Grupo CorpSC
-          </p>
-          <Heading as="h2" size="sm">
-            Sitios de interés
-          </Heading>
-        </div>
+      <div className="mb-6 flex items-end justify-end gap-4">
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
           <button
             type="button"
