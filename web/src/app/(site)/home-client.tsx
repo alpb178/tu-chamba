@@ -160,9 +160,12 @@ function CatalogHeader({
         </Heading>
         <Subheading className="mx-0 text-left">
           Conecta directo con empleadores locales — sin CV, por WhatsApp.{' '}
-          <span className="font-semibold text-primary">
+          <Link
+            href="/listings/new"
+            className="font-semibold text-primary underline-offset-4 hover:underline"
+          >
             Publica u ofrece trabajo en toda Bolivia.
-          </span>
+          </Link>
         </Subheading>
         <form
           onSubmit={submit}
