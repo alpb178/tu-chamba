@@ -25,7 +25,7 @@ function trackSiteClick(company: Company) {
 function BrandCard({ company }: { company: Company }) {
   const track = () => trackSiteClick(company);
   return (
-    <article className="flex h-full flex-col overflow-hidden border border-outline-variant bg-surface-container-lowest shadow-aceternity transition-shadow hover:shadow-derek">
+    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-aceternity transition-shadow hover:shadow-derek">
       <a
         href={company.url}
         target="_blank"
@@ -59,7 +59,7 @@ function BrandCard({ company }: { company: Company }) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={track}
-          className="inline-flex w-full items-center justify-center gap-2 bg-inverse-surface px-4 py-2.5 text-sm font-bold uppercase tracking-[0.1em] text-on-primary transition-all hover:-translate-y-0.5 hover:bg-on-background focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-tertiary px-4 py-2.5 text-sm font-bold text-on-tertiary transition-all hover:-translate-y-0.5 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           aria-label={`Visitar el sitio de ${company.name} (se abre en una pestaña nueva)`}
         >
           Visitar sitio

@@ -5,12 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight, Briefcase, ChevronLeft, ChevronRight } from 'lucide-react';
+import { COMPANIES } from '@/lib/companies';
 import { SlideBurst } from './fx/SlideBurst';
 
-// Imágenes de la columna derecha (marco decorativo). Por ahora una sola; el
-// carrusel admite más — conviene sustituirla por fotos limpias sin texto
-// incrustado (idealmente cuadradas), p. ej. en /public/hero/1.jpeg, etc.
-const CAROUSEL_IMAGES = ['/banner.jpeg'];
+// Imágenes de la columna derecha (marco decorativo): las mismas del carrusel
+// de "Sitios de interés" (banner de Tu Chamba + capturas de las empresas del
+// grupo). El carrusel autoavanza y muestra flechas/puntos al haber varias.
+const CAROUSEL_IMAGES = ['/banner.jpeg', ...COMPANIES.map((c) => c.image)];
 
 // Carrusel de la imagen del hero (autoavance + flechas/puntos si hay >1).
 // Portado del hero de Iris Natural y adaptado a los tokens M3 de tu-chamba.
