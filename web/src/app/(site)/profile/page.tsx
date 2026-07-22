@@ -68,7 +68,7 @@ export default function ProfilePage() {
 
   if (loading || !user)
     return (
-      <div className="mx-auto max-w-md space-y-4 rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+      <div className="mx-auto max-w-md space-y-4 border border-outline-variant bg-surface-container-lowest p-6">
         <Skeleton className="h-7 w-32" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
@@ -77,7 +77,7 @@ export default function ProfilePage() {
     );
 
   return (
-    <div className="mx-auto max-w-md rounded-lg border border-outline-variant bg-surface-container-lowest p-6">
+    <div className="mx-auto max-w-md border border-outline-variant bg-surface-container-lowest p-6">
       <h1 className="mb-4 text-xl font-semibold text-on-surface">Mi perfil</h1>
       <form onSubmit={onSubmit} className="space-y-4">
         <FormField label="Correo (no se puede modificar)">

@@ -40,8 +40,8 @@ const HEADERS = [
 const LIMIT = 20;
 
 const STATUS_STYLE: Record<EffectiveStatus, string> = {
-  ACTIVO: 'bg-green-100 text-green-800',
-  VENCIDO: 'bg-amber-100 text-amber-800',
+  ACTIVO: 'bg-tertiary-container text-on-tertiary-container',
+  VENCIDO: 'bg-secondary-container text-on-secondary-container',
   DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
 };
 

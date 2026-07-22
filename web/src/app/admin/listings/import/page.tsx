@@ -42,7 +42,7 @@ const CLEAN_HEADERS = [
 ];
 
 const CELL_INPUT_CLASS =
-  'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-2 py-1.5 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary';
+  'w-full border border-outline-variant bg-surface-container-lowest px-2 py-1.5 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary';
 
 // Celdas editables no controladas: el estado se actualiza al salir del campo
 // (onBlur) para no re-renderizar toda la tabla en cada tecla.
@@ -308,7 +308,7 @@ export default function ImportAdsPage() {
       </div>
 
       {/* Formato esperado */}
-      <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 text-sm text-on-surface-variant shadow-sm">
+      <div className="border border-outline-variant bg-surface-container-lowest p-5 text-sm text-on-surface-variant shadow-aceternity">
         <p className="font-medium text-on-surface">Formato del archivo</p>
         <p className="mt-2">
           Columnas obligatorias:{' '}
@@ -358,7 +358,7 @@ export default function ImportAdsPage() {
       </div>
 
       {created != null && (
-        <div className="flex items-center justify-between rounded-xl border border-outline-variant bg-green-50 px-5 py-4 text-sm text-green-800">
+        <div className="flex items-center justify-between border border-outline-variant bg-tertiary-container px-5 py-4 text-sm text-on-tertiary-container">
           <span>
             Se importaron {created} {created === 1 ? 'oferta' : 'ofertas'} correctamente.
           </span>
@@ -371,13 +371,13 @@ export default function ImportAdsPage() {
       {error && <p className="text-sm text-error">{error}</p>}
 
       {parsed?.headerError && (
-        <p className="rounded-xl border border-outline-variant bg-amber-50 px-5 py-4 text-sm text-amber-800">
+        <p className="border border-outline-variant bg-secondary-container px-5 py-4 text-sm text-on-secondary-container">
           {fileName}: {parsed.headerError}
         </p>
       )}
 
       {parsed && !parsed.headerError && parsed.rows.length === 0 && (
-        <p className="rounded-xl border border-outline-variant bg-amber-50 px-5 py-4 text-sm text-amber-800">
+        <p className="border border-outline-variant bg-secondary-container px-5 py-4 text-sm text-on-secondary-container">
           {fileName}: las {discarded} filas del archivo fueron eliminadas por no tener
           descripción o teléfono; no hay nada para importar.
         </p>
@@ -463,7 +463,7 @@ export default function ImportAdsPage() {
               ).map(([label, value]) => (
                 <div
                   key={label}
-                  className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"
+                  className="border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
                 >
                   <p className="text-xs text-on-surface-variant">{label}</p>
                   <p className="mt-1 font-display text-2xl font-bold text-primary">{value}</p>
@@ -550,7 +550,7 @@ export default function ImportAdsPage() {
                           Eliminada: {row.removedReasons.join('; ')}
                         </span>
                       ) : (
-                        <span className="inline-block rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                        <span className="inline-block rounded-full bg-tertiary-container px-2.5 py-0.5 text-xs font-medium text-on-tertiary-container">
                           Lista
                         </span>
                       )}
@@ -658,7 +658,7 @@ export default function ImportAdsPage() {
                   </td>
                   <td className="px-4 py-3 align-top">
                     {row.errors.length === 0 ? (
-                      <span className="inline-block rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                      <span className="inline-block rounded-full bg-tertiary-container px-2.5 py-0.5 text-xs font-medium text-on-tertiary-container">
                         Lista
                       </span>
                     ) : (

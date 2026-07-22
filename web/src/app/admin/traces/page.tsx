@@ -38,28 +38,28 @@ const LIMIT = 20;
 
 // Chips por familia de evento: sesión/registro, altas, cambios y bajas.
 const TYPE_STYLE: Record<TraceType, string> = {
-  LOGIN: 'bg-blue-100 text-blue-800',
-  LOGOUT: 'bg-blue-100 text-blue-800',
-  REGISTER: 'bg-blue-100 text-blue-800',
-  EMAIL_VERIFIED: 'bg-green-100 text-green-800',
-  ADMIN_CREATED: 'bg-purple-100 text-purple-800',
-  ROLE_UPDATED: 'bg-amber-100 text-amber-800',
-  USER_DELETED: 'bg-red-100 text-red-800',
-  AD_CREATED: 'bg-green-100 text-green-800',
-  AD_UPDATED: 'bg-amber-100 text-amber-800',
+  LOGIN: 'bg-primary-container text-on-primary-container',
+  LOGOUT: 'bg-primary-container text-on-primary-container',
+  REGISTER: 'bg-primary-container text-on-primary-container',
+  EMAIL_VERIFIED: 'bg-tertiary-container text-on-tertiary-container',
+  ADMIN_CREATED: 'bg-secondary text-on-secondary',
+  ROLE_UPDATED: 'bg-secondary-container text-on-secondary-container',
+  USER_DELETED: 'bg-error-container text-on-error-container',
+  AD_CREATED: 'bg-tertiary-container text-on-tertiary-container',
+  AD_UPDATED: 'bg-secondary-container text-on-secondary-container',
   AD_VIEWED: 'bg-surface-container-high text-on-surface-variant',
-  AD_IMPORTED: 'bg-green-100 text-green-800',
-  AD_UNPUBLISHED: 'bg-amber-100 text-amber-800',
-  AD_REPUBLISHED: 'bg-green-100 text-green-800',
-  AD_DELETED: 'bg-red-100 text-red-800',
-  REPORT_CREATED: 'bg-purple-100 text-purple-800',
-  REPORT_RESOLVED: 'bg-purple-100 text-purple-800',
-  REPORT_DELETED: 'bg-red-100 text-red-800',
-  REVIEW_CREATED: 'bg-green-100 text-green-800',
-  REVIEW_UPDATED: 'bg-amber-100 text-amber-800',
-  REVIEW_DELETED: 'bg-red-100 text-red-800',
-  USER_UPDATED: 'bg-amber-100 text-amber-800',
-  TRACE_DELETED: 'bg-red-100 text-red-800',
+  AD_IMPORTED: 'bg-tertiary-container text-on-tertiary-container',
+  AD_UNPUBLISHED: 'bg-secondary-container text-on-secondary-container',
+  AD_REPUBLISHED: 'bg-tertiary-container text-on-tertiary-container',
+  AD_DELETED: 'bg-error-container text-on-error-container',
+  REPORT_CREATED: 'bg-secondary text-on-secondary',
+  REPORT_RESOLVED: 'bg-secondary text-on-secondary',
+  REPORT_DELETED: 'bg-error-container text-on-error-container',
+  REVIEW_CREATED: 'bg-tertiary-container text-on-tertiary-container',
+  REVIEW_UPDATED: 'bg-secondary-container text-on-secondary-container',
+  REVIEW_DELETED: 'bg-error-container text-on-error-container',
+  USER_UPDATED: 'bg-secondary-container text-on-secondary-container',
+  TRACE_DELETED: 'bg-error-container text-on-error-container',
 };
 
 const TYPES = Object.keys(TRACE_TYPE_LABEL) as TraceType[];
@@ -243,8 +243,8 @@ export default function TracesPage() {
                   <span
                     className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       t.result === 'OK'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-tertiary-container text-on-tertiary-container'
+                        : 'bg-error-container text-on-error-container'
                     }`}
                   >
                     {t.result === 'OK' ? 'Correcto' : 'Error'}

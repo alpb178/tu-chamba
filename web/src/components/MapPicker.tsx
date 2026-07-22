@@ -161,7 +161,7 @@ function PickerMap({
       <button
         type="button"
         onClick={useMyLocation}
-        className="absolute bottom-2 left-2 z-[1001] rounded-md border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-sm hover:text-primary"
+        className="absolute bottom-2 left-2 z-[1001] border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-aceternity hover:text-primary"
       >
         📍 Usar mi ubicación
       </button>
@@ -201,12 +201,12 @@ export function MapPicker({
           lng={lng}
           onChange={onChange}
           onPlace={onPlace}
-          className="h-64 w-full rounded-md border border-outline-variant"
+          className="h-64 w-full border border-outline-variant"
         />
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="absolute right-2 top-2 z-[1001] rounded-md border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-sm hover:text-primary"
+          className="absolute right-2 top-2 z-[1001] border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-aceternity hover:text-primary"
         >
           ⤢ Ampliar
         </button>
@@ -224,7 +224,7 @@ export function MapPicker({
           aria-label="Mapa ampliado"
         >
           <div
-            className="relative z-0 h-[85vh] w-full max-w-5xl overflow-hidden rounded-lg bg-surface-container-lowest"
+            className="relative z-0 h-[85vh] w-full max-w-5xl overflow-hidden bg-surface-container-lowest"
             onClick={(e) => e.stopPropagation()}
           >
             <PickerMap
@@ -239,7 +239,7 @@ export function MapPicker({
               type="button"
               autoFocus
               onClick={() => setExpanded(false)}
-              className="absolute right-3 top-3 z-[1001] rounded-md border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow hover:text-primary"
+              className="absolute right-3 top-3 z-[1001] border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow-aceternity hover:text-primary"
             >
               ✕ Cerrar
             </button>
@@ -257,7 +257,7 @@ export function MapView({
   lat,
   lng,
   zoom = PIN_ZOOM,
-  className = 'h-56 rounded-md border border-outline-variant',
+  className = 'h-56 border border-outline-variant',
 }: {
   lat: number;
   lng: number;

@@ -75,10 +75,10 @@ export default function JobAlertsPage() {
           <Skeleton className="h-7 w-48" />
           <Skeleton className="h-4 w-72" />
         </div>
-        <Skeleton className="h-40 w-full rounded-lg" />
+        <Skeleton className="h-40 w-full" />
         <div className="space-y-2">
-          <Skeleton className="h-12 w-full rounded-md" />
-          <Skeleton className="h-12 w-full rounded-md" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
         </div>
       </div>
     );
@@ -95,7 +95,7 @@ export default function JobAlertsPage() {
 
       <form
         onSubmit={create}
-        className="space-y-4 rounded-lg border border-outline-variant bg-surface-container-lowest p-4"
+        className="space-y-4 border border-outline-variant bg-surface-container-lowest p-4"
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="Departamento">
@@ -138,7 +138,7 @@ export default function JobAlertsPage() {
             Aún no tienes alertas. Crea una para recibir avisos de nuevas ofertas.
           </p>
         ) : (
-          <ul className="divide-y divide-outline-variant/60 rounded-lg border border-outline-variant bg-surface-container-lowest">
+          <ul className="divide-y divide-outline-variant/60 border border-outline-variant bg-surface-container-lowest">
             {items.map((a) => (
               <li key={a.id} className="flex items-center justify-between px-4 py-3">
                 <span className="text-sm text-on-surface">{describe(a)}</span>

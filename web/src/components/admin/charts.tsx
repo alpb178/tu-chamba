@@ -8,6 +8,11 @@ import { Icon } from './Icon';
 // Especificación: barras ≤24px, punta redondeada solo en el extremo del dato,
 // una sola serie por gráfico (el título nombra la serie, sin leyenda).
 
+// Azul de marca por defecto de las gráficas. Corresponde al token
+// --c-primary (0 74 198); va como literal porque el SVG/canvas no resuelve
+// variables CSS de forma fiable en el atributo color.
+const BRAND_BLUE = '#004AC6';
+
 // 'YYYY-MM-DD' → 'd/M' sin pasar por Date (evita desfases de zona horaria).
 function dayLabel(date: string) {
   const [, month, day] = date.split('-');
@@ -18,7 +23,7 @@ function dayLabel(date: string) {
 // el resto de valores vive en el tooltip.
 export function DailyColumns({
   data,
-  color = '#004ac6',
+  color = BRAND_BLUE,
   unit,
 }: {
   data: DayPoint[];
@@ -38,7 +43,7 @@ export function DailyColumns({
               key={d.date}
               className="group relative flex h-full flex-1 flex-col items-center justify-end"
             >
-              <div className="pointer-events-none absolute -top-1 z-10 hidden -translate-y-full whitespace-nowrap rounded-md bg-inverse-surface px-2 py-1 text-xs text-white group-hover:block">
+              <div className="pointer-events-none absolute -top-1 z-10 hidden -translate-y-full whitespace-nowrap bg-inverse-surface px-2 py-1 text-xs text-inverse-on-surface group-hover:block">
                 {dayLabel(d.date)} — {d.total} {unit}
               </div>
               {isMax && (
@@ -86,7 +91,7 @@ export function DailyColumns({
 // DailyColumns. Solo se etiqueta la hora pico; el eje marca cada 3 horas.
 export function HourlyColumns({
   data,
-  color = '#004ac6',
+  color = BRAND_BLUE,
   unit,
 }: {
   data: HourPoint[];
@@ -105,7 +110,7 @@ export function HourlyColumns({
             key={d.hour}
             className="group relative flex h-full flex-1 flex-col items-center justify-end"
           >
-            <div className="pointer-events-none absolute -top-1 z-10 hidden -translate-y-full whitespace-nowrap rounded-md bg-inverse-surface px-2 py-1 text-xs text-white group-hover:block">
+            <div className="pointer-events-none absolute -top-1 z-10 hidden -translate-y-full whitespace-nowrap bg-inverse-surface px-2 py-1 text-xs text-inverse-on-surface group-hover:block">
               {d.hour}:00–{d.hour}:59 — {d.total} {unit}
             </div>
             {hasData && i === maxIndex && (
@@ -153,7 +158,7 @@ export function HourlyColumns({
 // puntos son divs absolutos, así nada se deforma al cambiar el ancho.
 export function DailyLine({
   data,
-  color = '#004ac6',
+  color = BRAND_BLUE,
   unit,
 }: {
   data: DayPoint[];
@@ -203,7 +208,7 @@ export function DailyLine({
           {data.map((d, i) => (
             <div key={d.date} className="group relative h-full flex-1">
               <div
-                className="pointer-events-none absolute z-10 hidden -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-md bg-inverse-surface px-2 py-1 text-xs text-white group-hover:block"
+                className="pointer-events-none absolute z-10 hidden -translate-x-1/2 -translate-y-full whitespace-nowrap bg-inverse-surface px-2 py-1 text-xs text-inverse-on-surface group-hover:block"
                 style={{ left: `${50}%`, top: `calc(${y(d.total)}% - 8px)` }}
               >
                 {dayLabel(d.date)} — {d.total} {unit}
@@ -256,7 +261,7 @@ export function DailyLine({
 // Barras horizontales con el valor en la punta (una sola serie/tono).
 export function HorizontalBars({
   data,
-  color = '#004ac6',
+  color = BRAND_BLUE,
 }: {
   data: { label: string; total: number }[];
   color?: string;
@@ -297,7 +302,7 @@ export function ChartCard({
   children: React.ReactNode;
 }) {
   const base =
-    'rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm';
+    'border border-outline-variant bg-surface-container-lowest p-5 shadow-aceternity';
   if (!href) {
     return (
       <div className={base}>
@@ -312,7 +317,7 @@ export function ChartCard({
     <Link
       href={href}
       title="Ver la sección"
-      className={`group/card block transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-md ${base}`}
+      className={`group/card block transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-derek ${base}`}
     >
       <h2 className="mb-4 flex items-center justify-between gap-2 text-sm font-medium text-on-surface-variant">
         {title}

@@ -85,7 +85,7 @@ function CreateAdminDialog({
       <form
         onSubmit={submit}
         autoComplete="off"
-        className="w-full max-w-sm space-y-4 rounded-lg bg-surface-container-lowest p-6 shadow-lg"
+        className="w-full max-w-sm space-y-4 border border-outline-variant bg-surface-container-lowest p-6 shadow-derek"
       >
         <div>
           <h3 className="text-lg font-semibold text-on-surface">Crear administrador</h3>

@@ -55,7 +55,7 @@ export function Pagination({
 
       <nav
         aria-label="Paginación"
-        className="flex divide-x divide-outline-variant overflow-hidden rounded-lg border border-outline-variant bg-surface-container-lowest"
+        className="flex divide-x divide-outline-variant overflow-hidden border border-outline-variant bg-surface-container-lowest"
       >
         <button
           type="button"

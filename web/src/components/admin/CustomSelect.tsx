@@ -160,7 +160,7 @@ export function CustomSelect({
         }
         onClick={() => (open ? setOpen(false) : openList())}
         onKeyDown={onTriggerKey}
-        className={`flex w-full items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-left text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
+        className={`flex w-full items-center gap-2 border border-outline-variant bg-surface-container-lowest px-3 py-2 text-left text-sm text-on-surface outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary ${className}`}
       >
         {icon && (
           <Icon name={icon} className="text-outline" />
@@ -190,7 +190,7 @@ export function CustomSelect({
       )}
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg">
+        <div className="absolute z-50 mt-1 w-full overflow-hidden border border-outline-variant bg-surface-container-lowest shadow-derek">
           {withSearch && (
             <div className="flex items-center gap-2 border-b border-outline-variant/60 px-3 py-2">
               <Icon name="search" className="text-lg text-outline" />

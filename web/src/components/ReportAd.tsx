@@ -58,7 +58,7 @@ export function ReportAd({ adId }: { adId: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-outline-variant p-3">
+    <form onSubmit={onSubmit} className="space-y-3 border border-outline-variant p-3">
       <p className="text-sm font-medium text-on-surface-variant">Reportar anuncio</p>
       <FormField label="Motivo">
         <CustomSelect
@@ -71,7 +71,7 @@ export function ReportAd({ adId }: { adId: string }) {
       </FormField>
       <FormField label="Comentario (opcional)">
         <textarea
-          className="w-full rounded-md border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+          className="w-full border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           rows={2}
           value={comment}
           onChange={(e) => setComment(e.target.value)}

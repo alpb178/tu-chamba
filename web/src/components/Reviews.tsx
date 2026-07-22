@@ -104,7 +104,7 @@ export function Reviews({
 
       <ul className="space-y-2">
         {data?.items.map((r) => (
-          <li key={r.id} className="rounded-md bg-surface-container-low p-3">
+          <li key={r.id} className="bg-surface-container-low p-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-on-surface-variant">
                 {r.author?.name ?? 'Usuario'}
@@ -131,7 +131,7 @@ export function Reviews({
       )}
 
       {canReview && formOpen && (
-        <form onSubmit={onSubmit} className="space-y-3 rounded-md border border-outline-variant p-3">
+        <form onSubmit={onSubmit} className="space-y-3 border border-outline-variant p-3">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-on-surface-variant">
               Calificar este anuncio
@@ -163,7 +163,7 @@ export function Reviews({
           </FormField>
           <FormField label="Comentario">
             <textarea
-              className="w-full rounded-md border border-outline-variant px-3 py-2 text-base outline-none focus:border-brand focus:ring-1 focus:ring-brand"
+              className="w-full border border-outline-variant px-3 py-2 text-base outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
