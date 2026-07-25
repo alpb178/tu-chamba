@@ -38,6 +38,60 @@ const includeCounts = {
   _count: { select: { visits: true, interests: true } },
 };
 
+// Campos mínimos para puntuar el orden del listado público (ver byRelevance),
+// sin traer los textos del anuncio.
+const selectRanking = {
+  id: true,
+  salary: true,
+  requirements: true,
+  location: true,
+  locationReference: true,
+  department: true,
+  category: true,
+  schedule: true,
+  latitude: true,
+  longitude: true,
+  createdAt: true,
+  _count: { select: { visits: true } },
+} satisfies Prisma.AdSelect;
+
+type RankedAd = Prisma.AdGetPayload<{ select: typeof selectRanking }>;
+
+// Datos opcionales que suman al grado de completitud del anuncio (tercer
+// criterio de orden). El salario no cuenta aquí: ya es el primer criterio.
+const OPTIONAL_FIELDS = [
+  'requirements',
+  'location',
+  'locationReference',
+  'department',
+  'category',
+  'schedule',
+] as const;
+
+// Cuántos datos opcionales llenó el publicante (0..7). El pin del mapa cuenta
+// como un solo dato aunque sean dos columnas.
+function completeness(ad: RankedAd) {
+  let score = OPTIONAL_FIELDS.reduce(
+    (n, field) => (ad[field] != null && ad[field] !== '' ? n + 1 : n),
+    0,
+  );
+  if (ad.latitude != null && ad.longitude != null) score += 1;
+  return score;
+}
+
+// Orden del listado público: 1) primero los que tienen salario definido,
+// 2) luego los de más accesos acumulados, 3) luego los más completos y
+// 4) el más reciente como desempate.
+function byRelevance(a: RankedAd, b: RankedAd) {
+  const withSalary = (ad: RankedAd) => (ad.salary != null ? 0 : 1);
+  return (
+    withSalary(a) - withSalary(b) ||
+    b._count.visits - a._count.visits ||
+    completeness(b) - completeness(a) ||
+    b.createdAt.getTime() - a.createdAt.getTime()
+  );
+}
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 function expiryDate(durationDays: number, from = new Date()) {
@@ -72,9 +126,10 @@ export class AdsService {
     private indexing: GoogleIndexingService,
   ) {}
 
-  // Listado público: solo anuncios vigentes (activos y no vencidos).
+  // Listado público: solo anuncios vigentes (activos y no vencidos), ordenados
+  // por relevancia (salario definido → accesos → completitud).
   async findAll(query: QueryAdDto) {
-    return this.paginate(query, whereActive());
+    return this.paginate(query, whereActive(), 'relevance');
   }
 
   // Conteos por opción sobre anuncios vigentes (para la barra de filtros).
@@ -87,7 +142,9 @@ export class AdsService {
       this.prisma.ad.aggregate({
         where,
         _min: { salary: true },
-        _max: { salary: true },
+        // El techo del deslizador considera los rangos: un anuncio "3500 a
+        // 4500" empuja el máximo a 4500, no a 3500.
+        _max: { salary: true, salaryMax: true },
       }),
       this.prisma.ad.count({ where }),
     ]);
@@ -110,7 +167,10 @@ export class AdsService {
       department: counts(byDepartment, 'department'),
       category: counts(byCategory, 'category'),
       salaryMin: agg._min.salary ? Number(agg._min.salary) : 0,
-      salaryMax: agg._max.salary ? Number(agg._max.salary) : 0,
+      salaryMax: Math.max(
+        agg._max.salary ? Number(agg._max.salary) : 0,
+        agg._max.salaryMax ? Number(agg._max.salaryMax) : 0,
+      ),
     };
   }
 
@@ -148,7 +208,11 @@ export class AdsService {
     return this.paginate(query, base);
   }
 
-  private async paginate(query: QueryAdDto, base: Prisma.AdWhereInput) {
+  private async paginate(
+    query: QueryAdDto,
+    base: Prisma.AdWhereInput,
+    order: 'recent' | 'relevance' = 'recent',
+  ) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
 
@@ -161,10 +225,23 @@ export class AdsService {
     if (departments.length) where.department = { in: departments };
     if (categories.length) where.category = { in: categories };
 
+    // El sueldo del anuncio puede ser un monto fijo (salary) o un rango
+    // [salary, salaryMax]: pasan los que se solapan con el rango pedido. Los
+    // anuncios sin salario quedan fuera al filtrar por sueldo, como antes.
     if (query.salaryMin != null || query.salaryMax != null) {
-      where.salary = {};
-      if (query.salaryMin != null) where.salary.gte = query.salaryMin;
-      if (query.salaryMax != null) where.salary.lte = query.salaryMax;
+      // El piso del anuncio no puede superar el techo pedido.
+      if (query.salaryMax != null) where.salary = { lte: query.salaryMax };
+      if (query.salaryMin != null) {
+        // El techo del anuncio es salaryMax si es un rango; si no, su salary.
+        where.AND = [
+          {
+            OR: [
+              { salaryMax: { gte: query.salaryMin } },
+              { salaryMax: null, salary: { gte: query.salaryMin } },
+            ],
+          },
+        ];
+      }
     }
 
     if (query.search) {
@@ -173,6 +250,7 @@ export class AdsService {
         { description: { contains: query.search, mode: 'insensitive' } },
         { requirements: { contains: query.search, mode: 'insensitive' } },
         { location: { contains: query.search, mode: 'insensitive' } },
+        { locationReference: { contains: query.search, mode: 'insensitive' } },
       ];
     }
 
@@ -180,6 +258,8 @@ export class AdsService {
     if (query.location) {
       where.location = { contains: query.location, mode: 'insensitive' };
     }
+
+    if (order === 'relevance') return this.pageByRelevance(where, page, limit);
 
     const [items, total] = await Promise.all([
       this.prisma.ad.findMany({
@@ -192,6 +272,45 @@ export class AdsService {
       }),
       this.prisma.ad.count({ where }),
     ]);
+
+    return {
+      items: await this.attachOwnerRatings(items),
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  // Página del listado público ordenada por relevancia. Prisma no puede
+  // ordenar por "tiene salario" ni por completitud (son expresiones
+  // calculadas), así que se traen solo los campos de ranking de los anuncios
+  // que pasan el filtro —los vigentes, un conjunto acotado—, se ordenan aquí y
+  // se hidrata únicamente la página pedida.
+  private async pageByRelevance(
+    where: Prisma.AdWhereInput,
+    page: number,
+    limit: number,
+  ) {
+    const ranked = await this.prisma.ad.findMany({
+      where,
+      select: selectRanking,
+    });
+    ranked.sort(byRelevance);
+
+    const total = ranked.length;
+    const ids = ranked.slice((page - 1) * limit, page * limit).map((a) => a.id);
+    const rows = ids.length
+      ? await this.prisma.ad.findMany({
+          where: { id: { in: ids } },
+          include: { ...includeAuthor, ...includeCounts },
+        })
+      : [];
+    // findMany con "in" no respeta el orden de los ids: se reordena aquí.
+    const byId = new Map(rows.map((row) => [row.id, row]));
+    const items = ids
+      .map((id) => byId.get(id))
+      .filter((row): row is (typeof rows)[number] => row != null);
 
     return {
       items: await this.attachOwnerRatings(items),
@@ -241,9 +360,9 @@ export class AdsService {
     return ad;
   }
 
-  // Detalle público: el teléfono y la ubicación solo se exponen a usuarios
-  // con sesión (regla de negocio). Los anónimos ven el resto (para SEO); el
-  // departamento sí queda visible como zona general.
+  // Detalle público: los teléfonos y la ubicación (con su referencia) solo se
+  // exponen a usuarios con sesión (regla de negocio). Los anónimos ven el resto
+  // (para SEO); el departamento sí queda visible como zona general.
   async findOnePublic(id: string, user: AuthUser | null) {
     const ad = await this.findOne(id);
     void this.traces.record(
@@ -255,7 +374,9 @@ export class AdsService {
     if (user) return ad;
     const {
       phone: _phone,
+      extraPhones: _extraPhones,
       location: _location,
+      locationReference: _reference,
       latitude: _lat,
       longitude: _lng,
       ...publicAd
@@ -267,7 +388,14 @@ export class AdsService {
   async getContact(id: string) {
     const ad = await this.prisma.ad.findUnique({
       where: { id },
-      select: { phone: true, location: true, latitude: true, longitude: true },
+      select: {
+        phone: true,
+        extraPhones: true,
+        location: true,
+        locationReference: true,
+        latitude: true,
+        longitude: true,
+      },
     });
     if (!ad) throw new NotFoundException('Anuncio no encontrado');
     return ad;
@@ -325,6 +453,10 @@ export class AdsService {
         const durationDays = dto.durationDays ?? 7;
         return {
           ...dto,
+          // createMany arma un INSERT con la unión de columnas de todo el lote:
+          // las filas sin teléfonos adicionales mandarían NULL explícito en vez
+          // de tomar el default, y la columna es NOT NULL.
+          extraPhones: dto.extraPhones ?? [],
           durationDays,
           expiresAt: expiryDate(durationDays, now),
           createdById: user.id,

@@ -12,10 +12,17 @@ datasource db {
 // docs/MIGRACION-CODIGO-INGLES.md). Los VALORES de los enums tampoco se
 // migran: son códigos de dominio persistidos y visibles en URLs del portal.
 
+// A_CONVENIR cubre las ofertas que no declaran jornada (frecuente en las
+// importaciones de prensa): antes se guardaban como TIEMPO_COMPLETO, que era
+// un dato inventado.
 enum JobType {
   DIARIA
   TIEMPO_COMPLETO
   MEDIA_JORNADA
+  POR_CONTRATO
+  PASANTIA
+  FREELANCE
+  A_CONVENIR
 
   @@map("TipoJornada")
 }
@@ -49,6 +56,9 @@ enum Category {
   SALUD
   BELLEZA
   SEGURIDAD
+  AGROPECUARIA
+  MECANICA
+  MARKETING_DISENO
   OTRO
 
   @@map("Categoria")
@@ -180,6 +190,9 @@ model Ad {
   requirements String?   @map("requisitos")
   // Nullable solo por anuncios previos a la migración; la API lo exige al crear.
   location     String?   @map("ubicacion")
+  // Texto libre para orientar al postulante ("frente al mercado Los Pozos"):
+  // a diferencia de location no se usa para filtrar, solo se muestra.
+  locationReference String? @map("referenciaUbicacion")
   // Departamento y rubro para filtrar (nullable por datos previos a la migración).
   department   Department? @map("departamento")
   category     Category?   @map("categoria")
@@ -188,8 +201,14 @@ model Ad {
   longitude    Float?    @map("longitud")
   schedule     String?   @map("horario")
   // Nullable: la importación por CSV permite ofertas sin salario ("a convenir").
+  // Con salaryMax el par es un rango ("Bs 3.500 a 4.500"); solo, es un monto
+  // fijo. salary siempre es el extremo inferior del rango.
   salary       Decimal?  @map("salario") @db.Decimal(12, 2)
+  salaryMax    Decimal?  @map("salarioMax") @db.Decimal(12, 2)
+  // Teléfono principal (el que se muestra primero y usa WhatsApp) y los
+  // adicionales: las ofertas de prensa suelen publicar dos o tres números.
   phone        String    @map("telefono")
+  extraPhones  String[]  @default([]) @map("telefonosExtra")
   jobType      JobType   @map("tipoJornada")
   status       AdStatus  @default(ACTIVO) @map("estado")
   durationDays Int       @default(3) @map("duracionDias")

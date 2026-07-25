@@ -19,6 +19,12 @@ const EMPLOYMENT_TYPE: Record<JobType, string> = {
   TIEMPO_COMPLETO: 'FULL_TIME',
   MEDIA_JORNADA: 'PART_TIME',
   DIARIA: 'PER_DIEM',
+  POR_CONTRATO: 'CONTRACTOR',
+  PASANTIA: 'INTERN',
+  FREELANCE: 'CONTRACTOR',
+  // Sin jornada declarada (avisos importados): OTHER es el valor genérico
+  // del vocabulario de schema.org.
+  A_CONVENIR: 'OTHER',
 };
 
 // JSON-LD JobPosting para los rich results de Google for Jobs.
@@ -49,6 +55,8 @@ export function jobPostingJsonLd(ad: Ad) {
         addressCountry: 'BO',
       },
     },
+    // Un rango se declara con minValue/maxValue; un monto fijo, con value
+    // (ambas formas válidas para QuantitativeValue de Google for Jobs).
     ...(ad.salary != null
       ? {
           baseSalary: {
@@ -56,7 +64,12 @@ export function jobPostingJsonLd(ad: Ad) {
             currency: 'BOB',
             value: {
               '@type': 'QuantitativeValue',
-              value: Number(ad.salary),
+              ...(ad.salaryMax != null && Number(ad.salaryMax) > Number(ad.salary)
+                ? {
+                    minValue: Number(ad.salary),
+                    maxValue: Number(ad.salaryMax),
+                  }
+                : { value: Number(ad.salary) }),
               unitText: 'MONTH',
             },
           },

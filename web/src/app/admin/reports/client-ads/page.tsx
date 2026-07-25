@@ -12,6 +12,7 @@ import {
   DEPARTMENT_LABEL,
   EffectiveStatus,
   Paginated,
+  salaryLabel,
   STATUS_LABEL,
 } from '@/lib/admin/types';
 import {
@@ -219,10 +220,8 @@ export default function ClientAdsReportPage() {
                   <td className="px-4 py-3 text-on-surface-variant">
                     {ad.department ? DEPARTMENT_LABEL[ad.department] : '—'}
                   </td>
-                  <td className="px-4 py-3 text-on-surface-variant">
-                    {ad.salary != null
-                      ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
-                      : 'A convenir'}
+                  <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant">
+                    {salaryLabel(ad)}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant">
                     {new Date(ad.createdAt).toLocaleDateString('es-BO')}

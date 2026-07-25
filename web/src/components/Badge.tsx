@@ -5,6 +5,11 @@ const COLORS: Record<JobType, string> = {
   DIARIA: 'bg-secondary-container text-on-secondary-container',
   TIEMPO_COMPLETO: 'bg-tertiary-container text-on-tertiary-container',
   MEDIA_JORNADA: 'bg-brand-light text-primary',
+  POR_CONTRATO: 'bg-secondary-container text-on-secondary-container',
+  PASANTIA: 'bg-brand-light text-primary',
+  FREELANCE: 'bg-tertiary-container text-on-tertiary-container',
+  // Sin jornada declarada: chip neutro, no compite con las jornadas reales.
+  A_CONVENIR: 'bg-surface-variant text-on-surface-variant',
 };
 
 export function Badge({ jobType }: { jobType: JobType }) {

@@ -1,9 +1,20 @@
-export type JobType = 'DIARIA' | 'TIEMPO_COMPLETO' | 'MEDIA_JORNADA';
+export type JobType =
+  | 'DIARIA'
+  | 'TIEMPO_COMPLETO'
+  | 'MEDIA_JORNADA'
+  | 'POR_CONTRATO'
+  | 'PASANTIA'
+  | 'FREELANCE'
+  | 'A_CONVENIR';
 
 export const JOB_TYPE_LABEL: Record<JobType, string> = {
   DIARIA: 'Diaria',
   TIEMPO_COMPLETO: 'Tiempo completo',
   MEDIA_JORNADA: 'Media jornada',
+  POR_CONTRATO: 'Por contrato',
+  PASANTIA: 'Pasantía',
+  FREELANCE: 'Freelance',
+  A_CONVENIR: 'A convenir',
 };
 
 export type Department =
@@ -59,6 +70,9 @@ export type Category =
   | 'SALUD'
   | 'BELLEZA'
   | 'SEGURIDAD'
+  | 'AGROPECUARIA'
+  | 'MECANICA'
+  | 'MARKETING_DISENO'
   | 'OTRO';
 
 export const CATEGORY_LABEL: Record<Category, string> = {
@@ -74,6 +88,9 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   SALUD: 'Salud',
   BELLEZA: 'Belleza',
   SEGURIDAD: 'Seguridad',
+  AGROPECUARIA: 'Agropecuaria',
+  MECANICA: 'Mecánica',
+  MARKETING_DISENO: 'Marketing y diseño',
   OTRO: 'Otro',
 };
 
@@ -82,6 +99,9 @@ export type AdStatus = 'ACTIVO' | 'DADO_DE_BAJA';
 export type EffectiveStatus = 'ACTIVO' | 'VENCIDO' | 'DADO_DE_BAJA';
 
 export const DURATION_DAYS = [3, 7, 15, 30];
+
+// Tope de teléfonos adicionales por anuncio (igual que en la API).
+export const MAX_EXTRA_PHONES = 4;
 
 export type ReportReason = 'SPAM' | 'FRAUDE' | 'CONTENIDO_INAPROPIADO' | 'OTRO';
 
@@ -112,14 +132,21 @@ export interface Ad {
   description: string;
   requirements?: string | null;
   location?: string | null;
+  // Referencia en texto libre ("frente al mercado Los Pozos"): solo se muestra,
+  // no se filtra. Como el teléfono, requiere sesión para verla.
+  locationReference?: string | null;
   department?: Department | null;
   category?: Category | null;
   latitude?: number | null;
   longitude?: number | null;
   schedule?: string | null;
   // Nulo = salario a convenir (p. ej. anuncios importados por CSV sin salario).
+  // Con salaryMax el par es un rango; salary es siempre el extremo inferior.
   salary?: string | number | null;
+  salaryMax?: string | number | null;
   phone: string;
+  // Números de contacto adicionales (los avisos suelen publicar dos o tres).
+  extraPhones?: string[];
   jobType: JobType;
   status: AdStatus;
   durationDays: number;
@@ -223,6 +250,33 @@ export const STATUS_LABEL: Record<EffectiveStatus, string> = {
 // para no servir de redirección abierta.
 export function safeNext(next: string | null): string {
   return next && next.startsWith('/') && !next.startsWith('//') ? next : '/';
+}
+
+// Sueldo del anuncio como texto: monto fijo, rango ("Bs 3.500 a 4.500") o
+// "A convenir" cuando no hay salario. Única fuente para tarjetas y detalle.
+export function salaryLabel(
+  ad: Pick<Ad, 'salary' | 'salaryMax'>,
+  fallback = 'A convenir',
+) {
+  const amount = (v: Ad['salary']) =>
+    v != null && v !== '' ? Number(v) : null;
+  const min = amount(ad.salary);
+  if (min == null || !Number.isFinite(min)) return fallback;
+  const bs = (n: number) => n.toLocaleString('es-BO');
+  const max = amount(ad.salaryMax);
+  // Un techo igual al piso no es un rango, es el mismo monto.
+  return max != null && Number.isFinite(max) && max > min
+    ? `Bs ${bs(min)} a ${bs(max)}`
+    : `Bs ${bs(min)}`;
+}
+
+// Todos los números de contacto del anuncio, sin repetidos y sin vacíos: el
+// principal primero. Vacío si el anuncio llegó sin contacto (visitante anónimo).
+export function adPhones(ad: Pick<Ad, 'phone' | 'extraPhones'>): string[] {
+  const all = [ad.phone, ...(ad.extraPhones ?? [])]
+    .map((p) => (p ?? '').trim())
+    .filter(Boolean);
+  return [...new Set(all)];
 }
 
 // Enlace de WhatsApp: wa.me exige el número con código de país. Los números
