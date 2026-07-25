@@ -1,9 +1,20 @@
-export type JobType = 'DIARIA' | 'TIEMPO_COMPLETO' | 'MEDIA_JORNADA';
+export type JobType =
+  | 'DIARIA'
+  | 'TIEMPO_COMPLETO'
+  | 'MEDIA_JORNADA'
+  | 'POR_CONTRATO'
+  | 'PASANTIA'
+  | 'FREELANCE'
+  | 'A_CONVENIR';
 
 export const JOB_TYPE_LABEL: Record<JobType, string> = {
   DIARIA: 'Diaria',
   TIEMPO_COMPLETO: 'Tiempo completo',
   MEDIA_JORNADA: 'Media jornada',
+  POR_CONTRATO: 'Por contrato',
+  PASANTIA: 'Pasantía',
+  FREELANCE: 'Freelance',
+  A_CONVENIR: 'A convenir',
 };
 
 export type Department =
@@ -42,6 +53,9 @@ export type Category =
   | 'SALUD'
   | 'BELLEZA'
   | 'SEGURIDAD'
+  | 'AGROPECUARIA'
+  | 'MECANICA'
+  | 'MARKETING_DISENO'
   | 'OTRO';
 
 export const CATEGORY_LABEL: Record<Category, string> = {
@@ -57,6 +71,9 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   SALUD: 'Salud',
   BELLEZA: 'Belleza',
   SEGURIDAD: 'Seguridad',
+  AGROPECUARIA: 'Agropecuaria',
+  MECANICA: 'Mecánica',
+  MARKETING_DISENO: 'Marketing y diseño',
   OTRO: 'Otro',
 };
 
@@ -109,14 +126,20 @@ export interface Ad {
   description: string;
   requirements?: string | null;
   location?: string | null;
+  // Referencia en texto libre ("frente al mercado Los Pozos"): solo se muestra.
+  locationReference?: string | null;
   department?: Department | null;
   category?: Category | null;
   latitude?: number | null;
   longitude?: number | null;
   schedule?: string | null;
   // Nulo = salario a convenir (p. ej. anuncios importados por CSV sin salario).
+  // Con salaryMax el par es un rango; salary es siempre el extremo inferior.
   salary?: string | number | null;
+  salaryMax?: string | number | null;
   phone: string;
+  // Números de contacto adicionales (los avisos suelen publicar dos o tres).
+  extraPhones?: string[];
   jobType: JobType;
   status: AdStatus;
   durationDays: number;
@@ -362,4 +385,20 @@ export interface Paginated<T> {
 export function adEffectiveStatus(ad: Pick<Ad, 'status' | 'expiresAt'>): EffectiveStatus {
   if (ad.status === 'DADO_DE_BAJA') return 'DADO_DE_BAJA';
   return new Date(ad.expiresAt).getTime() > Date.now() ? 'ACTIVO' : 'VENCIDO';
+}
+
+// Sueldo del anuncio como texto: monto fijo, rango ("Bs 3.500 a 4.500") o
+// "A convenir" (mismo criterio que el portal, ver lib/types.ts).
+export function salaryLabel(
+  ad: Pick<Ad, 'salary' | 'salaryMax'>,
+  fallback = 'A convenir',
+) {
+  const amount = (v: Ad['salary']) => (v != null && v !== '' ? Number(v) : null);
+  const min = amount(ad.salary);
+  if (min == null || !Number.isFinite(min)) return fallback;
+  const bs = (n: number) => n.toLocaleString('es-BO');
+  const max = amount(ad.salaryMax);
+  return max != null && Number.isFinite(max) && max > min
+    ? `Bs ${bs(min)} a ${bs(max)}`
+    : `Bs ${bs(min)}`;
 }

@@ -12,7 +12,13 @@ import {
   Department,
   JobType,
 } from '@/lib/admin/types';
-import { buildTemplateCsv, CsvAd, parseAdsCsv, ParsedCsv } from '@/lib/admin/csv';
+import {
+  buildTemplateCsv,
+  CsvAd,
+  parseAdsCsv,
+  ParsedCsv,
+  parsePhones,
+} from '@/lib/admin/csv';
 import { CleanResult, cleanRows } from '@/lib/admin/clean';
 import { AdminTable, Button, IconButton, SelectCheckbox } from '@/components/admin/ui';
 import { useSelection } from '@/lib/admin/useSelection';
@@ -21,10 +27,11 @@ const PREVIEW_HEADERS = [
   'Línea',
   'Título',
   'Descripción',
-  'Teléfono',
+  'Teléfonos',
   'Departamento',
   'Categoría',
   'Salario',
+  'Salario máx.',
   'Jornada',
   'Estado',
   '',
@@ -35,11 +42,25 @@ const CLEAN_HEADERS = [
   'Título',
   'Descripción',
   'Requisitos',
-  'Teléfono',
+  'Teléfonos',
   'Cambios',
   'Estado',
   '',
 ];
+
+// Los teléfonos se editan como una sola celda ("77900185 / 67894829"): al
+// salir del campo se vuelven a repartir en principal y adicionales.
+function phonesCellValue(v: Partial<CsvAd>) {
+  return [v.phone, ...(v.extraPhones ?? [])].filter(Boolean).join(' / ');
+}
+
+function phonesCellPatch(raw: string): Partial<CsvAd> {
+  const phones = parsePhones(raw);
+  return {
+    phone: phones[0],
+    extraPhones: phones.length > 1 ? phones.slice(1) : undefined,
+  };
+}
 
 const CELL_INPUT_CLASS =
   'w-full border border-outline-variant bg-surface-container-lowest px-2 py-1.5 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary';
@@ -532,13 +553,11 @@ export default function ImportAdsPage() {
                     </td>
                     <td className="px-4 py-3 align-top">
                       <CellInput
-                        value={row.values.phone ?? ''}
-                        label={`Teléfono de la línea ${row.line}`}
+                        value={phonesCellValue(row.values)}
+                        label={`Teléfonos de la línea ${row.line}`}
                         type="tel"
-                        className="w-28"
-                        onCommit={(v) =>
-                          updateCleanRow(row.line, { phone: v.trim() || undefined })
-                        }
+                        className="w-40"
+                        onCommit={(v) => updateCleanRow(row.line, phonesCellPatch(v))}
                       />
                     </td>
                     <td className="px-4 py-3 align-top text-xs text-on-surface-variant">
@@ -611,11 +630,11 @@ export default function ImportAdsPage() {
                   </td>
                   <td className="px-4 py-3 align-top">
                     <CellInput
-                      value={row.values.phone ?? ''}
-                      label={`Teléfono de la línea ${row.line}`}
+                      value={phonesCellValue(row.values)}
+                      label={`Teléfonos de la línea ${row.line}`}
                       type="tel"
-                      className="w-28"
-                      onCommit={(v) => updateRawRow(row.line, { phone: v.trim() || undefined })}
+                      className="w-40"
+                      onCommit={(v) => updateRawRow(row.line, phonesCellPatch(v))}
                     />
                   </td>
                   <td className="px-4 py-3 align-top">
@@ -642,15 +661,37 @@ export default function ImportAdsPage() {
                       className="w-24"
                       onCommit={(v) => {
                         const n = Number(v);
+                        const salary =
+                          v.trim() && Number.isFinite(n) && n > 0 ? n : undefined;
+                        // Sin piso no hay rango posible: se limpia el techo.
                         updateRawRow(row.line, {
-                          salary: v.trim() && Number.isFinite(n) && n > 0 ? n : undefined,
+                          salary,
+                          ...(salary == null ? { salaryMax: undefined } : {}),
                         });
                       }}
                     />
                   </td>
                   <td className="px-4 py-3 align-top">
+                    <CellInput
+                      value={row.values.salaryMax != null ? String(row.values.salaryMax) : ''}
+                      label={`Salario máximo de la línea ${row.line}`}
+                      type="number"
+                      className="w-24"
+                      onCommit={(v) => {
+                        const n = Number(v);
+                        // Solo es rango si supera el piso; si no, monto fijo.
+                        const valid =
+                          v.trim() &&
+                          Number.isFinite(n) &&
+                          row.values.salary != null &&
+                          n > row.values.salary;
+                        updateRawRow(row.line, { salaryMax: valid ? n : undefined });
+                      }}
+                    />
+                  </td>
+                  <td className="px-4 py-3 align-top">
                     <CellSelect<JobType>
-                      value={row.values.jobType ?? 'TIEMPO_COMPLETO'}
+                      value={row.values.jobType ?? 'A_CONVENIR'}
                       labels={JOB_TYPE_LABEL}
                       label={`Jornada de la línea ${row.line}`}
                       onCommit={(v) => updateRawRow(row.line, { jobType: v })}

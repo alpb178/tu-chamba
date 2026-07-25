@@ -3,7 +3,7 @@ import { Alert, Linking, ScrollView, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation';
 import { api } from '@/lib/api';
-import { Ad } from '@/lib/types';
+import { Ad, adPhones, salaryLabel } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { Badge, Button } from '@/components/ui';
 import { Pulse, Skeleton } from '@/components/Skeleton';
@@ -56,19 +56,27 @@ export function DetailScreen({ route, navigation }: Props) {
       <Badge jobType={ad.jobType} />
       <Text className="my-4 text-base text-gray-800">{ad.description}</Text>
       <Text className="text-3xl font-bold text-brand">
-        {ad.salary != null
-          ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
-          : 'Salario a convenir'}
+        {salaryLabel(ad, 'Salario a convenir')}
       </Text>
+      {ad.locationReference && (
+        <Text className="mt-1 text-sm text-gray-600">
+          Referencia: {ad.locationReference}
+        </Text>
+      )}
       <Text className="mt-1 text-sm text-gray-600">
         Publicado por: {ad.createdBy?.name ?? '—'}
       </Text>
 
-      <View className="mt-6">
-        <Button
-          title={`Llamar: ${ad.phone}`}
-          onPress={() => Linking.openURL(`tel:${ad.phone}`)}
-        />
+      {/* Un botón por número: los avisos suelen publicar dos o tres. */}
+      <View className="mt-6 gap-2">
+        {adPhones(ad).map((phone, i) => (
+          <Button
+            key={phone}
+            title={`Llamar: ${phone}`}
+            variant={i === 0 ? 'primary' : 'outline'}
+            onPress={() => Linking.openURL(`tel:${phone}`)}
+          />
+        ))}
       </View>
 
       {canEdit && (

@@ -180,20 +180,26 @@ describe('AdsService.findOne / findOnePublic / getContact', () => {
     await expect(service.findOne('x')).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('findOnePublic oculta teléfono y ubicación al visitante anónimo', async () => {
+  it('findOnePublic oculta teléfonos y ubicación al visitante anónimo', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue({
       id: 'a1',
       description: 'Prueba',
       phone: '70000000',
+      extraPhones: ['71111111'],
       location: 'Centro',
+      locationReference: 'Frente al mercado',
       latitude: -17,
       longitude: -63,
       department: 'LA_PAZ',
     });
     const res = (await service.findOnePublic('a1', null)) as Record<string, unknown>;
     expect(res).not.toHaveProperty('phone');
+    // Los números adicionales y la referencia son datos de contacto: tampoco
+    // se exponen sin sesión.
+    expect(res).not.toHaveProperty('extraPhones');
     expect(res).not.toHaveProperty('location');
+    expect(res).not.toHaveProperty('locationReference');
     expect(res).not.toHaveProperty('latitude');
     // El departamento (zona general) sí se conserva.
     expect(res.department).toBe('LA_PAZ');
@@ -224,7 +230,9 @@ describe('AdsService.findOne / findOnePublic / getContact', () => {
     expect(res.phone).toBe('70000000');
     expect(prisma.ad.findUnique.mock.calls[0][0].select).toEqual({
       phone: true,
+      extraPhones: true,
       location: true,
+      locationReference: true,
       latitude: true,
       longitude: true,
     });
@@ -280,6 +288,20 @@ describe('AdsService.bulkCreate', () => {
       admin,
     );
   });
+
+  // createMany arma un solo INSERT con la unión de columnas del lote: si una
+  // fila deja extraPhones en undefined, Postgres recibe NULL explícito y la
+  // columna es NOT NULL (falla todo el lote, no solo esa fila).
+  it('los anuncios sin teléfonos adicionales van con lista vacía, no undefined', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.createMany.mockResolvedValue({ count: 2 });
+    // dto está tipado como never en este archivo (payload mínimo de prueba).
+    const conExtras = { ...(dto as object), extraPhones: ['71111111'] };
+    await service.bulkCreate([dto, conExtras] as never, admin);
+    const data = prisma.ad.createMany.mock.calls[0][0].data;
+    expect(data[0].extraPhones).toEqual([]);
+    expect(data[1].extraPhones).toEqual(['71111111']);
+  });
 });
 
 describe('AdsService.republish / permisos', () => {
@@ -323,11 +345,39 @@ describe('AdsService.findMine', () => {
   });
 });
 
+// Fila tal como la devuelve la consulta de ranking del listado público (solo
+// los campos que usa el orden por relevancia). `extra` llena datos opcionales.
+function rankRow(
+  id: string,
+  salary: number | null,
+  visits: number,
+  extra: Record<string, unknown> = {},
+) {
+  return {
+    id,
+    salary,
+    requirements: null,
+    location: null,
+    locationReference: null,
+    department: null,
+    category: null,
+    schedule: null,
+    latitude: null,
+    longitude: null,
+    createdAt: new Date('2026-07-01'),
+    _count: { visits },
+    ...extra,
+  };
+}
+
 describe('AdsService.paginate (vía findAll) — construcción del where', () => {
   it('findAll pagina anuncios vigentes con filtros de enums, salario y búsqueda', async () => {
     const { service, prisma } = buildService();
-    prisma.ad.findMany.mockResolvedValue([{ id: 'a1', createdById: 'u1' }]);
-    prisma.ad.count.mockResolvedValue(1);
+    // 1ª consulta: campos de ranking de todos los vigentes que pasan el
+    // filtro; 2ª: la página ya ordenada, hidratada por id.
+    prisma.ad.findMany
+      .mockResolvedValueOnce([rankRow('a1', 1000, 3)])
+      .mockResolvedValueOnce([{ id: 'a1', createdById: 'u1' }]);
     prisma.review.groupBy.mockResolvedValue([
       { ownerId: 'u1', _avg: { rating: 4.5 }, _count: 2 },
     ]);
@@ -340,7 +390,7 @@ describe('AdsService.paginate (vía findAll) — construcción del where', () =>
       salaryMax: 3000,
       search: 'mesero',
       location: 'centro',
-      page: 2,
+      page: 1,
       limit: 5,
     } as never);
 
@@ -349,22 +399,145 @@ describe('AdsService.paginate (vía findAll) — construcción del where', () =>
     expect(where.jobType).toEqual({ in: ['DIARIA'] });
     expect(where.department).toEqual({ in: ['LA_PAZ'] });
     expect(where.category).toEqual({ in: ['VENTAS'] });
-    expect(where.salary).toEqual({ gte: 500, lte: 3000 });
-    expect(where.OR).toHaveLength(4); // title/description/requirements/location
+    // Solapamiento con el rango pedido: el piso del anuncio no pasa el techo
+    // pedido y su techo (salaryMax o el propio salary) alcanza el piso pedido.
+    expect(where.salary).toEqual({ lte: 3000 });
+    expect(where.AND).toEqual([
+      {
+        OR: [
+          { salaryMax: { gte: 500 } },
+          { salaryMax: null, salary: { gte: 500 } },
+        ],
+      },
+    ]);
+    // title/description/requirements/location/locationReference
+    expect(where.OR).toHaveLength(5);
     expect(where.location).toEqual({ contains: 'centro', mode: 'insensitive' });
-    expect(prisma.ad.findMany.mock.calls[0][0].skip).toBe(5); // (2-1)*5
+    // La página se hidrata por los ids ya ordenados (sin skip/take).
+    expect(prisma.ad.findMany.mock.calls[1][0].where).toEqual({
+      id: { in: ['a1'] },
+    });
     // Adjunta la calificación del publicante.
     expect(res.items[0]).toMatchObject({ ownerRating: { average: 4.5, count: 2 } });
+    expect(res.total).toBe(1);
     expect(res.totalPages).toBe(1);
   });
 
   it('sin reseñas, ownerRating queda en 0', async () => {
     const { service, prisma } = buildService();
-    prisma.ad.findMany.mockResolvedValue([{ id: 'a1', createdById: 'u1' }]);
-    prisma.ad.count.mockResolvedValue(1);
+    prisma.ad.findMany
+      .mockResolvedValueOnce([rankRow('a1', null, 0)])
+      .mockResolvedValueOnce([{ id: 'a1', createdById: 'u1' }]);
     prisma.review.groupBy.mockResolvedValue([]);
     const res = await service.findAll({} as never);
     expect(res.items[0]).toMatchObject({ ownerRating: { average: null, count: 0 } });
+  });
+
+  it('sin resultados no hidrata la página', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findMany.mockResolvedValueOnce([]);
+    const res = await service.findAll({} as never);
+    expect(prisma.ad.findMany).toHaveBeenCalledTimes(1);
+    expect(res).toMatchObject({ items: [], total: 0, totalPages: 0 });
+  });
+});
+
+describe('AdsService.findAll — filtro de sueldo con rangos', () => {
+  it('solo el piso pedido: el techo del anuncio puede ser su rango', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findMany.mockResolvedValueOnce([]);
+    await service.findAll({ salaryMin: 4000 } as never);
+    const where = prisma.ad.findMany.mock.calls[0][0].where;
+    expect(where.salary).toBeUndefined();
+    expect(where.AND).toEqual([
+      {
+        OR: [
+          { salaryMax: { gte: 4000 } },
+          { salaryMax: null, salary: { gte: 4000 } },
+        ],
+      },
+    ]);
+  });
+
+  it('solo el techo pedido: se compara contra el piso del anuncio', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findMany.mockResolvedValueOnce([]);
+    await service.findAll({ salaryMax: 2000 } as never);
+    const where = prisma.ad.findMany.mock.calls[0][0].where;
+    expect(where.salary).toEqual({ lte: 2000 });
+    expect(where.AND).toBeUndefined();
+  });
+});
+
+describe('AdsService.facets', () => {
+  it('el techo del deslizador considera los rangos salariales', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.groupBy.mockResolvedValue([]);
+    prisma.ad.count.mockResolvedValue(1);
+    prisma.ad.aggregate.mockResolvedValue({
+      _min: { salary: 950 },
+      _max: { salary: 3500, salaryMax: 4500 },
+    });
+    const res = await service.facets();
+    expect(res.salaryMin).toBe(950);
+    expect(res.salaryMax).toBe(4500);
+  });
+});
+
+describe('AdsService.findAll — orden por relevancia', () => {
+  // salario definido → más accesos → más datos completos → más reciente.
+  const rows = [
+    rankRow('sin-salario-popular', null, 99, {
+      location: 'Centro',
+      category: 'VENTAS',
+    }),
+    rankRow('salario-pocos-accesos', 900, 1),
+    rankRow('salario-completo', 700, 5, {
+      location: 'Miraflores',
+      schedule: '8 a 16',
+    }),
+    rankRow('salario-incompleto', 800, 5),
+  ];
+
+  it('ordena por salario definido, accesos y completitud', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findMany
+      .mockResolvedValueOnce(rows)
+      .mockResolvedValueOnce([]);
+    await service.findAll({} as never);
+
+    expect(prisma.ad.findMany.mock.calls[1][0].where.id.in).toEqual([
+      'salario-completo', // empata en accesos con el incompleto y gana por datos
+      'salario-incompleto',
+      'salario-pocos-accesos',
+      'sin-salario-popular', // sin salario va al final aunque tenga más accesos
+    ]);
+  });
+
+  it('el orden de la página se respeta aunque la BD devuelva otro', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findMany.mockResolvedValueOnce(rows).mockResolvedValueOnce([
+      { id: 'salario-incompleto', createdById: 'u1' },
+      { id: 'salario-completo', createdById: 'u1' },
+    ]);
+    const res = await service.findAll({ limit: 2 } as never);
+    expect(res.items.map((i: { id: string }) => i.id)).toEqual([
+      'salario-completo',
+      'salario-incompleto',
+    ]);
+    expect(res.total).toBe(4);
+    expect(res.totalPages).toBe(2);
+  });
+
+  it('la segunda página sigue el mismo ranking', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findMany
+      .mockResolvedValueOnce(rows)
+      .mockResolvedValueOnce([{ id: 'salario-pocos-accesos', createdById: 'u1' }]);
+    await service.findAll({ page: 3, limit: 1 } as never);
+    expect(prisma.ad.findMany.mock.calls[1][0].where.id.in).toEqual([
+      'salario-pocos-accesos',
+    ]);
   });
 });
 

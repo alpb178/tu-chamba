@@ -12,6 +12,7 @@ import {
   DEPARTMENT_LABEL,
   DURATION_DAYS,
   JobType,
+  MAX_EXTRA_PHONES,
 } from '@/lib/types';
 import { useRequireAuth } from '@/lib/useRequireAuth';
 import { Button, FormField, Input } from '@/components/ui';
@@ -96,14 +97,18 @@ function Form() {
     description: '',
     requirements: '',
     location: '',
+    locationReference: '',
     department: '' as Department | '',
     category: '' as Category | '',
     schedule: '',
     salary: '',
+    salaryMax: '',
     phone: '',
     jobType: 'TIEMPO_COMPLETO' as JobType,
     durationDays: 3,
   });
+  // Números de contacto adicionales (opcionales, ver MAX_EXTRA_PHONES).
+  const [extraPhones, setExtraPhones] = useState<string[]>([]);
   // Pin del mapa (opcional). Se guarda junto al anuncio.
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [loaded, setLoaded] = useState(!editId);
@@ -147,6 +152,14 @@ function Form() {
   ];
   const missingFields = missingByStep.flat();
 
+  // Números adicionales realmente escritos (los campos vacíos no viajan).
+  const filledExtraPhones = extraPhones.map((p) => p.trim()).filter(Boolean);
+  // El techo solo cuenta si hay piso y lo supera: si no, es un monto fijo.
+  const salaryRange =
+    form.salary.trim() !== '' &&
+    form.salaryMax.trim() !== '' &&
+    Number(form.salaryMax) > Number(form.salary);
+
   useEffect(() => {
     if (editId) {
       api<Ad>(`/listings/${editId}`).then((a) => {
@@ -155,14 +168,17 @@ function Form() {
           description: a.description,
           requirements: a.requirements ?? '',
           location: a.location ?? '',
+          locationReference: a.locationReference ?? '',
           department: a.department ?? '',
           category: a.category ?? '',
           schedule: a.schedule ?? '',
           salary: a.salary != null ? String(a.salary) : '',
+          salaryMax: a.salaryMax != null ? String(a.salaryMax) : '',
           phone: a.phone,
           jobType: a.jobType,
           durationDays: a.durationDays ?? 3,
         });
+        setExtraPhones(a.extraPhones ?? []);
         if (a.latitude != null && a.longitude != null) {
           setCoords({ lat: a.latitude, lng: a.longitude });
         }
@@ -191,13 +207,18 @@ function Form() {
         description: form.description,
         requirements: form.requirements.trim() || undefined,
         location: form.location.trim() || undefined,
+        locationReference: form.locationReference.trim() || undefined,
         department: form.department || 'SANTA_CRUZ',
         category: form.category || 'OTRO',
         latitude: coords?.lat,
         longitude: coords?.lng,
         schedule: form.schedule.trim() || undefined,
         salary: form.salary.trim() ? Number(form.salary) : undefined,
+        // El techo solo viaja si forma un rango válido con el piso (la API
+        // rechaza un máximo menor o sin mínimo).
+        salaryMax: salaryRange ? Number(form.salaryMax) : undefined,
         phone: form.phone,
+        extraPhones: filledExtraPhones.length ? filledExtraPhones : undefined,
         jobType: form.jobType,
         durationDays: form.durationDays,
       };
@@ -328,6 +349,15 @@ function Form() {
                 required={!isAdmin}
               />
             </FormField>
+            <FormField label="Referencia de ubicación (opcional)">
+              <Input
+                placeholder="Ej. frente al mercado Los Pozos, piso 2"
+                value={form.locationReference}
+                onChange={(e) =>
+                  setForm({ ...form, locationReference: e.target.value })
+                }
+              />
+            </FormField>
             <FormField label="Marca el lugar en el mapa (opcional)">
               {/* Se monta cuando ya se cargaron los datos en edición, para
                   centrar el pin existente. */}
@@ -342,6 +372,8 @@ function Form() {
                 />
               )}
             </FormField>
+            {/* Salario: un monto o un rango. El techo es opcional y solo se
+                envía si supera al mínimo. */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField label="Salario (Bs)" required={!isAdmin}>
                 <Input
@@ -352,14 +384,29 @@ function Form() {
                   required={!isAdmin}
                 />
               </FormField>
-              <FormField label="Horario de trabajo (opcional)">
+              <FormField label="Hasta (Bs, opcional)">
                 <Input
-                  placeholder="Ej. Lun-Vie 8:00 a 16:00"
-                  value={form.schedule}
-                  onChange={(e) => setForm({ ...form, schedule: e.target.value })}
+                  type="number"
+                  min={1}
+                  placeholder="Para publicar un rango"
+                  value={form.salaryMax}
+                  onChange={(e) => setForm({ ...form, salaryMax: e.target.value })}
                 />
               </FormField>
             </div>
+            {form.salaryMax.trim() !== '' && !salaryRange && (
+              <p className="bg-secondary-container px-3 py-2 text-xs text-on-secondary-container">
+                El monto máximo debe ser mayor al salario para publicar un
+                rango; si no, se publicará solo el salario.
+              </p>
+            )}
+            <FormField label="Horario de trabajo (opcional)">
+              <Input
+                placeholder="Ej. Lun-Vie 8:00 a 16:00"
+                value={form.schedule}
+                onChange={(e) => setForm({ ...form, schedule: e.target.value })}
+              />
+            </FormField>
           </>
         )}
 
@@ -373,6 +420,42 @@ function Form() {
                 required
               />
             </FormField>
+            {/* Números adicionales: útiles cuando el aviso atiende en dos
+                líneas. El primero sigue siendo el de los botones de contacto. */}
+            {extraPhones.map((value, i) => (
+              <FormField key={i} label={`Otro teléfono ${i + 1} (opcional)`}>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <PhoneField
+                      value={value}
+                      onChange={(v) =>
+                        setExtraPhones((list) =>
+                          list.map((p, j) => (j === i ? v : p)),
+                        )
+                      }
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      setExtraPhones((list) => list.filter((_, j) => j !== i))
+                    }
+                  >
+                    Quitar
+                  </Button>
+                </div>
+              </FormField>
+            ))}
+            {extraPhones.length < MAX_EXTRA_PHONES && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setExtraPhones((list) => [...list, ''])}
+              >
+                Agregar otro teléfono
+              </Button>
+            )}
             <FormField label="Duración de la publicación" required>
               <CustomSelect
                 value={String(form.durationDays)}

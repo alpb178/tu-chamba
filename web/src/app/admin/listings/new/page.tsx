@@ -13,6 +13,7 @@ import {
   JobType,
   JOB_TYPE_LABEL,
 } from '@/lib/admin/types';
+import { parsePhones } from '@/lib/admin/csv';
 import { Button, FormField, Input, Skeleton } from '@/components/admin/ui';
 import { CustomSelect } from '@/components/admin/CustomSelect';
 
@@ -30,11 +31,16 @@ function AdForm() {
     description: '',
     requirements: '',
     location: '',
+    locationReference: '',
     department: 'SANTA_CRUZ' as Department,
     category: 'OTRO' as Category,
     schedule: '',
     salary: '',
+    salaryMax: '',
     phone: '',
+    // Números adicionales en una sola celda, como en la importación CSV
+    // ("77900185 / 67894829"): se reparten al guardar.
+    extraPhones: '',
     jobType: 'TIEMPO_COMPLETO' as JobType,
     durationDays: 3,
   });
@@ -51,11 +57,14 @@ function AdForm() {
           description: a.description,
           requirements: a.requirements ?? '',
           location: a.location ?? '',
+          locationReference: a.locationReference ?? '',
           department: a.department ?? 'SANTA_CRUZ',
           category: a.category ?? 'OTRO',
           schedule: a.schedule ?? '',
           salary: a.salary != null ? String(a.salary) : '',
+          salaryMax: a.salaryMax != null ? String(a.salaryMax) : '',
           phone: a.phone,
+          extraPhones: (a.extraPhones ?? []).join(' / '),
           jobType: a.jobType,
           durationDays: a.durationDays ?? 3,
         });
@@ -69,17 +78,27 @@ function AdForm() {
     setError(null);
     setSaving(true);
     try {
+      const extraPhones = parsePhones(form.extraPhones);
       const payload = {
         title: form.title.trim(),
         description: form.description,
         requirements: form.requirements.trim() || undefined,
         location: form.location.trim() || undefined,
+        locationReference: form.locationReference.trim() || undefined,
         department: form.department,
         category: form.category,
         schedule: form.schedule.trim() || undefined,
-        // Sin salario el anuncio queda "a convenir".
+        // Sin salario el anuncio queda "a convenir"; con techo mayor al piso,
+        // se publica como rango.
         salary: form.salary.trim() ? Number(form.salary) : undefined,
+        salaryMax:
+          form.salary.trim() &&
+          form.salaryMax.trim() &&
+          Number(form.salaryMax) > Number(form.salary)
+            ? Number(form.salaryMax)
+            : undefined,
         phone: form.phone,
+        extraPhones: extraPhones.length ? extraPhones : undefined,
         jobType: form.jobType,
         durationDays: form.durationDays,
       };
@@ -182,6 +201,16 @@ function AdForm() {
             onChange={(e) => setForm({ ...form, location: e.target.value })}
           />
         </FormField>
+        <FormField label="Referencia de ubicación (opcional)">
+          <Input
+            placeholder="Ej. frente al mercado Los Pozos, piso 2"
+            maxLength={200}
+            value={form.locationReference}
+            onChange={(e) =>
+              setForm({ ...form, locationReference: e.target.value })
+            }
+          />
+        </FormField>
         <FormField label="Horario de trabajo (opcional)">
           <Input
             placeholder="Ej. Lun-Vie 8:00 a 16:00"
@@ -199,6 +228,17 @@ function AdForm() {
               onChange={(e) => setForm({ ...form, salary: e.target.value })}
             />
           </FormField>
+          <FormField label="Hasta (Bs, opcional)">
+            <Input
+              type="number"
+              min={1}
+              placeholder="Para publicar un rango"
+              value={form.salaryMax}
+              onChange={(e) => setForm({ ...form, salaryMax: e.target.value })}
+            />
+          </FormField>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormField label="Teléfono de contacto (WhatsApp)">
             <Input
               type="tel"
@@ -206,6 +246,14 @@ function AdForm() {
               value={form.phone}
               onChange={(e) => setForm({ ...form, phone: e.target.value })}
               required
+            />
+          </FormField>
+          <FormField label="Otros teléfonos (opcional)">
+            <Input
+              type="tel"
+              placeholder="67894829 / 3467010"
+              value={form.extraPhones}
+              onChange={(e) => setForm({ ...form, extraPhones: e.target.value })}
             />
           </FormField>
         </div>

@@ -8,6 +8,7 @@ import {
   DEPARTMENT_SLUG,
   STATUS_LABEL,
   adEffectiveStatus,
+  salaryLabel,
 } from '@/lib/types';
 import { Badge } from '@/components/Badge';
 import { AuthOnly } from '@/components/AuthOnly';
@@ -144,9 +145,7 @@ export default async function AdDetailPage({ params }: Params) {
           resto de los datos del anuncio requiere iniciar sesión. */}
       <div className="space-y-1 border-t border-outline-variant/60 pt-4">
         <p className="text-2xl font-bold text-brand">
-          {ad.salary != null
-            ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
-            : 'Salario a convenir'}
+          {salaryLabel(ad, 'Salario a convenir')}
         </p>
         <AuthOnly>
           {/* La ubicación exacta solo se muestra con sesión (en AdActions);
