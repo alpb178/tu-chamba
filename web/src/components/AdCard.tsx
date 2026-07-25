@@ -6,6 +6,7 @@ import {
   DEPARTMENT_LABEL,
   STATUS_LABEL,
   adEffectiveStatus,
+  salaryLabel,
 } from '@/lib/types';
 import { Badge } from './Badge';
 import { Icon } from './Icon';
@@ -37,6 +38,9 @@ const CATEGORY_ICON: Record<Category, string> = {
   SALUD: 'medical_services',
   BELLEZA: 'content_cut',
   SEGURIDAD: 'shield_person',
+  AGROPECUARIA: 'agriculture',
+  MECANICA: 'build',
+  MARKETING_DISENO: 'campaign',
   OTRO: 'business_center',
 };
 
@@ -118,10 +122,14 @@ export function AdCard({
               </span>
             )}
           </div>
-          <div className="font-display text-lg font-bold text-primary md:text-2xl">
-            {ad.salary != null
-              ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
-              : 'A convenir'}
+          {/* Monto fijo o rango ("Bs 3.500 a 4.500"); el rango va más chico
+              para que no rompa la tarjeta. */}
+          <div
+            className={`font-display font-bold text-primary ${
+              ad.salaryMax != null ? 'text-base md:text-xl' : 'text-lg md:text-2xl'
+            }`}
+          >
+            {salaryLabel(ad)}
           </div>
         </div>
       </div>

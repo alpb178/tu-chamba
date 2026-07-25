@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { adEffectiveStatus, waLink, safeNext } from './types';
+import {
+  adEffectiveStatus,
+  adPhones,
+  salaryLabel,
+  waLink,
+  safeNext,
+} from './types';
 
 describe('adEffectiveStatus', () => {
   const future = new Date(Date.now() + 86400_000).toISOString();
@@ -19,6 +25,38 @@ describe('adEffectiveStatus', () => {
     expect(adEffectiveStatus({ status: 'ACTIVO', expiresAt: past })).toBe(
       'VENCIDO',
     );
+  });
+});
+
+describe('salaryLabel (monto, rango o a convenir)', () => {
+  it('sin salario usa el texto por defecto', () => {
+    expect(salaryLabel({ salary: null })).toBe('A convenir');
+    expect(salaryLabel({ salary: '' }, 'Salario a convenir')).toBe(
+      'Salario a convenir',
+    );
+  });
+  it('un monto fijo se muestra en Bs', () => {
+    expect(salaryLabel({ salary: '3500' })).toBe('Bs 3.500');
+  });
+  it('con techo mayor al piso muestra el rango', () => {
+    expect(salaryLabel({ salary: 3500, salaryMax: 4500 })).toBe(
+      'Bs 3.500 a 4.500',
+    );
+  });
+  it('un techo igual o menor no es rango', () => {
+    expect(salaryLabel({ salary: 3500, salaryMax: 3500 })).toBe('Bs 3.500');
+    expect(salaryLabel({ salary: 3500, salaryMax: 2000 })).toBe('Bs 3.500');
+  });
+});
+
+describe('adPhones (números de contacto)', () => {
+  it('pone el principal primero y descarta vacíos y repetidos', () => {
+    expect(
+      adPhones({ phone: '70012345', extraPhones: ['', '70012345', '3467010'] }),
+    ).toEqual(['70012345', '3467010']);
+  });
+  it('sin teléfono (visitante anónimo) devuelve una lista vacía', () => {
+    expect(adPhones({ phone: undefined as unknown as string })).toEqual([]);
   });
 });
 

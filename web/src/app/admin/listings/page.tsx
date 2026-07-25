@@ -8,6 +8,7 @@ import {
   CATEGORY_LABEL,
   adEffectiveStatus,
   Paginated,
+  salaryLabel,
 } from '@/lib/admin/types';
 import {
   AdminTable,
@@ -198,10 +199,8 @@ export default function AdsAdminPage() {
                 {ad.category ? CATEGORY_LABEL[ad.category] : '—'}
               </td>
               <td className="px-4 py-3 text-on-surface-variant">{ad.location ?? '—'}</td>
-              <td className="px-4 py-3 font-medium text-brand">
-                {ad.salary != null
-                  ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
-                  : 'A convenir'}
+              <td className="whitespace-nowrap px-4 py-3 font-medium text-brand">
+                {salaryLabel(ad)}
               </td>
               <td className="px-4 py-3">
                 <Badge type={ad.jobType} />

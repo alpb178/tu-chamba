@@ -55,11 +55,20 @@ const BADGE_COLORS: Record<JobType, string> = {
   DIARIA: 'bg-orange-100',
   TIEMPO_COMPLETO: 'bg-green-100',
   MEDIA_JORNADA: 'bg-blue-100',
+  POR_CONTRATO: 'bg-orange-100',
+  PASANTIA: 'bg-blue-100',
+  FREELANCE: 'bg-green-100',
+  // Sin jornada declarada: chip neutro.
+  A_CONVENIR: 'bg-gray-200',
 };
 const BADGE_TEXT: Record<JobType, string> = {
   DIARIA: 'text-orange-800',
   TIEMPO_COMPLETO: 'text-green-800',
   MEDIA_JORNADA: 'text-blue-800',
+  POR_CONTRATO: 'text-orange-800',
+  PASANTIA: 'text-blue-800',
+  FREELANCE: 'text-green-800',
+  A_CONVENIR: 'text-gray-700',
 };
 
 export function Badge({ jobType }: { jobType: JobType }) {

@@ -5,7 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { api } from '@/lib/api';
-import { Ad, adEffectiveStatus, DEPARTMENT_LABEL, waLink } from '@/lib/types';
+import {
+  Ad,
+  adEffectiveStatus,
+  adPhones,
+  DEPARTMENT_LABEL,
+  waLink,
+} from '@/lib/types';
 import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
 import { Icon } from './Icon';
@@ -208,9 +214,16 @@ async function geocode(
 export function AdActions({ ad }: { ad: Ad }) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [phone, setPhone] = useState<string | null>(ad.phone ?? null);
-  // Ubicación del anuncio: solo viaja con sesión (vía /contact).
+  // Números de contacto del aviso: el primero es el principal (el de los CTA)
+  // y los demás se listan aparte. Solo viajan con sesión (vía /contact).
+  const [phones, setPhones] = useState<string[]>(adPhones(ad));
+  const phone = phones[0] ?? null;
+  const extraPhones = phones.slice(1);
+  // Ubicación del anuncio y su referencia: solo con sesión (vía /contact).
   const [location, setLocation] = useState<string | null>(ad.location ?? null);
+  const [reference, setReference] = useState<string | null>(
+    ad.locationReference ?? null,
+  );
   const [exact, setExact] = useState<{ lat: number; lng: number } | null>(
     ad.latitude != null && ad.longitude != null
       ? { lat: ad.latitude, lng: ad.longitude }
@@ -279,18 +292,21 @@ export function AdActions({ ad }: { ad: Ad }) {
     );
   }
 
-  // Teléfono y ubicación no viajan en el detalle público: se piden con sesión.
+  // Teléfonos y ubicación no viajan en el detalle público: se piden con sesión.
   useEffect(() => {
     if (user && (!phone || !location)) {
       api<{
         phone: string;
+        extraPhones?: string[];
         location: string | null;
+        locationReference: string | null;
         latitude: number | null;
         longitude: number | null;
       }>(`/listings/${ad.id}/contact`)
         .then((r) => {
-          setPhone(r.phone);
+          setPhones(adPhones(r));
           setLocation(r.location);
+          setReference(r.locationReference);
           if (r.latitude != null && r.longitude != null) {
             setExact({ lat: r.latitude, lng: r.longitude });
           }
@@ -319,6 +335,12 @@ export function AdActions({ ad }: { ad: Ad }) {
       {user && location && (
         <p className="flex items-center gap-1 text-sm text-on-surface-variant">
           <Icon name="location_on" className="text-base" /> Ubicación: {location}
+        </p>
+      )}
+      {/* Referencia en texto libre del publicante ("frente al mercado"). */}
+      {user && reference && (
+        <p className="flex items-center gap-1 text-sm text-on-surface-variant">
+          <Icon name="explore" className="text-base" /> Referencia: {reference}
         </p>
       )}
       {user &&
@@ -399,6 +421,33 @@ export function AdActions({ ad }: { ad: Ad }) {
                 ? `Teléfono: ${phone}`
                 : 'Inicia sesión para contactar: el teléfono se muestra al ingresar.'}
             </p>
+            {/* Números adicionales del aviso: cada uno llama o abre WhatsApp. */}
+            {extraPhones.length > 0 && (
+              <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-on-surface-variant">
+                <span>Otros números:</span>
+                {extraPhones.map((p) => (
+                  <span key={p} className="inline-flex items-center gap-1">
+                    <a
+                      href={`tel:${p}`}
+                      className="font-medium text-primary hover:underline"
+                      onClick={registerInterest}
+                    >
+                      {p}
+                    </a>
+                    <a
+                      href={waLink(p, waMessage)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Escribir por WhatsApp al ${p}`}
+                      className="text-[#25d366] hover:brightness-110"
+                      onClick={registerInterest}
+                    >
+                      <WhatsAppIcon className="h-3.5 w-3.5" />
+                    </a>
+                  </span>
+                ))}
+              </p>
+            )}
           </div>
 
           {/* Móvil: barra fija al pie para que el contacto siempre esté a

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
-import { Ad } from '@/lib/types';
+import { Ad, salaryLabel } from '@/lib/types';
 import { Badge } from './ui';
 
 export function AdCard({ ad, onPress }: { ad: Ad; onPress: () => void }) {
@@ -17,11 +17,7 @@ export function AdCard({ ad, onPress }: { ad: Ad; onPress: () => void }) {
         <Badge jobType={ad.jobType} />
       </View>
       <View className="flex-row items-center justify-between">
-        <Text className="text-lg font-bold text-brand">
-          {ad.salary != null
-            ? `Bs ${Number(ad.salary).toLocaleString('es-BO')}`
-            : 'A convenir'}
-        </Text>
+        <Text className="text-lg font-bold text-brand">{salaryLabel(ad)}</Text>
         {ad.ownerRating && ad.ownerRating.count > 0 && (
           <Text className="text-xs text-gray-600">
             <Text className="text-amber-500">★</Text>{' '}

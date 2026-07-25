@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { parseCsv, parseAdsCsv, extractTitle } from './csv';
+import {
+  parseCsv,
+  parseAdsCsv,
+  extractTitle,
+  parseSalary,
+  parsePhones,
+} from './csv';
 
 describe('parseCsv (parser CSV robusto)', () => {
   it('detecta el separador punto y coma y descarta líneas vacías', () => {
@@ -63,7 +69,8 @@ describe('parseAdsCsv (validación e importación)', () => {
     expect(row.values.description).toBe('Turno noche.');
     expect(row.values.department).toBe('SANTA_CRUZ');
     expect(row.values.category).toBe('OTRO');
-    expect(row.values.jobType).toBe('TIEMPO_COMPLETO');
+    // Sin jornada declarada no se asume tiempo completo (sería dato inventado).
+    expect(row.values.jobType).toBe('A_CONVENIR');
     expect(row.values.durationDays).toBe(7);
     expect(row.line).toBe(2);
   });
@@ -80,5 +87,95 @@ describe('parseAdsCsv (validación e importación)', () => {
       'descripcion,telefono,ubicacion\nVendedor,70012345,No especificado',
     );
     expect(res.rows[0].values.location).toBeUndefined();
+  });
+});
+
+describe('parseSalary (montos y rangos)', () => {
+  it('un solo monto no genera rango', () => {
+    expect(parseSalary('3000')).toEqual({ salary: 3000 });
+    expect(parseSalary('Bs 2.500,50')).toEqual({ salary: 2500.5 });
+  });
+
+  it('reconoce rangos con guion, "a" y guion largo', () => {
+    expect(parseSalary('3500-4500')).toEqual({ salary: 3500, salaryMax: 4500 });
+    expect(parseSalary('2000 a 3000')).toEqual({ salary: 2000, salaryMax: 3000 });
+    expect(parseSalary('Bs 2.700 – 2.800')).toEqual({
+      salary: 2700,
+      salaryMax: 2800,
+    });
+  });
+
+  it('ordena el rango al revés y descarta texto sin monto', () => {
+    expect(parseSalary('4500-3500')).toEqual({ salary: 3500, salaryMax: 4500 });
+    expect(parseSalary('a convenir')).toBeNull();
+  });
+});
+
+describe('parsePhones (varios números por celda)', () => {
+  it('separa por barra, coma y "y", sin repetidos', () => {
+    expect(parsePhones('77900185 / 67894829')).toEqual(['77900185', '67894829']);
+    expect(parsePhones('70012345, 3467010')).toEqual(['70012345', '3467010']);
+    expect(parsePhones('70012345 y 70012345')).toEqual(['70012345']);
+  });
+
+  it('descarta lo que no llega a 7 dígitos', () => {
+    expect(parsePhones('123 / 70012345')).toEqual(['70012345']);
+    expect(parsePhones('No especificado')).toEqual([]);
+  });
+});
+
+describe('parseAdsCsv — teléfonos, rangos y referencia', () => {
+  it('el primer número es el principal y el resto adicionales', () => {
+    const res = parseAdsCsv(
+      'descripcion,telefono\nVendedor,"77900185 / 67894829 / 3467010"',
+    );
+    const row = res.rows[0];
+    expect(row.errors).toHaveLength(0);
+    expect(row.values.phone).toBe('77900185');
+    expect(row.values.extraPhones).toEqual(['67894829', '3467010']);
+  });
+
+  it('un salario en rango llena piso y techo', () => {
+    const res = parseAdsCsv('descripcion,telefono,salario\nVendedor,70012345,3500-4500');
+    expect(res.rows[0].values.salary).toBe(3500);
+    expect(res.rows[0].values.salaryMax).toBe(4500);
+  });
+
+  it('la columna de salario máximo se ignora si no supera el piso', () => {
+    const res = parseAdsCsv(
+      'descripcion,telefono,salario,salarioMax\nVendedor,70012345,3000,2500',
+    );
+    expect(res.rows[0].values.salary).toBe(3000);
+    expect(res.rows[0].values.salaryMax).toBeUndefined();
+  });
+
+  it('mapea los rubros de la fuente a los propios', () => {
+    const res = parseAdsCsv(
+      'descripcion,telefono,categoria\nA,70012345,HOGAR_LIMPIEZA\nB,70012345,CHOFERES\nC,70012345,VARIOS\nD,70012345,AGROPECUARIA',
+    );
+    expect(res.rows.map((r) => r.values.category)).toEqual([
+      'LIMPIEZA',
+      'TRANSPORTE',
+      'OTRO',
+      'AGROPECUARIA',
+    ]);
+  });
+
+  it('acepta las jornadas nuevas y sus sinónimos', () => {
+    const res = parseAdsCsv(
+      'descripcion,telefono,tipoJornada\nA,70012345,POR_CONTRATO\nB,70012345,practicas\nC,70012345,Independiente',
+    );
+    expect(res.rows.map((r) => r.values.jobType)).toEqual([
+      'POR_CONTRATO',
+      'PASANTIA',
+      'FREELANCE',
+    ]);
+  });
+
+  it('lee la referencia de ubicación', () => {
+    const res = parseAdsCsv(
+      'descripcion,telefono,referencia\nVendedor,70012345,"Frente al mercado Los Pozos"',
+    );
+    expect(res.rows[0].values.locationReference).toBe('Frente al mercado Los Pozos');
   });
 });
