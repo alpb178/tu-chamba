@@ -25,6 +25,10 @@ export const DURATION_DAYS = [3, 7, 15, 30];
 // Tope de números adicionales: los avisos publican dos o tres.
 export const MAX_EXTRA_PHONES = 4;
 
+// Tope de la prioridad manual del panel. Dos dígitos alcanzan de sobra para
+// ordenar los destacados entre sí y mantienen legible la columna.
+export const MAX_PRIORITY = 99;
+
 // Un rango salarial necesita su extremo inferior y no puede ir al revés
 // ("Bs 4.500 a 3.500"). Solo aplica cuando llega salaryMax.
 function IsSalaryRange() {
@@ -148,6 +152,20 @@ export class CreateAdDto {
   @ApiProperty({ enum: JobType, example: JobType.TIEMPO_COMPLETO })
   @IsEnum(JobType)
   jobType: JobType;
+
+  // Solo el admin puede fijarla: el servicio la ignora si quien publica o
+  // edita no tiene acceso al panel.
+  @ApiPropertyOptional({
+    description: 'Prioridad manual: el mayor va primero (0 = normal, solo admin)',
+    default: 0,
+    maximum: MAX_PRIORITY,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  @Max(MAX_PRIORITY, { message: `La prioridad no puede superar ${MAX_PRIORITY}` })
+  priority?: number;
 
   @ApiPropertyOptional({
     description: 'Días de publicación (por defecto 3)',

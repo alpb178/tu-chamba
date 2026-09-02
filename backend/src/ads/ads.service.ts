@@ -42,6 +42,7 @@ const includeCounts = {
 // sin traer los textos del anuncio.
 const selectRanking = {
   id: true,
+  priority: true,
   salary: true,
   requirements: true,
   location: true,
@@ -79,17 +80,31 @@ function completeness(ad: RankedAd) {
   return score;
 }
 
-// Orden del listado público: 1) primero los que tienen salario definido,
+// Orden del listado público: 0) la prioridad fijada a mano desde el panel
+// manda sobre todo lo demás, 1) después los que tienen salario definido,
 // 2) luego los de más accesos acumulados, 3) luego los más completos y
 // 4) el más reciente como desempate.
 function byRelevance(a: RankedAd, b: RankedAd) {
   const withSalary = (ad: RankedAd) => (ad.salary != null ? 0 : 1);
   return (
+    b.priority - a.priority ||
     withSalary(a) - withSalary(b) ||
     b._count.visits - a._count.visits ||
     completeness(b) - completeness(a) ||
     b.createdAt.getTime() - a.createdAt.getTime()
   );
+}
+
+// La prioridad es una herramienta del panel: si quien publica o edita no tiene
+// acceso a él, el campo se descarta aunque venga en el cuerpo de la petición
+// (nadie se cuela al principio del listado publicando desde el portal).
+function stripAdminOnly<T extends { priority?: number }>(
+  dto: T,
+  user: AuthUser,
+): T {
+  if (user.isAdmin) return dto;
+  const { priority: _ignored, ...rest } = dto;
+  return rest as T;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -112,6 +127,14 @@ function whereActive(): Prisma.AdWhereInput {
   return { status: AdStatus.ACTIVO, expiresAt: { gt: new Date() } };
 }
 
+// La prioridad es una herramienta interna del panel: ordena el listado, pero
+// solo se expone en la vista de administración (/listings/all). Ninguna
+// respuesta del portal la incluye.
+function omitPriority<T extends { priority?: number }>(ad: T) {
+  const { priority: _internal, ...rest } = ad;
+  return rest;
+}
+
 // Descripción corta para las trazas del sistema.
 function summary(description: string) {
   return description.length > 60 ? `${description.slice(0, 60)}…` : description;
@@ -129,7 +152,8 @@ export class AdsService {
   // Listado público: solo anuncios vigentes (activos y no vencidos), ordenados
   // por relevancia (salario definido → accesos → completitud).
   async findAll(query: QueryAdDto) {
-    return this.paginate(query, whereActive(), 'relevance');
+    const page = await this.paginate(query, whereActive(), 'relevance');
+    return { ...page, items: page.items.map(omitPriority) };
   }
 
   // Conteos por opción sobre anuncios vigentes (para la barra de filtros).
@@ -266,7 +290,9 @@ export class AdsService {
         where,
         // includeCounts añade _count.visits para el contador de las tarjetas.
         include: { ...includeAuthor, ...includeCounts },
-        orderBy: { createdAt: 'desc' },
+        // El panel refleja el mismo criterio que el portal: los anuncios
+        // priorizados a mano encabezan la lista, luego los más recientes.
+        orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
         skip: (page - 1) * limit,
         take: limit,
       }),
@@ -371,8 +397,12 @@ export class AdsService {
       user,
       { resource: `ad:${id}` },
     );
-    if (user) return ad;
+    // El panel edita la prioridad desde el formulario de anuncio, así que el
+    // admin sí la recibe en el detalle; el resto del portal no.
+    if (user?.isAdmin) return ad;
+    if (user) return omitPriority(ad);
     const {
+      priority: _priority,
       phone: _phone,
       extraPhones: _extraPhones,
       location: _location,
@@ -418,7 +448,7 @@ export class AdsService {
     const durationDays = dto.durationDays ?? 3;
     const ad = await this.prisma.ad.create({
       data: {
-        ...dto,
+        ...stripAdminOnly(dto, user),
         durationDays,
         expiresAt: expiryDate(durationDays),
         createdById: user.id,
@@ -439,7 +469,7 @@ export class AdsService {
     );
     // Google indexa la oferta mientras está viva (fire-and-forget).
     void this.indexing.notifyUpdated(ad.id);
-    return ad;
+    return omitPriority(ad);
   }
 
   // Importación masiva desde el panel admin (CSV). A diferencia de create():
@@ -476,7 +506,7 @@ export class AdsService {
     this.assertCanModify(ad.createdById, user);
 
     // Cambiar la duración extiende la vigencia desde ahora.
-    const data: Prisma.AdUpdateInput = { ...dto };
+    const data: Prisma.AdUpdateInput = { ...stripAdminOnly(dto, user) };
     if (dto.durationDays && dto.durationDays !== ad.durationDays) {
       data.expiresAt = expiryDate(dto.durationDays);
     }
@@ -493,7 +523,7 @@ export class AdsService {
       { resource: `ad:${id}` },
     );
     void this.indexing.notifyUpdated(id);
-    return updated;
+    return omitPriority(updated);
   }
 
   // Baja manual: el anuncio deja de listarse públicamente pero no se borra.
@@ -512,7 +542,7 @@ export class AdsService {
       { resource: `ad:${id}` },
     );
     void this.indexing.notifyDeleted(id);
-    return updated;
+    return omitPriority(updated);
   }
 
   // Reactiva un anuncio dado de baja (o vencido aún no barrido por la
@@ -535,7 +565,7 @@ export class AdsService {
       { resource: `ad:${id}` },
     );
     void this.indexing.notifyUpdated(id);
-    return updated;
+    return omitPriority(updated);
   }
 
   // Borrado físico: dueño del anuncio o admin.
@@ -599,11 +629,12 @@ export class AdsService {
 
   // Anuncios propios, con accesos e interesados para ver su actividad.
   async findMine(userId: string) {
-    return this.prisma.ad.findMany({
+    const ads = await this.prisma.ad.findMany({
       where: { createdById: userId },
       include: { ...includeAuthor, ...includeCounts },
       orderBy: { createdAt: 'desc' },
     });
+    return ads.map(omitPriority);
   }
 
   // Solo el dueño del anuncio o un admin pueden modificarlo o borrarlo.
