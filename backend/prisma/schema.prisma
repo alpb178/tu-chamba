@@ -211,6 +211,9 @@ model Ad {
   extraPhones  String[]  @default([]) @map("telefonosExtra")
   jobType      JobType   @map("tipoJornada")
   status       AdStatus  @default(ACTIVO) @map("estado")
+  // Prioridad manual del panel: el mayor va primero en el listado público y en
+  // el panel, por encima de cualquier criterio de relevancia. 0 = normal.
+  priority     Int       @default(0) @map("prioridad")
   durationDays Int       @default(3) @map("duracionDias")
   expiresAt    DateTime  @map("expiraEn")
   reports      Report[]

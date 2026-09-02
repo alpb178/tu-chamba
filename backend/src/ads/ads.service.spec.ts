@@ -355,6 +355,7 @@ function rankRow(
 ) {
   return {
     id,
+    priority: 0,
     salary,
     requirements: null,
     location: null,
@@ -529,6 +530,43 @@ describe('AdsService.findAll — orden por relevancia', () => {
     expect(res.totalPages).toBe(2);
   });
 
+  it('la prioridad manual manda sobre salario, accesos y completitud', async () => {
+    const { service, prisma } = buildService();
+    const priorizado = rankRow('sin-salario-priorizado', null, 0, { priority: 5 });
+    prisma.ad.findMany
+      .mockResolvedValueOnce([...rows, priorizado])
+      .mockResolvedValueOnce([]);
+    await service.findAll({} as never);
+
+    const ids = prisma.ad.findMany.mock.calls[1][0].where.id.in;
+    expect(ids[0]).toBe('sin-salario-priorizado');
+    // El resto conserva el orden por relevancia.
+    expect(ids.slice(1)).toEqual([
+      'salario-completo',
+      'salario-incompleto',
+      'salario-pocos-accesos',
+      'sin-salario-popular',
+    ]);
+  });
+
+  it('entre priorizados gana el de mayor prioridad', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findMany
+      .mockResolvedValueOnce([
+        rankRow('p2', null, 0, { priority: 2 }),
+        rankRow('p9', null, 0, { priority: 9 }),
+        rankRow('normal', 500, 50),
+      ])
+      .mockResolvedValueOnce([]);
+    await service.findAll({} as never);
+
+    expect(prisma.ad.findMany.mock.calls[1][0].where.id.in).toEqual([
+      'p9',
+      'p2',
+      'normal',
+    ]);
+  });
+
   it('la segunda página sigue el mismo ranking', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany
@@ -571,6 +609,85 @@ describe('AdsService.findAllAdmin — filtros del reporte', () => {
     prisma.ad.count.mockResolvedValue(0);
     await service.findAllAdmin({ status: 'DADO_DE_BAJA' } as never);
     expect(prisma.ad.findMany.mock.calls[0][0].where.status).toBe('DADO_DE_BAJA');
+  });
+
+  it('lista los priorizados primero y luego los más recientes', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findMany.mockResolvedValue([]);
+    prisma.ad.count.mockResolvedValue(0);
+    await service.findAllAdmin({} as never);
+    expect(prisma.ad.findMany.mock.calls[0][0].orderBy).toEqual([
+      { priority: 'desc' },
+      { createdAt: 'desc' },
+    ]);
+  });
+});
+
+describe('AdsService — la prioridad es solo del panel', () => {
+  it('el listado público no expone la prioridad', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findMany
+      .mockResolvedValueOnce([rankRow('a1', 500, 1, { priority: 4 })])
+      .mockResolvedValueOnce([{ id: 'a1', createdById: 'u1', priority: 4 }]);
+    const res = await service.findAll({} as never);
+    expect(res.items[0]).not.toHaveProperty('priority');
+  });
+
+  it('el detalle público y los anuncios propios tampoco', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findUnique.mockResolvedValue({ ...existingAd, priority: 4 });
+    const detail = await service.findOnePublic('a1', owner);
+    expect(detail).not.toHaveProperty('priority');
+
+    prisma.ad.findMany.mockResolvedValue([{ ...existingAd, priority: 4 }]);
+    const mine = await service.findMine('u1');
+    expect(mine[0]).not.toHaveProperty('priority');
+  });
+
+  it('el detalle sí la incluye para el admin (la edita en el formulario)', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findUnique.mockResolvedValue({ ...existingAd, priority: 4 });
+    const detail = await service.findOnePublic('a1', admin);
+    expect(detail).toHaveProperty('priority', 4);
+  });
+
+  it('el listado del panel sí la incluye (la tabla la edita)', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findMany.mockResolvedValue([{ ...existingAd, priority: 4, createdById: 'u1' }]);
+    prisma.ad.count.mockResolvedValue(1);
+    const res = await service.findAllAdmin({} as never);
+    expect(res.items[0]).toHaveProperty('priority', 4);
+  });
+
+  it('descarta la prioridad que manda un cliente al publicar', async () => {
+    const { service, prisma } = buildService();
+    prisma.user.findUnique.mockResolvedValue({ emailVerified: true });
+    prisma.ad.create.mockResolvedValue({ ...existingAd, createdBy: existingAd.createdBy });
+    await service.create({ ...(dto as object), priority: 9 } as never, owner);
+    expect(prisma.ad.create.mock.calls[0][0].data.priority).toBeUndefined();
+  });
+
+  it('el admin sí puede fijarla al publicar', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.create.mockResolvedValue({ ...existingAd, createdBy: existingAd.createdBy });
+    await service.create({ ...(dto as object), priority: 9 } as never, admin);
+    expect(prisma.ad.create.mock.calls[0][0].data.priority).toBe(9);
+  });
+
+  it('descarta la prioridad que manda el dueño al editar su anuncio', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findUnique.mockResolvedValue(existingAd);
+    prisma.ad.update.mockResolvedValue(existingAd);
+    await service.update('a1', { priority: 9 } as never, owner);
+    expect(prisma.ad.update.mock.calls[0][0].data.priority).toBeUndefined();
+  });
+
+  it('el admin cambia la prioridad de cualquier anuncio', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findUnique.mockResolvedValue(existingAd);
+    prisma.ad.update.mockResolvedValue(existingAd);
+    await service.update('a1', { priority: 7 } as never, admin);
+    expect(prisma.ad.update.mock.calls[0][0].data.priority).toBe(7);
   });
 });
 
