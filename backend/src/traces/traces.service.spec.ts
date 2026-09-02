@@ -95,8 +95,8 @@ describe('TracesService.findAll', () => {
       result: 'ERROR',
       actorEmail: { contains: 'ana@', mode: 'insensitive' },
     });
-    expect(where.createdAt.gte).toEqual(new Date('2026-07-01'));
-    expect(where.createdAt.lte).toEqual(new Date('2026-07-31T23:59:59.999Z'));
+    expect(where.createdAt.gte).toEqual(new Date('2026-07-01T04:00:00.000Z'));
+    expect(where.createdAt.lte).toEqual(new Date('2026-08-01T03:59:59.999Z'));
   });
 });
 

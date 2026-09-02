@@ -203,8 +203,8 @@ describe('ReviewsService.findAllAdmin (reporte de moderación)', () => {
     const where = prisma.review.findMany.mock.calls[0][0].where;
     expect(where.rating).toBe(4);
     expect(where.OR).toBeDefined(); // comment/author/owner
-    expect(where.createdAt.gte).toEqual(new Date('2026-07-01'));
-    expect(where.createdAt.lte).toEqual(new Date('2026-07-10T23:59:59.999Z'));
+    expect(where.createdAt.gte).toEqual(new Date('2026-07-01T04:00:00.000Z'));
+    expect(where.createdAt.lte).toEqual(new Date('2026-07-11T03:59:59.999Z'));
     expect(res).toMatchObject({ total: 1, page: 1, totalPages: 1 });
   });
 });

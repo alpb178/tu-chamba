@@ -24,6 +24,7 @@ import { AuthUser } from '../auth/decorators/current-user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
 import { TracesService } from '../traces/traces.service';
 import { GoogleIndexingService } from '../indexing/google-indexing.service';
+import { endOfDay, startOfDay } from '../common/date-range';
 
 const includeAuthor = {
   // emailVerified alimenta el badge "Verificado" del portal (señal de
@@ -214,9 +215,9 @@ export class AdsService {
     if (Object.keys(createdBy).length) base.createdBy = createdBy;
     if (query.from || query.to) {
       base.createdAt = {};
-      if (query.from) base.createdAt.gte = new Date(query.from);
-      // Hasta el final del día indicado.
-      if (query.to) base.createdAt.lte = new Date(`${query.to}T23:59:59.999Z`);
+      if (query.from) base.createdAt.gte = startOfDay(query.from);
+      // Hasta el final del día indicado (en hora de Bolivia).
+      if (query.to) base.createdAt.lte = endOfDay(query.to);
     }
     // VENCIDO no se persiste: se traduce a "activo con vigencia pasada".
     if (query.status === 'ACTIVO') {
