@@ -53,8 +53,8 @@ describe('ErrorsService.findAll', () => {
     expect(args.where.severity).toBe(ErrorSeverity.ERROR);
     expect(args.where.status).toBe(ErrorStatus.NEW);
     expect(args.where.service).toBe('cron');
-    expect(args.where.createdAt.gte).toEqual(new Date('2026-07-01'));
-    expect(args.where.createdAt.lte).toEqual(new Date('2026-07-10T23:59:59.999Z'));
+    expect(args.where.createdAt.gte).toEqual(new Date('2026-07-01T04:00:00.000Z'));
+    expect(args.where.createdAt.lte).toEqual(new Date('2026-07-11T03:59:59.999Z'));
     expect(args.skip).toBe(5); // (2-1)*5
     expect(args.take).toBe(5);
   });

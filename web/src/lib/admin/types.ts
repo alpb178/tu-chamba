@@ -80,6 +80,9 @@ export const CATEGORY_LABEL: Record<Category, string> = {
 // Duraciones de publicación permitidas (en días). 3 es el valor por defecto.
 export const DURATION_DAYS = [3, 7, 15, 30];
 
+// Tope de la prioridad manual (mismo que valida la API).
+export const MAX_PRIORITY = 99;
+
 // DADO_DE_BAJA se persiste; VENCIDO se calcula con expiresAt (ver adEffectiveStatus).
 export type AdStatus = 'ACTIVO' | 'DADO_DE_BAJA';
 export type EffectiveStatus = 'ACTIVO' | 'VENCIDO' | 'DADO_DE_BAJA';
@@ -142,6 +145,8 @@ export interface Ad {
   extraPhones?: string[];
   jobType: JobType;
   status: AdStatus;
+  // Prioridad manual: el mayor va primero en el portal y en el panel (0 = normal).
+  priority: number;
   durationDays: number;
   expiresAt: string;
   createdById: string;

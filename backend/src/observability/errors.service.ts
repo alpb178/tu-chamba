@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ErrorSeverity, ErrorStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryErrorDto } from './dto/query-error.dto';
+import { endOfDay, startOfDay } from '../common/date-range';
 
 // Registro persistente de errores del sistema (API, cron, correo...).
 @Injectable()
@@ -39,8 +40,8 @@ export class ErrorsService {
     if (query.service) where.service = query.service;
     if (query.from || query.to) {
       where.createdAt = {};
-      if (query.from) where.createdAt.gte = new Date(query.from);
-      if (query.to) where.createdAt.lte = new Date(`${query.to}T23:59:59.999Z`);
+      if (query.from) where.createdAt.gte = startOfDay(query.from);
+      if (query.to) where.createdAt.lte = endOfDay(query.to);
     }
 
     const [items, total, pending] = await Promise.all([

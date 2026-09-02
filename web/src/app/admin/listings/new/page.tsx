@@ -12,6 +12,7 @@ import {
   DURATION_DAYS,
   JobType,
   JOB_TYPE_LABEL,
+  MAX_PRIORITY,
 } from '@/lib/admin/types';
 import { parsePhones } from '@/lib/admin/csv';
 import { Button, FormField, Input, Skeleton } from '@/components/admin/ui';
@@ -43,6 +44,8 @@ function AdForm() {
     extraPhones: '',
     jobType: 'TIEMPO_COMPLETO' as JobType,
     durationDays: 3,
+    // Prioridad manual: 0 deja el anuncio en el orden normal del portal.
+    priority: '',
   });
   const [loaded, setLoaded] = useState(!editId);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +70,7 @@ function AdForm() {
           extraPhones: (a.extraPhones ?? []).join(' / '),
           jobType: a.jobType,
           durationDays: a.durationDays ?? 3,
+          priority: a.priority ? String(a.priority) : '',
         });
         setLoaded(true);
       })
@@ -101,8 +105,11 @@ function AdForm() {
         extraPhones: extraPhones.length ? extraPhones : undefined,
         jobType: form.jobType,
         durationDays: form.durationDays,
+        // Vacío = 0 (orden normal). Se manda siempre para poder quitarle la
+        // prioridad a un anuncio que ya la tenía.
+        priority: form.priority.trim() ? Number(form.priority) : 0,
       };
-      await api(editId ? `/listings/${editId}` : '/admin/listings', {
+      await api(editId ? `/listings/${editId}` : '/listings', {
         method: editId ? 'PATCH' : 'POST',
         body: JSON.stringify(payload),
       });
@@ -279,6 +286,20 @@ function AdForm() {
             />
           </FormField>
         </div>
+        <FormField label="Prioridad (opcional)">
+          <Input
+            type="number"
+            min={0}
+            max={MAX_PRIORITY}
+            value={form.priority}
+            onChange={(e) => setForm({ ...form, priority: e.target.value })}
+            placeholder="0"
+          />
+          <span className="text-xs text-on-surface-variant">
+            El anuncio de mayor prioridad encabeza el portal. Vacío o 0 lo deja
+            en el orden normal; también se puede cambiar desde la tabla.
+          </span>
+        </FormField>
         {error && <p className="text-sm text-error">{error}</p>}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={() => router.push('/admin/listings')}>

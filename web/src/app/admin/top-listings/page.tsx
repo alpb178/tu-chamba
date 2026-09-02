@@ -157,7 +157,7 @@ export default function TopAdsPage() {
                     <IconButton
                       icon="edit"
                       label="Editar"
-                      onClick={() => router.push(`/listings/new?id=${ad.id}`)}
+                      onClick={() => router.push(`/admin/listings/new?id=${ad.id}`)}
                     />
                     <IconButton
                       icon="delete"

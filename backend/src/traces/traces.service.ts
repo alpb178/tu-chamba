@@ -3,6 +3,7 @@ import { Prisma, TraceResult, TraceType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { QueryTraceDto } from './dto/query-trace.dto';
 import { requestContext } from './request-context';
+import { endOfDay, startOfDay } from '../common/date-range';
 
 // geo-IP offline (geoip-lite) cargado de forma perezosa: si el paquete o sus
 // datos no están disponibles, el país simplemente queda nulo (best-effort).
@@ -90,9 +91,9 @@ export class TracesService {
     }
     if (query.from || query.to) {
       where.createdAt = {};
-      if (query.from) where.createdAt.gte = new Date(query.from);
-      // Hasta el final del día indicado.
-      if (query.to) where.createdAt.lte = new Date(`${query.to}T23:59:59.999Z`);
+      if (query.from) where.createdAt.gte = startOfDay(query.from);
+      // Hasta el final del día indicado (en hora de Bolivia).
+      if (query.to) where.createdAt.lte = endOfDay(query.to);
     }
 
     const [items, total] = await Promise.all([

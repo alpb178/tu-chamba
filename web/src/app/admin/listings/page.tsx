@@ -7,6 +7,7 @@ import {
   Ad,
   CATEGORY_LABEL,
   adEffectiveStatus,
+  MAX_PRIORITY,
   Paginated,
   salaryLabel,
 } from '@/lib/admin/types';
@@ -24,6 +25,7 @@ import { Pagination } from '@/components/admin/Pagination';
 // La primera columna es la de selección para el borrado por lotes.
 const HEADERS = [
   '',
+  'Prioridad',
   'Título',
   'Descripción',
   'Categoría',
@@ -38,6 +40,69 @@ const HEADERS = [
 ];
 
 const CHECKBOX_CLASS = 'h-4 w-4 cursor-pointer accent-primary';
+
+// Campo para fijar a mano la posición del anuncio: el de mayor prioridad
+// encabeza el portal y esta tabla (0 = orden normal por relevancia). Guarda al
+// salir del campo o con Enter; si la API falla, vuelve al valor anterior.
+function PriorityCell({ ad, onSaved }: { ad: Ad; onSaved: () => void }) {
+  const saved = ad.priority ?? 0;
+  const [value, setValue] = useState(String(saved));
+  const [saving, setSaving] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => setValue(String(saved)), [saved]);
+
+  async function save() {
+    const parsed = Math.trunc(Number(value));
+    const priority = Number.isFinite(parsed)
+      ? Math.min(Math.max(parsed, 0), MAX_PRIORITY)
+      : saved;
+    setValue(String(priority));
+    if (priority === saved) return;
+    setSaving(true);
+    setFailed(false);
+    try {
+      await api(`/listings/${ad.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ priority }),
+      });
+      onSaved();
+    } catch {
+      setFailed(true);
+      setValue(String(saved));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <input
+      type="number"
+      min={0}
+      max={MAX_PRIORITY}
+      value={value}
+      disabled={saving}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={save}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') e.currentTarget.blur();
+      }}
+      aria-label={`Prioridad del anuncio "${ad.title}"`}
+      title={
+        failed
+          ? 'No se pudo guardar la prioridad'
+          : 'Mayor prioridad = más arriba en el portal (0 = orden normal)'
+      }
+      className={`w-16 border bg-surface-container-lowest px-2 py-1 text-sm tabular-nums outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:opacity-50 ${
+        failed
+          ? 'border-error text-error'
+          : saved > 0
+            ? 'border-primary font-semibold text-primary'
+            : 'border-outline-variant text-on-surface-variant'
+      }`}
+    />
+  );
+}
 
 const LIMIT = 10;
 
@@ -191,6 +256,9 @@ export default function AdsAdminPage() {
                   aria-label={`Seleccionar el anuncio "${ad.title}"`}
                 />
               </td>
+              <td className="px-4 py-3">
+                <PriorityCell ad={ad} onSaved={load} />
+              </td>
               <td className="max-w-[14rem] truncate px-4 py-3 font-medium">{ad.title}</td>
               <td className="max-w-xs truncate px-4 py-3 text-on-surface-variant">
                 {ad.description}
@@ -220,7 +288,7 @@ export default function AdsAdminPage() {
                   <IconButton
                     icon="edit"
                     label="Editar"
-                    onClick={() => router.push(`/listings/new?id=${ad.id}`)}
+                    onClick={() => router.push(`/admin/listings/new?id=${ad.id}`)}
                   />
                   {status !== 'ACTIVO' && (
                     <IconButton

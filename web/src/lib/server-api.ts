@@ -1,18 +1,49 @@
+import { cache } from 'react';
+import { headers } from 'next/headers';
 import { Ad, Department, Paginated } from './types';
 
 // Fetch en servidor (SSR/metadata). No usa el token del navegador, así que
 // el detalle llega sin teléfono (público); el contacto se pide en cliente.
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
 
-export async function fetchAd(id: string): Promise<Ad | null> {
+// Datos del visitante que se reenvían al backend en las peticiones de
+// servidor: sin ellos la API solo ve al servidor de Next y la auditoría
+// registra su IP y su país (EE. UU.) en lugar de los del visitante real.
+async function visitorHeaders(): Promise<Record<string, string>> {
   try {
-    const res = await fetch(`${API}/listings/${id}`, { cache: 'no-store' });
+    const incoming = await headers();
+    const forward: Record<string, string> = {};
+    for (const name of [
+      'x-forwarded-for',
+      'x-vercel-ip-country',
+      'user-agent',
+      'referer',
+    ]) {
+      const value = incoming.get(name);
+      if (value) forward[name] = value;
+    }
+    return forward;
+  } catch {
+    // Fuera del ciclo de un request (build, sitemap): no hay visitante.
+    return {};
+  }
+}
+
+// cache() de React memoiza la llamada dentro de un mismo render: la página de
+// detalle y su generateMetadata piden el mismo anuncio, y sin esto el backend
+// registraba dos trazas "detalle visto" por cada visita.
+export const fetchAd = cache(async (id: string): Promise<Ad | null> => {
+  try {
+    const res = await fetch(`${API}/listings/${id}`, {
+      cache: 'no-store',
+      headers: await visitorHeaders(),
+    });
     if (!res.ok) return null;
     return (await res.json()) as Ad;
   } catch {
     return null;
   }
-}
+});
 
 export async function fetchAds(params: {
   department?: Department;
