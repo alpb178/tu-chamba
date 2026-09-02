@@ -13,6 +13,7 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
 import { TracesService } from '../traces/traces.service';
+import { endOfDay, startOfDay } from '../common/date-range';
 
 const includeAuthor = {
   author: { select: { id: true, name: true } },
@@ -131,8 +132,8 @@ export class ReviewsService {
     }
     if (query.from || query.to) {
       where.createdAt = {};
-      if (query.from) where.createdAt.gte = new Date(query.from);
-      if (query.to) where.createdAt.lte = new Date(`${query.to}T23:59:59.999Z`);
+      if (query.from) where.createdAt.gte = startOfDay(query.from);
+      if (query.to) where.createdAt.lte = endOfDay(query.to);
     }
 
     const [items, total] = await Promise.all([

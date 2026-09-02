@@ -18,6 +18,18 @@ export interface RequestContext {
 
 export const requestContext = new AsyncLocalStorage<RequestContext>();
 
+// IP real del visitante. Detrás del proxy de Render la cabecera llega como
+// "cliente, proxy1, proxy2…": el primer valor es el cliente y los siguientes
+// son los saltos de la infraestructura. req.ip no sirve aquí porque, con
+// `trust proxy` a 1, Express devuelve el salto más cercano al servidor (la
+// IP del borde, que geolocaliza en EE. UU. y no dice nada del visitante).
+function clientIp(req: Request): string | undefined {
+  const raw = req.headers['x-forwarded-for'];
+  const xff = Array.isArray(raw) ? raw[0] : raw;
+  const first = xff?.split(',')[0]?.trim();
+  return first || req.ip;
+}
+
 // País desde cabeceras que suelen inyectar los CDN/proxies (Cloudflare,
 // Vercel, App Engine). Devuelve el ISO-2 en mayúsculas, o undefined.
 function countryFromHeaders(req: Request): string | undefined {
@@ -52,15 +64,14 @@ function sourceFromRequest(req: Request): string | undefined {
   }
 }
 
-// Captura IP y user-agent de cada request (con trust proxy, req.ip trae la
-// IP real del cliente detrás del proxy de Render), más país (cabecera de CDN)
-// y fuente (utm/Referer).
+// Captura IP y user-agent de cada request, más país (cabecera de CDN o, en su
+// defecto, geo-IP sobre la IP del cliente) y fuente (utm/Referer).
 @Injectable()
 export class RequestContextMiddleware implements NestMiddleware {
   use(req: Request, _res: Response, next: NextFunction) {
     requestContext.run(
       {
-        ip: req.ip,
+        ip: clientIp(req),
         userAgent: req.headers['user-agent'],
         country: countryFromHeaders(req),
         source: sourceFromRequest(req),

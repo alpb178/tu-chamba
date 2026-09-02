@@ -558,8 +558,9 @@ describe('AdsService.findAllAdmin — filtros del reporte', () => {
     const where = prisma.ad.findMany.mock.calls[0][0].where;
     expect(where.createdBy.isAdmin).toBe(false);
     expect(where.createdBy.OR).toHaveLength(2);
-    expect(where.createdAt.gte).toEqual(new Date('2026-07-01'));
-    expect(where.createdAt.lte).toEqual(new Date('2026-07-10T23:59:59.999Z'));
+    // Días de Bolivia (UTC-4): el filtro abarca del 1 al 10 en hora local.
+    expect(where.createdAt.gte).toEqual(new Date('2026-07-01T04:00:00.000Z'));
+    expect(where.createdAt.lte).toEqual(new Date('2026-07-11T03:59:59.999Z'));
     // VENCIDO = activo con vigencia pasada.
     expect(where.status).toBe('ACTIVO');
     expect(where.expiresAt.lte).toBeInstanceOf(Date);
