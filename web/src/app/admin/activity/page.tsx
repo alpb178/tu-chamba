@@ -12,22 +12,16 @@ import {
   PerformanceMetrics,
   ServiceState,
   ServiceStatus,
-  Trace,
-  TraceResult,
-  TraceType,
-  TRACE_TYPE_LABEL,
 } from '@/lib/admin/types';
 import {
   AdminTable,
   Button,
   ConfirmDialog,
   IconButton,
-  Input,
   SelectCheckbox,
   Skeleton,
 } from '@/components/admin/ui';
 import { CustomSelect } from '@/components/admin/CustomSelect';
-import { Pagination } from '@/components/admin/Pagination';
 import { useSelection } from '@/lib/admin/useSelection';
 
 // El panel se refresca solo, como un centro de monitoreo.
@@ -55,8 +49,6 @@ const SEVERITY_STYLE: Record<ErrorSeverity, string> = {
   CRITICAL: 'bg-error text-on-error',
 };
 
-const TYPES = Object.keys(TRACE_TYPE_LABEL) as TraceType[];
-
 function formatUptime(seconds: number) {
   const d = Math.floor(seconds / 86400);
   const h = Math.floor((seconds % 86400) / 3600);
@@ -70,14 +62,13 @@ export default function ActivityPage() {
       <div>
         <h1 className="text-2xl font-semibold text-on-surface">Actividad del sitio</h1>
         <p className="mt-1 text-sm text-on-surface-variant">
-          Centro de monitoreo: estado de los servicios, rendimiento, errores y
-          actividad en tiempo real (se actualiza cada 15 s).
+          Centro de monitoreo: estado de los servicios, rendimiento y errores
+          (se actualiza cada 15 s). El historial de eventos vive en Auditoría.
         </p>
       </div>
       <ServicesSection />
       <MetricsSection />
       <ErrorsSection />
-      <FeedSection />
     </div>
   );
 }
@@ -411,225 +402,6 @@ function ErrorsSection() {
         message={`Se borran ${selected.size} ${
           selected.size === 1 ? 'entrada' : 'entradas'
         } del registro de errores. ¿Continuar?`}
-        onConfirm={removeSelected}
-        onCancel={() => setConfirmBulk(false)}
-      />
-    </section>
-  );
-}
-
-// ——— Feed de actividad ———
-
-const FEED_HEADERS = ['Fecha', 'Evento', 'Descripción', ''];
-
-function FeedSection() {
-  const [data, setData] = useState<Paginated<Trace> | null>(null);
-  const [type, setType] = useState<TraceType | ''>('');
-  const [result, setResult] = useState<TraceResult | ''>('');
-  const [actor, setActor] = useState('');
-  const [from, setFrom] = useState('');
-  const [page, setPage] = useState(1);
-  const [toDelete, setToDelete] = useState<Trace | null>(null);
-  const [confirmBulk, setConfirmBulk] = useState(false);
-  const [confirmAll, setConfirmAll] = useState(false);
-  const { selected, allInPage, toggleOne, togglePage, clear } = useSelection(
-    (data?.items ?? []).map((t) => t.id),
-  );
-
-  const load = useCallback(() => {
-    const params = new URLSearchParams({ page: String(page), limit: '10' });
-    if (type) params.set('type', type);
-    if (result) params.set('result', result);
-    if (actor.trim()) params.set('actor', actor.trim());
-    if (from) params.set('from', from);
-    api<Paginated<Trace>>(`/admin/traces?${params}`)
-      .then(setData)
-      .catch(() => {});
-  }, [type, result, actor, from, page]);
-
-  // El feed comparte las trazas de auditoría; el borrado queda auditado.
-  async function remove() {
-    if (!toDelete) return;
-    await api(`/admin/traces/${toDelete.id}`, { method: 'DELETE' });
-    setToDelete(null);
-    load();
-  }
-
-  async function removeSelected() {
-    setConfirmBulk(false);
-    await api('/admin/traces/bulk-delete', {
-      method: 'POST',
-      body: JSON.stringify({ ids: [...selected] }),
-    });
-    clear();
-    load();
-  }
-
-  async function removeAll() {
-    setConfirmAll(false);
-    await api('/admin/traces/all', { method: 'DELETE' });
-    clear();
-    setPage(1);
-    load();
-  }
-
-  useEffect(() => {
-    load();
-    // Solo la primera página se refresca sola (es la vista "en vivo").
-    if (page !== 1) return;
-    const t = setInterval(load, REFRESH_MS);
-    return () => clearInterval(t);
-  }, [load, page]);
-
-  return (
-    <section className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-on-surface">Feed de actividad</h2>
-        <div className="flex gap-2">
-          {selected.size > 0 && (
-            <Button variant="danger" onClick={() => setConfirmBulk(true)}>
-              Eliminar seleccionados ({selected.size})
-            </Button>
-          )}
-          {(data?.total ?? 0) > 0 && (
-            <Button variant="danger" onClick={() => setConfirmAll(true)}>
-              Eliminar todos
-            </Button>
-          )}
-          <IconButton icon="refresh" label="Actualizar la lista" onClick={load} />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <CustomSelect
-          value={type}
-          onChange={(v) => {
-            setType(v as TraceType | '');
-            setPage(1);
-          }}
-          options={[
-            { value: '', label: 'Todos los eventos' },
-            ...TYPES.map((t) => ({ value: t, label: TRACE_TYPE_LABEL[t] })),
-          ]}
-        />
-        <CustomSelect
-          value={result}
-          onChange={(v) => {
-            setResult(v as TraceResult | '');
-            setPage(1);
-          }}
-          options={[
-            { value: '', label: 'Cualquier estado' },
-            { value: 'OK', label: 'Correcto' },
-            { value: 'ERROR', label: 'Error' },
-          ]}
-        />
-        <Input
-          placeholder="Usuario (email)"
-          value={actor}
-          onChange={(e) => {
-            setActor(e.target.value);
-            setPage(1);
-          }}
-        />
-        <Input
-          type="date"
-          value={from}
-          onChange={(e) => {
-            setFrom(e.target.value);
-            setPage(1);
-          }}
-        />
-      </div>
-
-      <AdminTable
-        headers={[
-          <SelectCheckbox
-            key="select-page"
-            label="Seleccionar todos los eventos de la página"
-            checked={allInPage}
-            onChange={togglePage}
-          />,
-          ...FEED_HEADERS,
-        ]}
-        loading={!data}
-        empty="Sin actividad para los filtros."
-        skeletonRows={6}
-      >
-        {(data?.items ?? []).map((t) => (
-          <tr key={t.id}>
-            <td className="px-4 py-3">
-              <SelectCheckbox
-                label="Seleccionar el evento"
-                checked={selected.has(t.id)}
-                onChange={() => toggleOne(t.id)}
-              />
-            </td>
-            <td className="whitespace-nowrap px-4 py-3 text-on-surface-variant">
-              {new Date(t.createdAt).toLocaleString('es-BO', {
-                dateStyle: 'short',
-                timeStyle: 'medium',
-              })}
-            </td>
-            <td className="px-4 py-3">
-              <span className="flex items-center gap-2 whitespace-nowrap">
-                <span
-                  className={`h-2.5 w-2.5 shrink-0 rounded-full ${
-                    t.result === 'ERROR' ? 'bg-error' : 'bg-tertiary'
-                  }`}
-                />
-                <span className="rounded-full bg-surface-container-high px-2 py-0.5 text-xs font-medium text-on-surface-variant">
-                  {TRACE_TYPE_LABEL[t.type]}
-                </span>
-              </span>
-            </td>
-            <td className="max-w-md px-4 py-3">{t.description}</td>
-            <td className="px-4 py-3 text-right">
-              <div className="flex justify-end">
-                <IconButton
-                  icon="delete"
-                  label="Eliminar"
-                  variant="danger"
-                  onClick={() => setToDelete(t)}
-                />
-              </div>
-            </td>
-          </tr>
-        ))}
-      </AdminTable>
-
-      {data && (
-        <Pagination
-          page={data.page}
-          totalPages={data.totalPages}
-          total={data.total}
-          limit={data.limit}
-          onPage={setPage}
-        />
-      )}
-
-      <ConfirmDialog
-        open={!!toDelete}
-        title="Eliminar evento"
-        message="El evento se borra del historial y la eliminación queda auditada. ¿Continuar?"
-        onConfirm={remove}
-        onCancel={() => setToDelete(null)}
-      />
-
-      <ConfirmDialog
-        open={confirmAll}
-        title="Eliminar TODO el historial"
-        message="El feed comparte las trazas de auditoría: esto borra TODO el historial, no solo lo filtrado; queda una traza resumen del borrado (no se puede deshacer). ¿Continuar?"
-        onConfirm={removeAll}
-        onCancel={() => setConfirmAll(false)}
-      />
-
-      <ConfirmDialog
-        open={confirmBulk}
-        title="Eliminar eventos seleccionados"
-        message={`Se borran ${selected.size} ${
-          selected.size === 1 ? 'evento' : 'eventos'
-        } del historial y la eliminación queda auditada. ¿Continuar?`}
         onConfirm={removeSelected}
         onCancel={() => setConfirmBulk(false)}
       />
