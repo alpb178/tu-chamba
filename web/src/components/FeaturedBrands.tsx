@@ -24,7 +24,7 @@ function trackSiteClick(company: Company) {
 function BrandCard({ company }: { company: Company }) {
   const track = () => trackSiteClick(company);
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-outline-variant bg-surface-container-lowest shadow-aceternity transition-shadow hover:shadow-derek">
+    <article className="flex h-full flex-col overflow-hidden rounded-card border border-outline-variant bg-surface-container-lowest shadow-aceternity transition-shadow hover:shadow-derek">
       <a
         href={company.url}
         target="_blank"

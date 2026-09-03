@@ -158,7 +158,7 @@ export function ConfirmDialog({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="w-full max-w-sm border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity">
+      <div className="w-full max-w-sm rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity">
         <h3 className="text-lg font-semibold text-on-surface">{title}</h3>
         <p className="mt-2 text-sm text-on-surface-variant">{message}</p>
         <div className="mt-4 flex justify-end gap-2">
@@ -182,7 +182,7 @@ export function DataTable({
   children: ReactNode;
 }) {
   return (
-    <div className="overflow-x-auto border border-outline-variant bg-surface-container-lowest shadow-aceternity">
+    <div className="overflow-x-auto rounded-card border border-outline-variant bg-surface-container-lowest shadow-aceternity">
       <table className="w-full text-left text-sm">
         <thead className="border-b border-outline-variant bg-surface-container-low text-on-surface-variant">
           <tr>
@@ -267,7 +267,7 @@ export function StatCard({
     </>
   );
   const base =
-    'border border-outline-variant bg-surface-container-lowest p-5 shadow-aceternity';
+    'rounded-card border border-outline-variant bg-surface-container-lowest p-5 shadow-aceternity';
   if (!href) return <div className={base}>{body}</div>;
   return (
     <Link
@@ -317,7 +317,7 @@ export function TableSkeleton({
 
 export function StatCardSkeleton() {
   return (
-    <div className="border border-outline-variant bg-surface-container-lowest p-5">
+    <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-5">
       <Skeleton className="h-4 w-32" />
       <Skeleton className="mt-2 h-8 w-16" />
     </div>
@@ -326,7 +326,7 @@ export function StatCardSkeleton() {
 
 export function ChartCardSkeleton({ height = 'h-40' }: { height?: string }) {
   return (
-    <div className="border border-outline-variant bg-surface-container-lowest p-5">
+    <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-5">
       <Skeleton className="h-4 w-56" />
       <Skeleton className={`mt-4 w-full ${height}`} />
     </div>

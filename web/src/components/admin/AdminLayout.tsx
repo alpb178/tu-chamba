@@ -209,7 +209,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
                 />
                 <div
                   role="menu"
-                  className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden border border-outline-variant bg-surface-container-lowest shadow-derek"
+                  className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-tile border border-outline-variant bg-surface-container-lowest shadow-derek"
                 >
                   <div className="border-b border-outline-variant px-4 py-3">
                     <p className="truncate text-sm font-medium text-on-surface">{user.name}</p>

@@ -74,7 +74,7 @@ export default async function AdDetailPage({ params }: Params) {
         )}
       </nav>
 
-      <div className="space-y-4 border border-outline-variant bg-surface-container-lowest p-6">
+      <div className="space-y-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6">
       {/* JobPosting para Google for Jobs: solo en ofertas vigentes. */}
       {status === 'ACTIVO' && (
         <script

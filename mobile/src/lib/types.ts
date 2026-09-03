@@ -40,6 +40,8 @@ export interface Ad {
   // Referencia en texto libre ("frente al mercado Los Pozos").
   locationReference?: string | null;
   jobType: JobType;
+  // Destacado por el panel: la tarjeta lo marca.
+  featured?: boolean;
   createdById: string;
   createdBy?: { id: string; name: string; email: string };
   // Calificación del publicante; el backend la adjunta en los listados.

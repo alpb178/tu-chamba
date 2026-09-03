@@ -88,8 +88,36 @@ const config: Config = {
         move: 'move 5s linear infinite',
         'spin-circle': 'spin-circle 3s linear infinite',
         meteor: 'meteor 5s linear infinite',
+        // Borde de los anuncios con prioridad: un color cada 5 s (tres tramos,
+        // 15 s de vuelta completa). Ver el keyframe para el reparto.
+        'featured-border': 'featured-border 15s ease-in-out infinite',
       },
       keyframes: {
+        // El borde del anuncio destacado, cambiando de color cada 5 segundos.
+        //
+        // Cada tramo aguanta 3 s y cruza al siguiente en 2 s: el cambio se ve
+        // sin que el borde parpadee, y en un listado con varios destacados
+        // todos van a compás (misma animación, mismo arranque) en vez de
+        // titilar cada uno por su lado.
+        //
+        // Solo se anima `border-color`, y eso no es pereza: es la única
+        // propiedad de la tarjeta que se puede mover sin que nada se
+        // descoloque. El grosor sigue en 1 px, así que el destacado ocupa
+        // exactamente lo mismo que el resto.
+        //
+        // Los tres colores son los tres tonos de la paleta. El azul es
+        // `primary-container` (más saturado) y no `primary`, porque `primary`
+        // al 40 % es el borde del HOVER de una tarjeta normal y el tramo azul
+        // se leería como «tengo el cursor encima» en vez de «este va
+        // destacado».
+        'featured-border': {
+          '0%, 100%': { borderColor: 'rgb(var(--c-secondary-container))' },
+          '20%': { borderColor: 'rgb(var(--c-secondary-container))' },
+          '33.33%': { borderColor: 'rgb(var(--c-tertiary-container))' },
+          '53.33%': { borderColor: 'rgb(var(--c-tertiary-container))' },
+          '66.66%': { borderColor: 'rgb(var(--c-primary-container))' },
+          '86.66%': { borderColor: 'rgb(var(--c-primary-container))' },
+        },
         move: {
           '0%': { transform: 'translateX(-200px)' },
           '100%': { transform: 'translateX(200px)' },
@@ -112,8 +140,24 @@ const config: Config = {
       },
       // Esquinas rectas por defecto (estética editorial): `rounded` sin sufijo
       // queda cuadrado; las píldoras de marca usan `rounded-full` explícito.
+      //
+      // Las TARJETAS son la excepción, y por eso tienen token propio en vez de
+      // un `rounded-2xl` repetido en treinta sitios: el radio de una tarjeta es
+      // una decisión de diseño que se toma una vez, y con la clase suelta el
+      // día que cambie hay que ir a buscarla a mano por todo el portal (que es
+      // exactamente cómo `FeaturedBrands` se quedó con un radio que no
+      // compartía nadie).
+      //
+      //   rounded-card → superficies de contenido: tarjetas de anuncio, paneles
+      //                  de formulario, diálogos, tarjetas del panel.
+      //   rounded-tile → lo que va DENTRO o encima de una tarjeta: el tile del
+      //                  rubro, los menús desplegables. Menor a propósito: un
+      //                  radio interior igual al exterior se ve más redondo que
+      //                  el borde que lo contiene.
       borderRadius: {
         DEFAULT: '0',
+        card: '1rem',
+        tile: '0.75rem',
       },
     },
   },

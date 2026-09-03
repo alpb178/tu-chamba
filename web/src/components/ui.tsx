@@ -122,7 +122,8 @@ export function FormField({
 
 // ——— Primitivas editoriales (portadas de Iris Natural) ———
 
-// Tarjeta base con borde, sombra aceternity y esquinas rectas.
+// Tarjeta base con borde, sombra aceternity y esquinas redondeadas
+// (`rounded-card`, el token compartido por todas las tarjetas del portal).
 export function Card({
   className,
   children,
@@ -133,7 +134,7 @@ export function Card({
   return (
     <div
       className={cn(
-        'border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity',
+        'rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity',
         className
       )}
     >

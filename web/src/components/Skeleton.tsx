@@ -8,7 +8,7 @@ export function Skeleton({ className = '' }: { className?: string }) {
 // Silueta de una AdCard del listado.
 export function AdCardSkeleton() {
   return (
-    <div className="border border-outline-variant bg-surface-container-lowest p-4">
+    <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 space-y-1.5">
           <Skeleton className="h-4 w-11/12" />

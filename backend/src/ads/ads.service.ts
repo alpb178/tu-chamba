@@ -128,12 +128,13 @@ function whereActive(): Prisma.AdWhereInput {
   return { status: AdStatus.ACTIVO, expiresAt: { gt: new Date() } };
 }
 
-// La prioridad es una herramienta interna del panel: ordena el listado, pero
-// solo se expone en la vista de administración (/listings/all). Ninguna
-// respuesta del portal la incluye.
-function omitPriority<T extends { priority?: number }>(ad: T) {
-  const { priority: _internal, ...rest } = ad;
-  return rest;
+// El número de prioridad es una herramienta interna del panel: solo viaja en
+// la vista de administración (/listings/all). Al portal se le manda en su
+// lugar `featured`, que le basta para marcar la tarjeta como destacada sin
+// revelar la posición asignada.
+function toPublicAd<T extends { priority?: number }>(ad: T) {
+  const { priority, ...rest } = ad;
+  return { ...rest, featured: (priority ?? 0) > 0 };
 }
 
 // Descripción corta para las trazas del sistema.
@@ -154,7 +155,7 @@ export class AdsService {
   // por relevancia (salario definido → accesos → completitud).
   async findAll(query: QueryAdDto) {
     const page = await this.paginate(query, whereActive(), 'relevance');
-    return { ...page, items: page.items.map(omitPriority) };
+    return { ...page, items: page.items.map(toPublicAd) };
   }
 
   // Conteos por opción sobre anuncios vigentes (para la barra de filtros).
@@ -401,9 +402,10 @@ export class AdsService {
     // El panel edita la prioridad desde el formulario de anuncio, así que el
     // admin sí la recibe en el detalle; el resto del portal no.
     if (user?.isAdmin) return ad;
-    if (user) return omitPriority(ad);
+    if (user) return toPublicAd(ad);
+    // toPublicAd ya cambia la prioridad por `featured`; aquí solo se quitan
+    // además los datos que exigen sesión.
     const {
-      priority: _priority,
       phone: _phone,
       extraPhones: _extraPhones,
       location: _location,
@@ -411,7 +413,7 @@ export class AdsService {
       latitude: _lat,
       longitude: _lng,
       ...publicAd
-    } = ad;
+    } = toPublicAd(ad);
     return publicAd;
   }
 
@@ -470,7 +472,7 @@ export class AdsService {
     );
     // Google indexa la oferta mientras está viva (fire-and-forget).
     void this.indexing.notifyUpdated(ad.id);
-    return omitPriority(ad);
+    return toPublicAd(ad);
   }
 
   // Importación masiva desde el panel admin (CSV). A diferencia de create():
@@ -524,7 +526,7 @@ export class AdsService {
       { resource: `ad:${id}` },
     );
     void this.indexing.notifyUpdated(id);
-    return omitPriority(updated);
+    return toPublicAd(updated);
   }
 
   // Baja manual: el anuncio deja de listarse públicamente pero no se borra.
@@ -543,7 +545,7 @@ export class AdsService {
       { resource: `ad:${id}` },
     );
     void this.indexing.notifyDeleted(id);
-    return omitPriority(updated);
+    return toPublicAd(updated);
   }
 
   // Reactiva un anuncio dado de baja (o vencido aún no barrido por la
@@ -566,7 +568,7 @@ export class AdsService {
       { resource: `ad:${id}` },
     );
     void this.indexing.notifyUpdated(id);
-    return omitPriority(updated);
+    return toPublicAd(updated);
   }
 
   // Borrado físico: dueño del anuncio o admin.
@@ -635,7 +637,7 @@ export class AdsService {
       include: { ...includeAuthor, ...includeCounts },
       orderBy: { createdAt: 'desc' },
     });
-    return ads.map(omitPriority);
+    return ads.map(toPublicAd);
   }
 
   // Solo el dueño del anuncio o un admin pueden modificarlo o borrarlo.
