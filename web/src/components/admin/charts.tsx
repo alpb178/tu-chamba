@@ -302,7 +302,7 @@ export function ChartCard({
   children: React.ReactNode;
 }) {
   const base =
-    'border border-outline-variant bg-surface-container-lowest p-5 shadow-aceternity';
+    'rounded-card border border-outline-variant bg-surface-container-lowest p-5 shadow-aceternity';
   if (!href) {
     return (
       <div className={base}>

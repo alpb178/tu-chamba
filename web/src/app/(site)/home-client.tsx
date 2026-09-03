@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { Grid2X2, Grid3X3, SlidersHorizontal, X } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
+import { SORT_LABEL, SortOption, sortAds } from '@/lib/sort';
 import {
   Ad,
   CATEGORY_LABEL,
@@ -183,59 +184,6 @@ function CatalogHeader({
       </div>
     </div>
   );
-}
-
-// El backend de /listings no admite parámetro de orden, así que el orden se
-// aplica en cliente sobre las tarjetas ya cargadas (la página actual en
-// escritorio; el acumulado del scroll infinito en móvil). No toca la API.
-type SortOption = 'recientes' | 'antiguos' | 'salario-desc' | 'salario-asc';
-
-const SORT_LABEL: Record<SortOption, string> = {
-  recientes: 'Más recientes',
-  antiguos: 'Más antiguos',
-  'salario-desc': 'Salario: mayor a menor',
-  'salario-asc': 'Salario: menor a mayor',
-};
-
-// Ordena una copia de las ofertas según la opción elegida. El salario puede
-// venir nulo (a convenir): se manda al final en ambos sentidos.
-function sortAds(list: Ad[], sort: SortOption): Ad[] {
-  const salaryOf = (a: Ad) =>
-    a.salary != null && a.salary !== '' ? Number(a.salary) : null;
-  const out = [...list];
-  switch (sort) {
-    case 'antiguos':
-      out.sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      );
-      break;
-    case 'salario-desc':
-      out.sort((a, b) => {
-        const sa = salaryOf(a);
-        const sb = salaryOf(b);
-        if (sa == null) return sb == null ? 0 : 1;
-        if (sb == null) return -1;
-        return sb - sa;
-      });
-      break;
-    case 'salario-asc':
-      out.sort((a, b) => {
-        const sa = salaryOf(a);
-        const sb = salaryOf(b);
-        if (sa == null) return sb == null ? 0 : 1;
-        if (sb == null) return -1;
-        return sa - sb;
-      });
-      break;
-    case 'recientes':
-    default:
-      out.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-  }
-  return out;
 }
 
 // Barra de herramientas sobre el listado (estilo Iris): conteo de resultados,
@@ -558,7 +506,7 @@ export function HomeClient({
               loading ? (
                 <AdListSkeleton />
               ) : (
-              <div className="flex flex-col items-center gap-3 border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-14 text-center">
+              <div className="flex flex-col items-center gap-3 rounded-card border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-14 text-center">
                 <Icon name="search" className="text-4xl text-outline" />
                 <p className="text-base text-on-surface">
                   No se encontraron ofertas con estos filtros.

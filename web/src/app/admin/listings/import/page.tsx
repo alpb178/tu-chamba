@@ -329,7 +329,7 @@ export default function ImportAdsPage() {
       </div>
 
       {/* Formato esperado */}
-      <div className="border border-outline-variant bg-surface-container-lowest p-5 text-sm text-on-surface-variant shadow-aceternity">
+      <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-5 text-sm text-on-surface-variant shadow-aceternity">
         <p className="font-medium text-on-surface">Formato del archivo</p>
         <p className="mt-2">
           Columnas obligatorias:{' '}
@@ -484,7 +484,7 @@ export default function ImportAdsPage() {
               ).map(([label, value]) => (
                 <div
                   key={label}
-                  className="border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
+                  className="rounded-card border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
                 >
                   <p className="text-xs text-on-surface-variant">{label}</p>
                   <p className="mt-1 font-display text-2xl font-bold text-primary">{value}</p>

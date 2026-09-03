@@ -190,7 +190,7 @@ export function CustomSelect({
       )}
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full overflow-hidden border border-outline-variant bg-surface-container-lowest shadow-derek">
+        <div className="absolute z-50 mt-1 w-full overflow-hidden rounded-tile border border-outline-variant bg-surface-container-lowest shadow-derek">
           {withSearch && (
             <div className="flex items-center gap-2 border-b border-outline-variant/60 px-3 py-2">
               <Icon name="search" className="text-lg text-outline" />

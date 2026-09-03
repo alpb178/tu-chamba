@@ -101,7 +101,7 @@ function ServicesSection() {
           return (
             <div
               key={s.key}
-              className="border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
+              className="rounded-card border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium text-on-surface">
@@ -121,7 +121,7 @@ function ServicesSection() {
             <div
               key={i}
               aria-hidden="true"
-              className="space-y-2 border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
+              className="space-y-2 rounded-card border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
             >
               <Skeleton className="h-5 w-32" />
               <Skeleton className="h-3 w-full" />
@@ -182,7 +182,7 @@ function MetricsSection() {
           {Array.from({ length: 9 }, (_, i) => (
             <div
               key={i}
-              className="space-y-2 border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
+              className="space-y-2 rounded-card border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
             >
               <Skeleton className="h-3 w-24" />
               <Skeleton className="h-6 w-16" />
@@ -194,7 +194,7 @@ function MetricsSection() {
           {tiles.map((t) => (
             <div
               key={t.label}
-              className="border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
+              className="rounded-card border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity"
             >
               <p className="text-xs text-on-surface-variant">{t.label}</p>
               <p className="mt-1 text-xl font-semibold text-on-surface">{t.value}</p>

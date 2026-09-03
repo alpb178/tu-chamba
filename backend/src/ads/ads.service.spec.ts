@@ -632,6 +632,17 @@ describe('AdsService — la prioridad es solo del panel', () => {
       .mockResolvedValueOnce([{ id: 'a1', createdById: 'u1', priority: 4 }]);
     const res = await service.findAll({} as never);
     expect(res.items[0]).not.toHaveProperty('priority');
+    // El portal solo sabe que va destacado, no en qué posición.
+    expect(res.items[0]).toHaveProperty('featured', true);
+  });
+
+  it('sin prioridad el anuncio no va destacado', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findMany
+      .mockResolvedValueOnce([rankRow('a1', 500, 1)])
+      .mockResolvedValueOnce([{ id: 'a1', createdById: 'u1', priority: 0 }]);
+    const res = await service.findAll({} as never);
+    expect(res.items[0]).toHaveProperty('featured', false);
   });
 
   it('el detalle público y los anuncios propios tampoco', async () => {
@@ -643,6 +654,14 @@ describe('AdsService — la prioridad es solo del panel', () => {
     prisma.ad.findMany.mockResolvedValue([{ ...existingAd, priority: 4 }]);
     const mine = await service.findMine('u1');
     expect(mine[0]).not.toHaveProperty('priority');
+  });
+
+  it('el visitante anónimo ve el destacado pero no la prioridad', async () => {
+    const { service, prisma } = buildService();
+    prisma.ad.findUnique.mockResolvedValue({ ...existingAd, priority: 4 });
+    const detail = await service.findOnePublic('a1', null);
+    expect(detail).not.toHaveProperty('priority');
+    expect(detail).toHaveProperty('featured', true);
   });
 
   it('el detalle sí la incluye para el admin (la edita en el formulario)', async () => {

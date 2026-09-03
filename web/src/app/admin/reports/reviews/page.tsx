@@ -80,7 +80,7 @@ function EditReviewDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
       <form
         onSubmit={submit}
-        className="w-full max-w-sm space-y-4 border border-outline-variant bg-surface-container-lowest p-6 shadow-derek"
+        className="w-full max-w-sm space-y-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-derek"
       >
         <div>
           <h3 className="text-lg font-semibold text-on-surface">Editar reseña</h3>

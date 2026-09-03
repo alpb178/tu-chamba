@@ -149,6 +149,9 @@ export interface Ad {
   extraPhones?: string[];
   jobType: JobType;
   status: AdStatus;
+  // Destacado por el panel: la tarjeta lo marca. El número de prioridad que
+  // decide el orden no sale del panel.
+  featured?: boolean;
   durationDays: number;
   expiresAt: string;
   createdById: string;

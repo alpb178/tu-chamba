@@ -231,7 +231,7 @@ export function Navbar() {
             {menuUsuario && (
               <div
                 role="menu"
-                className="absolute right-0 z-50 mt-2 w-72 overflow-hidden border border-outline-variant bg-surface-container-lowest shadow-derek ring-1 ring-black/5"
+                className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-tile border border-outline-variant bg-surface-container-lowest shadow-derek ring-1 ring-black/5"
               >
                 {user ? (
                   <>

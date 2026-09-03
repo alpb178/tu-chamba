@@ -242,7 +242,7 @@ function Form() {
   }
 
   return (
-    <div className="mx-auto max-w-xl border border-outline-variant bg-surface-container-lowest p-6">
+    <div className="mx-auto max-w-xl rounded-card border border-outline-variant bg-surface-container-lowest p-6">
       <h1 className="mb-4 text-xl font-semibold text-on-surface">
         {editId ? 'Editar oferta de trabajo' : 'Publicar oferta de trabajo'}
       </h1>

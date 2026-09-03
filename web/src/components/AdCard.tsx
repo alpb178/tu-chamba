@@ -56,10 +56,38 @@ export function AdCard({
   const status = adEffectiveStatus(ad);
   // Visitas al detalle del anuncio (contador social en la tarjeta).
   const views = ad._count?.visits ?? 0;
+  // Los destacados por el panel se distinguen por el color del borde (mismo
+  // grosor, así no se descolocan respecto al resto de tarjetas), y ese color va
+  // cambiando cada 5 segundos: ámbar → verde → azul, en bucle.
+  //
+  // El color de reposo es ÁMBAR y no azul, que es lo que llevaba: el azul es el
+  // color del HOVER de una tarjeta normal (`hover:border-primary/40`), así que
+  // pasar el cursor por cualquier anuncio lo disfrazaba de destacado. El ámbar
+  // es además el color con el que el portal ya habla de promoción (el botón de
+  // publicar oferta), así que el borde se lee sin leyenda.
+  //
+  // `motion-safe:` y no la animación a secas: con
+  // `prefers-reduced-motion: reduce` el borde se queda quieto en el ámbar, que
+  // es el mismo criterio que ya aplican `FeaturedBrands` y `SlideBurst`. Un
+  // borde que cambia de color sin parar es justo lo que esa preferencia existe
+  // para apagar.
+  //
+  // El `hover:` sobrevive por lo mismo: cuando la animación está apagada sigue
+  // siendo el único acuse de recibo del cursor. Con la animación en marcha, la
+  // regla de animación gana y el hover no se ve — a propósito, porque el borde
+  // ya está diciendo algo más importante.
+  //
+  // Ya no lleva el `ring` de antes. Estaba para que el borde pareciera de 2 px
+  // sin ocupar 2 px, y un `--tw-ring-color` no se puede interpolar (las
+  // propiedades personalizadas sin `@property` saltan de golpe): el aro se
+  // habría quedado ámbar dando tumbos mientras el borde cruzaba al verde.
+  const border = ad.featured
+    ? 'border-accent hover:border-accent-dark motion-safe:animate-featured-border'
+    : 'border-outline-variant hover:border-primary/40';
   return (
     <Link
       href={`/listings/${ad.id}`}
-      className="group relative block overflow-hidden border border-outline-variant bg-surface-container-lowest p-4 shadow-aceternity transition-all duration-300 hover:-translate-y-1 hover:shadow-derek hover:border-primary/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:p-6"
+      className={`group relative block overflow-hidden rounded-card border bg-surface-container-lowest p-4 shadow-aceternity transition-all duration-300 hover:-translate-y-1 hover:shadow-derek focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:p-6 ${border}`}
     >
       {/* Detalle decorativo que crece al pasar el cursor. */}
       <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150" />
@@ -69,7 +97,7 @@ export function AdCard({
         <div className="flex min-w-0 gap-3 md:gap-4">
           {/* El tile del rubro también se ve en móvil (ancla visual de la
               tarjeta ahora que va una por fila). */}
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center border border-outline-variant bg-surface-container sm:h-16 sm:w-16">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-tile border border-outline-variant bg-surface-container sm:h-16 sm:w-16">
             <Icon
               name={CATEGORY_ICON[ad.category ?? 'OTRO']}
               className="text-2xl text-primary sm:text-3xl"

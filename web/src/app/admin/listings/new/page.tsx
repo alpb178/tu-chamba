@@ -139,7 +139,7 @@ function AdForm() {
         ) : (
           <div
             aria-hidden="true"
-            className="space-y-4 border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity"
+            className="space-y-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity"
           >
             <Skeleton className="h-24 w-full" />
             <Skeleton className="h-16 w-full" />
@@ -150,7 +150,7 @@ function AdForm() {
       ) : (
       <form
         onSubmit={onSubmit}
-        className="space-y-4 border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity"
+        className="space-y-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6 shadow-aceternity"
       >
         <FormField label="Título del puesto">
           <Input
