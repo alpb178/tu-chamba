@@ -144,7 +144,11 @@ describe('AdminService.stats', () => {
     prisma.user.findMany.mockResolvedValue([{ createdAt: new Date(now) }]); // recentUsers (no admins)
     prisma.ad.count.mockResolvedValue(20);
     prisma.ad.findMany.mockResolvedValue([{ createdAt: new Date(now) }]);
-    prisma.visit.count.mockResolvedValueOnce(100).mockResolvedValueOnce(5);
+    // total, las de anuncios que aún existen, y las últimas 24 h.
+    prisma.visit.count
+      .mockResolvedValueOnce(100)
+      .mockResolvedValueOnce(60)
+      .mockResolvedValueOnce(5);
     prisma.visit.findMany.mockResolvedValue([{ createdAt: new Date(now) }]);
     prisma.pageView.count.mockResolvedValueOnce(200).mockResolvedValueOnce(8);
     prisma.pageView.findMany.mockResolvedValue([{ createdAt: new Date(now) }]);
@@ -154,6 +158,10 @@ describe('AdminService.stats', () => {
     expect(res.users.byDay).toHaveLength(14);
     expect(res.ads.total).toBe(20);
     expect(res.visits.total).toBe(100);
+    // El resto del acumulado son visitas a anuncios ya borrados: el desglose
+    // evita que el total parezca contradecir a "Top anuncios".
+    expect(res.visits.liveAds).toBe(60);
+    expect(prisma.visit.count.mock.calls[1][0].where.adId).toEqual({ not: null });
     expect(res.siteVisits.total).toBe(200);
     // 24 franjas horarias.
     expect(res.siteVisits.byHour).toHaveLength(24);
