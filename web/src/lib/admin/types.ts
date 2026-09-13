@@ -342,8 +342,10 @@ export interface AdminStats {
   // byDay: registros por día calendario, siempre sin administradores.
   users: { total: number; admins: number; byDay: DayPoint[] };
   ads: { total: number; byDay: DayPoint[] };
-  // Visitas al detalle de anuncios.
-  visits: VisitStats;
+  // Visitas al detalle de anuncios. `liveAds` es la parte del acumulado que
+  // corresponde a anuncios que aún existen: al borrar un anuncio sus visitas
+  // se conservan sin dueño, y es lo único que ve "Top anuncios".
+  visits: VisitStats & { liveAds: number };
   // Páginas vistas del portal (visitas generales al sitio); byHour es la
   // distribución por hora del día de la última semana.
   siteVisits: VisitStats & { byHour: HourPoint[] };
