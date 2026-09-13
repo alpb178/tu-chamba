@@ -62,6 +62,7 @@ function TickerRow({ duplicate = false }: { duplicate?: boolean }) {
 // copia entre repos sin depender de la config de Tailwind de cada uno.
 const CSS = `
 .gt {
+  position: relative;
   display: flex;
   flex: none;
   align-items: center;
@@ -71,7 +72,7 @@ const CSS = `
   /* El header de CorpSC es del mismo azul marino: sin esta línea la franja se
      fundiría con él. */
   border-bottom: 1px solid rgba(127, 176, 255, 0.22);
-  color: #dfe7f5;
+  color: #ffffff;
   font-size: 0.8125rem;
   line-height: 1;
 }
@@ -79,19 +80,42 @@ const CSS = `
   position: relative;
   flex: 1;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+}
+/* Difuminado de los bordes con degradados del propio fondo y no con
+   mask-image: en Safari de iOS la máscara puede congelar la animación
+   que corre por debajo. */
+.gt-viewport::before,
+.gt-viewport::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  z-index: 1;
+  pointer-events: none;
+}
+.gt-viewport::before {
+  left: 0;
+  background: linear-gradient(90deg, #06132e, rgba(6, 19, 46, 0));
+}
+.gt-viewport::after {
+  right: 0;
+  background: linear-gradient(270deg, #06132e, rgba(6, 19, 46, 0));
 }
 .gt-track {
   display: flex;
   width: max-content;
+  will-change: transform;
   animation: gt-scroll 38s linear infinite;
 }
-/* Se detiene al pasar el mouse o al llegar con el teclado, para poder leer y
-   hacer clic sin perseguir el enlace. */
-.gt:hover .gt-track,
+/* La pausa al pasar el mouse solo donde hay puntero: en táctil el :hover
+   se queda pegado tras el primer toque y dejaría la franja detenida. El
+   foco de teclado sí la pausa siempre. */
 .gt-track:focus-within {
   animation-play-state: paused;
+}
+@media (hover: hover) and (pointer: fine) {
+  .gt:hover .gt-track { animation-play-state: paused; }
 }
 .gt-row {
   display: flex;
@@ -122,13 +146,13 @@ const CSS = `
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 .gt-name { font-weight: 600; }
-.gt-url { color: #93a4c4; }
-.gt-desc { color: #7387aa; }
+.gt-url { color: #ffffff; }
+.gt-desc { color: #ffffff; }
 /* Separador entre el enlace y su descripción; decorativo, por eso va en CSS. */
 .gt-desc::before {
   content: "·";
   margin-right: 0.5rem;
-  color: #43587d;
+  color: rgba(255, 255, 255, 0.5);
 }
 @keyframes gt-scroll {
   from { transform: translateX(0); }
