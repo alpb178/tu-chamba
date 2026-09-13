@@ -147,6 +147,13 @@ export default function DashboardPage() {
               <p className="mt-1 text-sm text-on-surface-variant">
                 Visitas al detalle de anuncios desde el portal (histórico).
               </p>
+              {/* Sin este desglose el total parece contradecir a "Top
+                  anuncios": las visitas de un anuncio borrado siguen contando
+                  aquí, pero allá no hay anuncio al que atribuirlas. */}
+              <p className="mt-1 text-sm text-on-surface-variant">
+                {stats.visits.liveAds.toLocaleString('es-BO')} son de anuncios
+                que siguen publicados; el resto, de anuncios ya eliminados.
+              </p>
             </ChartCard>
           </div>
         </>

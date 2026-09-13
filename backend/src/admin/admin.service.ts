@@ -71,6 +71,7 @@ export class AdminService {
       totalAds,
       recentAds,
       totalVisits,
+      visitsOfLiveAds,
       visits24h,
       recentVisits,
       totalPageViews,
@@ -90,6 +91,11 @@ export class AdminService {
         select: { createdAt: true },
       }),
       this.prisma.visit.count(),
+      // Al borrar un anuncio sus visitas se conservan con adId nulo (el
+      // histórico no se pierde), así que el acumulado incluye anuncios que ya
+      // no existen. "Top anuncios" y el contador de las tarjetas solo ven
+      // estas otras: sin el desglose, los dos números parecen contradecirse.
+      this.prisma.visit.count({ where: { adId: { not: null } } }),
       this.prisma.visit.count({ where: { createdAt: { gte: dayAgo } } }),
       this.prisma.visit.findMany({
         where: { createdAt: { gte: since } },
@@ -124,6 +130,8 @@ export class AdminService {
       ads: { total: totalAds, byDay: countByDay(recentAds) },
       visits: {
         total: totalVisits,
+        // Del acumulado, las que corresponden a anuncios que siguen existiendo.
+        liveAds: visitsOfLiveAds,
         last24h: visits24h,
         last7Days,
         byDay: visitsByDay,
