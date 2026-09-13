@@ -2,22 +2,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Company, COMPANIES } from '@/lib/companies';
-import { api } from '@/lib/api';
+import { trackSiteClick } from '@/lib/track-site-click';
 import { Icon } from './Icon';
 import { Tilt3D } from './fx/Tilt3D';
 import { SlideBurst } from './fx/SlideBurst';
-
-// Registra el acceso a la tarjeta de una empresa del grupo (métrica del panel
-// admin). Best-effort: los enlaces abren en pestaña nueva, así que el fetch
-// alcanza a completarse; si falla, no afecta la navegación.
-function trackSiteClick(company: Company) {
-  api('/visits', {
-    method: 'POST',
-    body: JSON.stringify({ company: company.slug, label: company.name }),
-  }).catch(() => {
-    /* noop: el tracking es best-effort */
-  });
-}
 
 // Tarjeta promocional de una marca: captura del sitio con el nombre en
 // overlay, descripción y CTA "Visitar sitio" (enlace externo seguro).

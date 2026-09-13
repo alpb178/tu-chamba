@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Navbar } from '@/components/Navbar';
+import { GroupTicker } from '@/components/GroupTicker';
 import { Footer } from '@/components/Footer';
 import { VerificationBanner } from '@/components/VerificationBanner';
 import { TrackPageView } from '@/components/TrackPageView';
@@ -48,6 +49,7 @@ export default function SiteLayout({
       />
       <TrackPageView />
       <div className="flex min-h-screen flex-col">
+        <GroupTicker />
         <Navbar />
         <VerificationBanner />
         <main className="mx-auto w-full max-w-7xl 2xl:max-w-screen-2xl flex-1 px-4 py-6 sm:px-6 lg:px-12">
