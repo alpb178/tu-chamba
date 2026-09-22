@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Libre_Franklin, Merriweather } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth';
+import { HubAnalytics } from '@/components/HubAnalytics';
 
 // Tipografías del sistema de diseño (estilo editorial portado de Iris Natural):
 // Libre Franklin para el cuerpo/UI y Merriweather (serif) para los titulares
@@ -39,6 +40,8 @@ export default function RootLayout({
     >
       <body>
         <AuthProvider>{children}</AuthProvider>
+        {/* No pinta nada: manda la visita y los clics al hub del grupo. */}
+        <HubAnalytics />
       </body>
     </html>
   );
