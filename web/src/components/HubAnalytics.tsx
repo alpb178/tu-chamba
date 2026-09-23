@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { resolveGroupSite } from '@/lib/hub-analytics';
+import { visitOrigin, type VisitOrigin } from '@/lib/visit-origin';
 import { describeClick, isPrivatePath } from '@/lib/click-target';
 
 /**
@@ -32,12 +33,17 @@ export function HubAnalytics() {
   // Última ruta enviada: sin esto la misma página cuenta dos veces, porque
   // StrictMode ejecuta el efecto por duplicado y un remontaje lo repetiría.
   const lastPath = useRef<string | null>(null);
+  // The first page view of this load is the landing: only it carries the
+  // source. Later client-side navigations keep the same document.referrer.
+  const landed = useRef(false);
 
   useEffect(() => {
     if (!pathname || lastPath.current === pathname) return;
     lastPath.current = pathname;
 
-    send({ type: 'page_view', path: pathname });
+    const origin = landed.current ? {} : visitOrigin();
+    landed.current = true;
+    send({ type: 'page_view', path: pathname, ...origin });
   }, [pathname]);
 
   useEffect(() => {
@@ -71,7 +77,7 @@ export function HubAnalytics() {
   return null;
 }
 
-interface HubEvent {
+interface HubEvent extends VisitOrigin {
   type: 'page_view' | 'site_click' | 'click';
   path: string;
   section?: string;

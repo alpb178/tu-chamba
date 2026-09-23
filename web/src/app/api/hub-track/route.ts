@@ -43,6 +43,10 @@ interface IncomingEvent {
   path: string;
   section?: string;
   label?: string;
+  referrer?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
   target?: string;
   linkType?: 'web' | 'android' | 'ios';
 }
@@ -62,6 +66,13 @@ function isValid(event: unknown): event is IncomingEvent {
   if (e.type === 'click' && (!isText(e.section, 64) || !isText(e.label, 120))) return false;
   if (e.section !== undefined && !isText(e.section, 64)) return false;
   if (e.label !== undefined && !isText(e.label, 120)) return false;
+  // Only the domain: a full URL could carry the visitor's search or an id.
+  if (e.referrer !== undefined && !(typeof e.referrer === 'string' && /^[a-z0-9.-]{1,255}$/.test(e.referrer))) {
+    return false;
+  }
+  for (const utm of [e.utmSource, e.utmMedium, e.utmCampaign]) {
+    if (utm !== undefined && !isText(utm, 100)) return false;
+  }
   if (e.linkType !== undefined && !['web', 'android', 'ios'].includes(e.linkType as string)) {
     return false;
   }
@@ -115,6 +126,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!hubUrl || !apiKey) return noContent;
 
   const at = new Date().toISOString();
+  // Vercel resolves the country from the IP at its edge; the IP itself never
+  // leaves this server.
+  const countryHeader = request.headers.get('x-vercel-ip-country')?.toUpperCase();
+  const country = countryHeader && /^[A-Z]{2}$/.test(countryHeader) ? countryHeader : undefined;
 
   try {
     await fetch(`${hubUrl}/ingest/events`, {
@@ -126,6 +141,15 @@ export async function POST(request: Request): Promise<NextResponse> {
           type: event.type,
           sessionId,
           path: event.path,
+          ...(country ? { country } : {}),
+          ...(event.type === 'page_view'
+            ? {
+                referrer: event.referrer,
+                utmSource: event.utmSource,
+                utmMedium: event.utmMedium,
+                utmCampaign: event.utmCampaign,
+              }
+            : {}),
           ...(event.type !== 'page_view' && event.section && event.label
             ? { section: event.section, label: event.label }
             : {}),
