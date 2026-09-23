@@ -5,9 +5,8 @@ import { api } from '@/lib/api';
 import { Button, FormField, Input } from './ui';
 import { PasswordInput } from '@/components/PasswordInput';
 
-// Edición de los datos de la cuenta de un usuario desde el panel. La
-// contraseña solo se puede cambiar en cuentas locales (las de Google no
-// tienen contraseña local).
+// Editing a user's account data from the panel. The password can only be
+// changed on local accounts (Google accounts have no local password).
 export function EditUserDialog({
   user,
   onClose,
@@ -30,10 +29,10 @@ export function EditUserDialog({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Cuenta de Google: sin contraseña local, no se muestra el campo.
+  // Google account: no local password, so the field is not shown.
   const isGoogle = user?.provider === 'google';
 
-  // Al abrir con otro usuario, el formulario arranca con sus datos.
+  // When opened with another user, the form starts with their data.
   useEffect(() => {
     if (!user) return;
     setName(user.name);
@@ -53,7 +52,7 @@ export function EditUserDialog({
     try {
       await api(`/users/${user.id}`, {
         method: 'PATCH',
-        // La contraseña solo se envía si se escribió una nueva.
+        // The password is only sent if a new one was typed.
         body: JSON.stringify({
           name,
           email,

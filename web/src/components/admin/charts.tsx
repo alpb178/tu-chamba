@@ -4,23 +4,23 @@ import Link from 'next/link';
 import { DayPoint, HourPoint } from '@/lib/admin/types';
 import { Icon } from './Icon';
 
-// Gráficos del dashboard hechos con Tailwind (sin librería de gráficos).
-// Especificación: barras ≤24px, punta redondeada solo en el extremo del dato,
-// una sola serie por gráfico (el título nombra la serie, sin leyenda).
+// Dashboard charts built with Tailwind (no charting library).
+// Spec: bars ≤24px, rounded tip only at the data end, a single series per
+// chart (the title names the series, no legend).
 
-// Azul de marca por defecto de las gráficas. Corresponde al token
-// --c-primary (0 74 198); va como literal porque el SVG/canvas no resuelve
-// variables CSS de forma fiable en el atributo color.
-const BRAND_BLUE = '#004AC6'; // token --c-primary (azul de tu-chamba)
+// Default brand blue for the charts. Matches the --c-primary token
+// (0 74 198); it's a literal because SVG/canvas doesn't reliably resolve CSS
+// variables in the color attribute.
+const BRAND_BLUE = '#004AC6'; // --c-primary token (tu-chamba blue)
 
-// 'YYYY-MM-DD' → 'd/M' sin pasar por Date (evita desfases de zona horaria).
+// 'YYYY-MM-DD' → 'd/M' without going through Date (avoids timezone shifts).
 function dayLabel(date: string) {
   const [, month, day] = date.split('-');
   return `${Number(day)}/${Number(month)}`;
 }
 
-// Columnas por día con tooltip al pasar el mouse. Solo se etiqueta el máximo;
-// el resto de valores vive en el tooltip.
+// Daily columns with a hover tooltip. Only the maximum is labeled; the other
+// values live in the tooltip.
 export function DailyColumns({
   data,
   color = BRAND_BLUE,
@@ -73,7 +73,7 @@ export function DailyColumns({
             key={d.date}
             className="flex-1 text-center text-[10px] text-on-surface-variant"
           >
-            {/* Día por medio (siempre el último) evita choques con 14 columnas. */}
+            {/* Every other day (always the last) avoids overlaps with 14 columns. */}
             {(data.length - 1 - i) % 2 === 0 ? dayLabel(d.date) : ''}
           </span>
         ))}
@@ -87,8 +87,8 @@ export function DailyColumns({
   );
 }
 
-// Columnas por hora del día (0-23) con tooltip; mismo lenguaje visual que
-// DailyColumns. Solo se etiqueta la hora pico; el eje marca cada 3 horas.
+// Columns per hour of day (0-23) with a tooltip; same visual language as
+// DailyColumns. Only the peak hour is labeled; the axis marks every 3 hours.
 export function HourlyColumns({
   data,
   color = BRAND_BLUE,
@@ -139,7 +139,7 @@ export function HourlyColumns({
             key={d.hour}
             className="flex-1 text-center text-[10px] text-on-surface-variant"
           >
-            {/* Cada 3 horas alcanza para ubicarse sin chocar (24 columnas). */}
+            {/* Every 3 hours is enough to orient without overlaps (24 columns). */}
             {d.hour % 3 === 0 ? `${d.hour}h` : ''}
           </span>
         ))}
@@ -153,9 +153,9 @@ export function HourlyColumns({
   );
 }
 
-// Línea por día con puntos y tooltip (una sola serie; el título nombra la
-// serie). La línea vive en un SVG porcentual con trazo sin escalar y los
-// puntos son divs absolutos, así nada se deforma al cambiar el ancho.
+// Daily line with dots and a tooltip (a single series; the title names the
+// series). The line lives in a percentage-based SVG with a non-scaling stroke
+// and the dots are absolute divs, so nothing distorts when the width changes.
 export function DailyLine({
   data,
   color = BRAND_BLUE,
@@ -168,11 +168,11 @@ export function DailyLine({
   const max = Math.max(...data.map((d) => d.total), 1);
   const hasData = data.some((d) => d.total > 0);
   const n = data.length;
-  // Margen vertical: 6% arriba (etiqueta del máximo) y 6% abajo (puntos en 0).
+  // Vertical margin: 6% on top (max label) and 6% at the bottom (dots at 0).
   const x = (i: number) => ((i + 0.5) / n) * 100;
   const y = (total: number) => 6 + (1 - total / max) * 88;
   const points = data.map((d, i) => `${x(i)},${y(d.total)}`).join(' ');
-  // Ya se etiquetó el máximo (solo el primero, si se repite).
+  // Whether the max has been labeled (only the first one, if repeated).
   const maxIndex = data.findIndex((d) => d.total === max);
 
   return (
@@ -203,7 +203,7 @@ export function DailyLine({
             />
           )}
         </svg>
-        {/* Una celda por día: zona de hover ancha, punto y tooltip. */}
+        {/* One cell per day: wide hover area, dot and tooltip. */}
         <div className="absolute inset-0 flex">
           {data.map((d, i) => (
             <div key={d.date} className="group relative h-full flex-1">
@@ -221,8 +221,8 @@ export function DailyLine({
                   {d.total}
                 </span>
               )}
-              {/* Punto del día: con dato lleva el tono de la serie; en 0 (o
-                  sin datos) queda un punto neutro sobre la línea base. */}
+              {/* The day's dot: with data it takes the series tone; at 0 (or
+                  with no data) it's a neutral dot on the baseline. */}
               <span
                 className={`absolute h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-transform group-hover:scale-150 ${
                   d.total > 0
@@ -258,7 +258,7 @@ export function DailyLine({
   );
 }
 
-// Barras horizontales con el valor en la punta (una sola serie/tono).
+// Horizontal bars with the value at the tip (a single series/tone).
 export function HorizontalBars({
   data,
   color = BRAND_BLUE,
@@ -289,9 +289,9 @@ export function HorizontalBars({
   );
 }
 
-// Tarjeta contenedora de un gráfico del dashboard. Con href, toda la
-// tarjeta es un acceso directo a la sección a la que pertenece la serie
-// (los tooltips por hover del gráfico siguen funcionando igual).
+// Container card for a dashboard chart. With href, the whole card is a
+// shortcut to the section the series belongs to (the chart's hover tooltips
+// still work the same).
 export function ChartCard({
   title,
   href,
@@ -312,8 +312,8 @@ export function ChartCard({
     );
   }
   return (
-    // Grupo con nombre: el hover de la tarjeta no debe disparar los
-    // tooltips internos del gráfico (que usan el grupo sin nombre).
+    // Named group: hovering the card must not trigger the chart's inner
+    // tooltips (which use the unnamed group).
     <Link
       href={href}
       title="Ver la sección"

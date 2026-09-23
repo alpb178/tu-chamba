@@ -20,18 +20,18 @@ import { CustomSelect } from '@/components/CustomSelect';
 import { Icon } from '@/components/Icon';
 import { PhoneField } from '@/components/PhoneField';
 
-// Leaflet usa window: solo en cliente.
+// Leaflet uses window: client-only.
 const MapPicker = dynamic(
   () => import('@/components/MapPicker').then((m) => m.MapPicker),
   { ssr: false, loading: () => <div className="h-64 bg-surface-container" /> },
 );
 
-// Pasos del wizard: publicar de una sola página abrumaba (11 campos);
-// en tres pantallas cortas se termina más rápido, sobre todo en móvil.
+// Wizard steps: publishing on a single page was overwhelming (11 fields);
+// three short screens are faster to finish, especially on mobile.
 const STEPS = ['El puesto', 'Lugar y pago', 'Contacto'];
 
-// Indicador de progreso: círculos numerados; los pasos ya visitados son
-// clicables para volver.
+// Progress indicator: numbered circles; already visited steps are
+// clickable to go back.
 function StepIndicator({
   step,
   onStep,
@@ -107,24 +107,24 @@ function Form() {
     jobType: 'TIEMPO_COMPLETO' as JobType,
     durationDays: 3,
   });
-  // Números de contacto adicionales (opcionales, ver MAX_EXTRA_PHONES).
+  // Extra contact numbers (optional, see MAX_EXTRA_PHONES).
   const [extraPhones, setExtraPhones] = useState<string[]>([]);
-  // Pin del mapa (opcional). Se guarda junto al anuncio.
+  // Map pin (optional). Saved along with the listing.
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [loaded, setLoaded] = useState(!editId);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Con el correo sin verificar no se puede publicar (admins exentos).
+  // Can't publish with an unverified email (admins exempt).
   const notVerified = !!user && !user.isAdmin && !user.emailVerified;
 
-  // Al admin solo se le exigen descripción y teléfono (mismas reglas que su
-  // panel); al resto, todos los campos salvo el horario.
+  // Admins only need description and phone (same rules as their panel);
+  // everyone else needs every field except the schedule.
   const isAdmin = !!user?.isAdmin;
 
-  // Campos obligatorios aún sin completar, POR PASO: deshabilitan el botón
-  // del paso y se listan en un aviso visible (nada de tooltips por hover,
-  // que en móvil no existen). Jornada y duración siempre tienen valor.
+  // Required fields still missing, PER STEP: they disable the step's button
+  // and are listed in a visible notice (no hover tooltips, which don't exist
+  // on mobile). Job type and duration always have a value.
   const missing = (pairs: readonly (readonly [string, string])[]) =>
     pairs.filter(([value]) => !value.trim()).map(([, label]) => label);
 
@@ -152,9 +152,10 @@ function Form() {
   ];
   const missingFields = missingByStep.flat();
 
-  // Números adicionales realmente escritos (los campos vacíos no viajan).
+  // Extra numbers actually typed in (empty fields aren't sent).
   const filledExtraPhones = extraPhones.map((p) => p.trim()).filter(Boolean);
-  // El techo solo cuenta si hay piso y lo supera: si no, es un monto fijo.
+  // The ceiling only counts if there's a floor and it exceeds it; otherwise
+  // it's a fixed amount.
   const salaryRange =
     form.salary.trim() !== '' &&
     form.salaryMax.trim() !== '' &&
@@ -187,8 +188,8 @@ function Form() {
     }
   }, [editId]);
 
-  // Al crear, el teléfono se precarga con el del perfil del usuario
-  // (es el que usarán los botones Llamar y Chatear). Sigue siendo editable.
+  // On create, the phone is prefilled with the one from the user's profile
+  // (the one the Llamar and Chatear buttons will use). It stays editable.
   useEffect(() => {
     if (!editId && user?.phone) {
       setForm((f) => (f.phone ? f : { ...f, phone: user.phone! }));
@@ -200,8 +201,8 @@ function Form() {
     setError(null);
     setSaving(true);
     try {
-      // Los valores vacíos solo pueden llegar del admin: se omiten (salario
-      // "a convenir") o toman los mismos defaults que su panel e importación.
+      // Empty values can only come from an admin: they're omitted (salary
+      // "a convenir") or take the same defaults as their panel and import.
       const payload = {
         title: form.title.trim(),
         description: form.description,
@@ -214,8 +215,8 @@ function Form() {
         longitude: coords?.lng,
         schedule: form.schedule.trim() || undefined,
         salary: form.salary.trim() ? Number(form.salary) : undefined,
-        // El techo solo viaja si forma un rango válido con el piso (la API
-        // rechaza un máximo menor o sin mínimo).
+        // The ceiling is only sent if it forms a valid range with the floor
+        // (the API rejects a lower maximum or one without a minimum).
         salaryMax: salaryRange ? Number(form.salaryMax) : undefined,
         phone: form.phone,
         extraPhones: filledExtraPhones.length ? filledExtraPhones : undefined,
@@ -260,7 +261,7 @@ function Form() {
       <StepIndicator step={step} onStep={setStep} />
 
       <form onSubmit={onSubmit} className="space-y-4">
-        {/* ——— Paso 1: el puesto ——— */}
+        {/* ——— Step 1: the position ——— */}
         {step === 0 && (
           <>
             <FormField label="Título del puesto" required>
@@ -325,7 +326,7 @@ function Form() {
           </>
         )}
 
-        {/* ——— Paso 2: lugar y pago ——— */}
+        {/* ——— Step 2: place and pay ——— */}
         {step === 1 && (
           <>
             <FormField label="Departamento" required={!isAdmin}>
@@ -359,8 +360,8 @@ function Form() {
               />
             </FormField>
             <FormField label="Marca el lugar en el mapa (opcional)">
-              {/* Se monta cuando ya se cargaron los datos en edición, para
-                  centrar el pin existente. */}
+              {/* Mounted once the data has loaded in edit mode, so it centers
+                  on the existing pin. */}
               {loaded && (
                 <MapPicker
                   lat={coords?.lat ?? null}
@@ -372,8 +373,8 @@ function Form() {
                 />
               )}
             </FormField>
-            {/* Salario: un monto o un rango. El techo es opcional y solo se
-                envía si supera al mínimo. */}
+            {/* Salary: an amount or a range. The ceiling is optional and only
+                sent if it exceeds the minimum. */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField label="Salario (Bs)" required={!isAdmin}>
                 <Input
@@ -410,7 +411,7 @@ function Form() {
           </>
         )}
 
-        {/* ——— Paso 3: contacto y publicación ——— */}
+        {/* ——— Step 3: contact and publishing ——— */}
         {step === 2 && (
           <>
             <FormField label="Teléfono de contacto (WhatsApp)" required>
@@ -420,8 +421,8 @@ function Form() {
                 required
               />
             </FormField>
-            {/* Números adicionales: útiles cuando el aviso atiende en dos
-                líneas. El primero sigue siendo el de los botones de contacto. */}
+            {/* Extra numbers: useful when the listing takes calls on two
+                lines. The first one is still the one the contact buttons use. */}
             {extraPhones.map((value, i) => (
               <FormField key={i} label={`Otro teléfono ${i + 1} (opcional)`}>
                 <div className="flex items-center gap-2">
@@ -475,7 +476,7 @@ function Form() {
 
         {error && <p className="text-sm text-error">{error}</p>}
 
-        {/* Aviso SIEMPRE visible (no tooltip): en móvil no hay hover. */}
+        {/* Notice ALWAYS visible (no tooltip): there's no hover on mobile. */}
         {missingByStep[step].length > 0 && (
           <p className="bg-secondary-container px-3 py-2 text-xs text-on-secondary-container">
             Te falta completar: {missingByStep[step].join(', ')}.

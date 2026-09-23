@@ -1,15 +1,15 @@
 import { CsvAd, CsvRowResult, extractTitle } from './csv';
 
-// ——— Limpieza de ofertas importadas ———
-// Preprocesa las filas parseadas del archivo antes de subirlas por lotes:
-// quita de la descripción las frases con datos de contacto, mueve la sección
-// de requisitos a su columna, y descarta las filas que quedan sin descripción
-// o sin teléfono. Todo es determinista y se muestra en una vista previa.
+// ——— Cleanup of imported job listings ———
+// Preprocesses the rows parsed from the file before uploading them in batches:
+// removes sentences with contact details from the description, moves the
+// requirements section to its column, and drops rows left without a
+// description or phone. Everything is deterministic and shown in a preview.
 
 export interface CleanedRow {
   line: number;
   values: Partial<CsvAd>;
-  // Motivos por los que la fila no se importará; vacío = fila lista.
+  // Reasons why the row won't be imported; empty = row ready.
   removedReasons: string[];
   descriptionModified: boolean;
   requirementsExtracted: boolean;
@@ -29,8 +29,8 @@ export interface CleanResult {
   stats: CleanStats;
 }
 
-// Minúsculas y sin tildes, conservando la longitud ("á" -> "a"): permite
-// buscar sobre el texto plegado y cortar el original con los mismos índices.
+// Lowercase and without accents, preserving length ("á" -> "a"): allows
+// searching the folded text and slicing the original with the same indices.
 function fold(s: string): string {
   let out = '';
   for (const ch of s.split('')) {
@@ -40,8 +40,8 @@ function fold(s: string): string {
   return out;
 }
 
-// Referencias a teléfono o medios de contacto (sobre texto plegado). Incluye
-// variaciones comunes en español y números de celular bolivianos.
+// References to phones or contact channels (on folded text). Includes
+// common Spanish variations and Bolivian mobile numbers.
 const CONTACT_RE = new RegExp(
   [
     '\\btel(?:f|efono)?s?\\b',
@@ -62,35 +62,35 @@ const CONTACT_RE = new RegExp(
     '\\bnro\\.? de contacto',
     'datos de contacto',
     '\\+?591[\\s.-]?\\d',
-    // Números "pelados": celulares (8 dígitos, empiezan en 6/7) o similares.
+    // "Bare" numbers: mobile phones (8 digits, starting with 6/7) or similar.
     '\\b\\d{7,8}\\b',
   ].join('|'),
 );
 
-// Encabezados de requisitos dentro de la descripción. Los sustantivos aceptan
-// dos puntos, guion o punto; las frases con verbo ("se requiere") solo con dos
-// puntos, para no confundirlas con la redacción del anuncio ("Se requiere
-// ayudante de cocina" es la oferta, no un requisito).
+// Requirement headings inside the description. Nouns accept a colon, dash
+// or period; verb phrases ("se requiere") only a colon, so they aren't
+// confused with the listing's wording ("Se requiere ayudante de cocina" is
+// the job offer, not a requirement).
 const BOUNDARY = '(?:^|\\n|(?<=[.!?;])\\s*)';
 const REQ_HEADER_RE = new RegExp(
   `${BOUNDARY}(?:los\\s+)?(?:requisitos?|requerimientos?|perfil(?:\\s+(?:requerido|solicitado|del?\\s+(?:puesto|candidato|postulante)))?|condiciones|indispensable)\\s*[:\\-–.]\\s*` +
     `|${BOUNDARY}(?:se\\s+(?:requiere|solicita|pide|necesita)|debe\\s+cumplir(?:\\s+con)?)\\s*:\\s*`,
 );
 
-// "Ver descripción", "Consultar descripción" y similares en la columna
-// de requisitos: son relleno, no requisitos reales.
+// "Ver descripción", "Consultar descripción" and the like in the
+// requirements column: they are filler, not real requirements.
 const PLACEHOLDER_RE =
   /^\W*(?:ver|consultar|revisar|leer|segun|idem)\s+(?:la\s+|el\s+)?(?:descripcion|descripciones|detalle|anuncio|aviso)\W*$/;
 
-// Quita las oraciones (o tramos entre comas) que refieren a un contacto,
-// conservando el resto de la descripción.
+// Removes the sentences (or comma-separated chunks) that refer to a contact,
+// keeping the rest of the description.
 function stripContact(text: string): string {
   const lines = text.split(/\n/).map((line) => {
     const sentences = line.split(/(?<=[.!?;])\s+/);
     return sentences
       .map((sentence) => {
         if (!CONTACT_RE.test(fold(sentence))) return sentence;
-        // Dentro de una oración mixta se conservan los tramos sin contacto:
+        // Within a mixed sentence the chunks without contact info are kept:
         // "Se busca vendedor, llamar al 71111111" -> "Se busca vendedor".
         return sentence
           .split(',')
@@ -103,8 +103,8 @@ function stripContact(text: string): string {
   return lines.filter((l) => l.trim() !== '').join('\n');
 }
 
-// Separa la sección de requisitos de la descripción (si existe): desde el
-// encabezado hasta el final. Devuelve ambas partes sin el encabezado.
+// Splits the requirements section off the description (if present): from the
+// heading to the end. Returns both parts without the heading.
 function splitRequirements(text: string): { description: string; requirements: string } {
   const m = REQ_HEADER_RE.exec(fold(text));
   if (!m) return { description: text, requirements: '' };
@@ -114,8 +114,8 @@ function splitRequirements(text: string): { description: string; requirements: s
   };
 }
 
-// Limpieza final de una celda: espacios y saltos repetidos, puntuación
-// duplicada o huérfana tras quitar fragmentos.
+// Final cleanup of a cell: repeated spaces and line breaks, duplicated or
+// orphaned punctuation after removing fragments.
 function tidy(s: string): string {
   return s
     .replace(/[ \t]+/g, ' ')
@@ -146,8 +146,8 @@ export function cleanRows(rows: CsvRowResult[]): CleanResult {
     let requirementsExtracted = false;
     let placeholderReplaced = false;
 
-    // 1) Descripción: fuera datos de contacto, y la sección de requisitos
-    //    pasa a su columna.
+    // 1) Description: contact details removed, and the requirements section
+    //    moves to its column.
     let extracted = '';
     if (original.description) {
       const { description, requirements } = splitRequirements(
@@ -159,8 +159,8 @@ export function cleanRows(rows: CsvRowResult[]): CleanResult {
       values.description = cleanDescription || undefined;
     }
 
-    // 1b) El título también se limpia de datos de contacto; si queda vacío
-    //     se vuelve a derivar de la descripción ya limpia.
+    // 1b) The title is also stripped of contact details; if it ends up empty
+    //     it is derived again from the cleaned description.
     if (original.title) {
       let cleanTitle = tidy(stripContact(original.title));
       if (!cleanTitle && values.description) {
@@ -169,9 +169,9 @@ export function cleanRows(rows: CsvRowResult[]): CleanResult {
       values.title = cleanTitle || original.title;
     }
 
-    // 2) Columna Requisitos: vacía o con relleno tipo "Ver descripción" se
-    //    completa con lo extraído; con contenido propio, lo extraído se
-    //    añade al final para no perderlo.
+    // 2) Requirements column: if empty or with filler like "Ver descripción"
+    //    it is filled with the extracted text; if it has its own content,
+    //    the extracted text is appended so it isn't lost.
     const existing = (original.requirements ?? '').trim();
     if (existing && PLACEHOLDER_RE.test(fold(existing))) {
       values.requirements = extracted || undefined;
@@ -183,7 +183,7 @@ export function cleanRows(rows: CsvRowResult[]): CleanResult {
     }
     if (extracted) requirementsExtracted = true;
 
-    // 3) Filas que no se importan tras el procesamiento.
+    // 3) Rows that aren't imported after processing.
     const removedReasons: string[] = [];
     if (!original.description) {
       removedReasons.push('Sin descripción');

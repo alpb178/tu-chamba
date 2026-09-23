@@ -1,11 +1,12 @@
-# Blueprint de Render para el backend (NestJS + Prisma + PostgreSQL).
-# Render lo detecta en la raíz del repo. Crea la base de datos y el servicio
-# web con sus variables ya cableadas. Importar en: Render → New → Blueprint.
+# Render Blueprint for the backend (NestJS + Prisma + PostgreSQL).
+# Render detects it at the repo root. It creates the database and the web
+# service with their variables already wired. Import via: Render → New →
+# Blueprint.
 #
-# Este blueprint es la config CORRECTA del servicio: compila en el build y
-# arranca con `node dist/main` (el JS ya compilado). NO usa `yarn start` ni
-# `nest start`, que recompilarían TypeScript en cada arranque y agotan la
-# memoria del plan free (~256 MB de heap) provocando OOM al desplegar.
+# This blueprint is the CORRECT service config: it compiles during the build and
+# starts with `node dist/main` (the already compiled JS). It does NOT use
+# `yarn start` or `nest start`, which would recompile TypeScript on every start
+# and exhaust the free plan's memory (~256 MB of heap), causing OOM on deploy.
 
 databases:
   - name: tu-chamba-db
@@ -19,41 +20,42 @@ services:
     plan: free
     region: oregon
     rootDir: backend
-    # Rama que Render despliega. Producción vive en main (develop se mergea a
-    # main). Cámbiala si tu servicio de producción sigue otra rama.
+    # Branch Render deploys. Production lives on main (develop is merged into
+    # main). Change it if your production service tracks another branch.
     branch: main
-    # Las migraciones van en el build: en el plan free de Render, preDeployCommand
-    # NO se ejecuta. migrate deploy es idempotente, así que correrlo en cada build
-    # es seguro y garantiza que las tablas existan.
+    # Migrations run in the build: on Render's free plan, preDeployCommand does
+    # NOT run. migrate deploy is idempotent, so running it on every build is
+    # safe and guarantees the tables exist.
     buildCommand: npm install && npx prisma generate && npm run build && npx prisma migrate deploy
     startCommand: node dist/main
     healthCheckPath: /api/health
     envVars:
-      # Conexión a la base de datos: la inyecta Render desde la DB de arriba.
+      # Database connection: Render injects it from the DB above.
       - key: DATABASE_URL
         fromDatabase:
           name: tu-chamba-db
           property: connectionString
-      # Secreto JWT: Render genera un valor aleatorio seguro.
+      # JWT secret: Render generates a secure random value.
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
-      # Dominios del frontend (web; el panel vive en /admin de la misma app).
-      # Se rellena a mano en el dashboard.
+      # Frontend domains (web; the panel lives at /admin in the same app).
+      # Filled in by hand in the dashboard.
       - key: CORS_ORIGINS
         sync: false
-      # Google Indexing API (service account con acceso en Search Console).
-      # Se rellenan a mano en el dashboard; sin ellas la integración es no-op.
+      # Google Indexing API (service account with Search Console access).
+      # Filled in by hand in the dashboard; without them the integration is a
+      # no-op.
       - key: GOOGLE_INDEXING_CLIENT_EMAIL
         sync: false
       - key: GOOGLE_INDEXING_PRIVATE_KEY
         sync: false
       - key: NODE_VERSION
         value: "20"
-      # Tope de heap explícito para el build: `nest build` (tsc) necesita
-      # ~350 MB por los tipos generados de Prisma, pero en una máquina de
-      # 512 MB Node auto-limita el heap a ~256 MB → OOM. Este techo lo evita.
-      # Es solo un techo (no reserva memoria); inofensivo en runtime.
+      # Explicit heap cap for the build: `nest build` (tsc) needs ~350 MB
+      # because of Prisma's generated types, but on a 512 MB machine Node
+      # auto-limits the heap to ~256 MB → OOM. This ceiling prevents that.
+      # It's only a ceiling (it reserves no memory); harmless at runtime.
       - key: NODE_OPTIONS
         value: --max-old-space-size=1024

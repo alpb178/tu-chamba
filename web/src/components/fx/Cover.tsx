@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 import React from 'react';
 
 /**
- * Resalta un fragmento de texto sobre una tarjeta con puntos parpadeantes en
- * las esquinas (estilo "cover" de aceternity). Portado de Iris Natural y
- * adaptado a los tokens M3 de tu-chamba.
+ * Highlights a text fragment on a card with blinking dots in the corners
+ * (aceternity "cover" style). Ported from Iris Natural and adapted to
+ * tu-chamba's M3 tokens.
  */
 export const Cover = ({ children }: { children?: React.ReactNode }) => {
   return (

@@ -20,7 +20,7 @@ import { adTitle, jobPostingJsonLd, jsonLd } from '@/lib/seo';
 
 type Params = { params: Promise<{ id: string }> };
 
-// Metadata por anuncio (indexable en buscadores).
+// Per-listing metadata (indexable by search engines).
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const ad = await fetchAd(id);
@@ -36,7 +36,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: `/listings/${id}` },
-    // Las ofertas vencidas o dadas de baja salen del índice.
+    // Expired or taken-down listings drop out of the index.
     robots:
       adEffectiveStatus(ad) === 'ACTIVO' ? undefined : { index: false },
     openGraph: { title, description, type: 'article', images: ['/banner.jpeg'] },
@@ -52,8 +52,8 @@ export default async function AdDetailPage({ params }: Params) {
 
   return (
     <div className="mx-auto max-w-2xl">
-      {/* Ruta de navegación: sitúa al usuario y da salida al listado
-          (clave cuando se llega por un enlace compartido o por Google). */}
+      {/* Breadcrumb: orients the user and offers a way back to the list
+          (key when arriving via a shared link or from Google). */}
       <nav
         aria-label="Ruta de navegación"
         className="mb-3 flex flex-wrap items-center gap-1 text-sm text-on-surface-variant"
@@ -75,7 +75,7 @@ export default async function AdDetailPage({ params }: Params) {
       </nav>
 
       <div className="space-y-4 rounded-card border border-outline-variant bg-surface-container-lowest p-6">
-      {/* JobPosting para Google for Jobs: solo en ofertas vigentes. */}
+      {/* JobPosting for Google for Jobs: only on active listings. */}
       {status === 'ACTIVO' && (
         <script
           type="application/ld+json"
@@ -114,7 +114,7 @@ export default async function AdDetailPage({ params }: Params) {
 
       <h1 className="font-display text-2xl font-bold text-on-surface">{ad.title}</h1>
 
-      {/* Publicante con su señal de confianza, visible sin sesión. */}
+      {/* Publisher with their trust signal, visible without logging in. */}
       <p className="flex flex-wrap items-center gap-1.5 text-sm text-on-surface-variant">
         <Icon name="person" className="text-base" />
         {ad.createdBy?.name ?? 'Publicante'}
@@ -141,15 +141,15 @@ export default async function AdDetailPage({ params }: Params) {
         </div>
       )}
 
-      {/* Título, descripción, requisitos y salario se ven sin sesión; el
-          resto de los datos del anuncio requiere iniciar sesión. */}
+      {/* Title, description, requirements and salary are visible without a
+          session; the rest of the listing's data requires logging in. */}
       <div className="space-y-1 border-t border-outline-variant/60 pt-4">
         <p className="text-2xl font-bold text-brand">
           {salaryLabel(ad, 'Salario a convenir')}
         </p>
         <AuthOnly>
-          {/* La ubicación exacta solo se muestra con sesión (en AdActions);
-              aquí queda el departamento como zona general. */}
+          {/* The exact location is only shown with a session (in AdActions);
+              here the department stays as the general area. */}
           {ad.department && (
             <p className="flex items-center gap-1 text-sm text-on-surface-variant">
               <Icon name="location_on" className="text-base" /> Zona:{' '}
@@ -177,15 +177,15 @@ export default async function AdDetailPage({ params }: Params) {
 
       <AdActions ad={ad} />
 
-      {/* Las reseñas son públicas: son la señal de confianza del publicante
-          (calificar sí exige sesión; el formulario solo aparece con ella). */}
+      {/* Reviews are public: they are the publisher's trust signal (rating
+          does require a session; the form only appears with one). */}
       <Reviews
         adId={ad.id}
         ownerId={ad.createdById}
         ownerName={ad.createdBy?.name ?? 'este publicante'}
       />
 
-      {/* Holgura para la barra de contacto fija de AdActions en móvil. */}
+      {/* Spacing for AdActions' fixed contact bar on mobile. */}
       <div aria-hidden className="h-14 sm:hidden" />
       </div>
     </div>

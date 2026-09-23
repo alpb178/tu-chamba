@@ -1,57 +1,58 @@
 import { Ad } from './types';
 
-// El backend de /listings no admite parámetro de orden, así que el orden se
-// aplica en cliente sobre las tarjetas ya cargadas (la página actual en
-// escritorio; el acumulado del scroll infinito en móvil). No toca la API.
+// The /listings backend doesn't accept a sort parameter, so sorting is
+// applied client-side on the cards already loaded (the current page on
+// desktop; the infinite-scroll accumulation on mobile). It doesn't touch the
+// API.
 //
-// Vive en `lib` y no dentro de `home-client` para poder probarlo: la regla de
-// los destacados es lo único de esta pantalla que se puede equivocar en
-// silencio (se nota como «el anuncio pagado no sale arriba», que nadie
-// reporta).
+// It lives in `lib` rather than inside `home-client` so it can be tested: the
+// featured-ads rule is the only thing on this screen that can go wrong
+// silently (it shows up as "the paid ad isn't at the top", which nobody
+// reports).
 export type SortOption =
-  | 'recientes'
-  | 'antiguos'
-  | 'salario-desc'
-  | 'salario-asc';
+  | 'newest'
+  | 'oldest'
+  | 'salary-desc'
+  | 'salary-asc';
 
 export const SORT_LABEL: Record<SortOption, string> = {
-  recientes: 'Más recientes',
-  antiguos: 'Más antiguos',
-  'salario-desc': 'Salario: mayor a menor',
-  'salario-asc': 'Salario: menor a mayor',
+  newest: 'Más recientes',
+  oldest: 'Más antiguos',
+  'salary-desc': 'Salario: mayor a menor',
+  'salary-asc': 'Salario: menor a mayor',
 };
 
-// Ordena una copia de las ofertas según la opción elegida. El salario puede
-// venir nulo (a convenir): se manda al final en ambos sentidos.
+// Sorts a copy of the listings by the chosen option. The salary may be null
+// ("a convenir"): it is pushed to the end in both directions.
 //
-// Los DESTACADOS van primero, siempre, por encima de la opción elegida. Antes
-// no: el backend los pone al principio y esta función volvía a ordenar la lista
-// entera por fecha o por salario, así que el anuncio priorizado desde el panel
-// perdía su sitio en cuanto la página se pintaba. La prioridad no servía para
-// nada en el portal, que es justo donde tenía que servir.
+// FEATURED ads always go first, above the chosen option. They didn't use to:
+// the backend puts them at the start and this function re-sorted the whole
+// list by date or salary, so the ad prioritized from the panel lost its place
+// as soon as the page rendered. Priority was useless on the portal, which is
+// exactly where it had to work.
 //
-// Entre los destacados manda su ORDEN DE LLEGADA, y ahí está el detalle que
-// hace que esto funcione: el número de prioridad no viaja al portal a
-// propósito (`toPublicAd` lo cambia por `featured` para no revelar la posición
-// asignada), pero la API los devuelve ya ordenados por prioridad
-// descendente — así que la posición con la que llegan ES la prioridad, y
-// basta con no perderla. Por eso el índice se toma ANTES de reordenar.
+// Among featured ads their ARRIVAL ORDER rules, and that's the detail that
+// makes this work: the priority number is deliberately not sent to the portal
+// (`toPublicAd` replaces it with `featured` so the assigned position isn't
+// revealed), but the API returns them already sorted by descending priority
+// — so the position they arrive in IS the priority, and we just have to keep
+// it. That's why the index is taken BEFORE re-sorting.
 //
-// La opción elegida sigue mandando en todo lo demás: se aplica a la lista
-// completa y `filter` conserva ese orden para los no destacados.
+// The chosen option still rules everything else: it is applied to the whole
+// list and `filter` keeps that order for non-featured ads.
 export function sortAds(list: Ad[], sort: SortOption): Ad[] {
   const salaryOf = (a: Ad) =>
     a.salary != null && a.salary !== '' ? Number(a.salary) : null;
-  const llegada = new Map(list.map((ad, i) => [ad.id, i]));
+  const arrivalIndex = new Map(list.map((ad, i) => [ad.id, i]));
   const out = [...list];
   switch (sort) {
-    case 'antiguos':
+    case 'oldest':
       out.sort(
         (a, b) =>
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
       break;
-    case 'salario-desc':
+    case 'salary-desc':
       out.sort((a, b) => {
         const sa = salaryOf(a);
         const sb = salaryOf(b);
@@ -60,7 +61,7 @@ export function sortAds(list: Ad[], sort: SortOption): Ad[] {
         return sb - sa;
       });
       break;
-    case 'salario-asc':
+    case 'salary-asc':
       out.sort((a, b) => {
         const sa = salaryOf(a);
         const sb = salaryOf(b);
@@ -69,16 +70,18 @@ export function sortAds(list: Ad[], sort: SortOption): Ad[] {
         return sa - sb;
       });
       break;
-    case 'recientes':
+    case 'newest':
     default:
       out.sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
   }
-  const destacados = out
+  const featuredAds = out
     .filter((ad) => ad.featured)
-    .sort((a, b) => (llegada.get(a.id) ?? 0) - (llegada.get(b.id) ?? 0));
-  const resto = out.filter((ad) => !ad.featured);
-  return [...destacados, ...resto];
+    .sort(
+      (a, b) => (arrivalIndex.get(a.id) ?? 0) - (arrivalIndex.get(b.id) ?? 0),
+    );
+  const rest = out.filter((ad) => !ad.featured);
+  return [...featuredAds, ...rest];
 }

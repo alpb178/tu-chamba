@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-// Bucket de un minuto: solicitudes, errores y latencia acumulada.
+// One-minute bucket: requests, errors and accumulated latency.
 interface MinuteBucket {
   count: number;
   errors: number;
@@ -8,11 +8,11 @@ interface MinuteBucket {
 }
 
 const HOUR_MINUTES = 60;
-// Un usuario cuenta como "conectado" si hizo alguna petición hace <5 min.
+// A user counts as "online" if they made any request in the last 5 min.
 const CONNECTED_WINDOW_MS = 5 * 60 * 1000;
 
-// Métricas de la API en memoria (ventana rodante de una hora). Se pierden al
-// reiniciar el proceso a propósito: describen la instancia viva, no histórico.
+// In-memory API metrics (rolling one-hour window). They're lost on process
+// restart on purpose: they describe the live instance, not history.
 @Injectable()
 export class MetricsService {
   private buckets = new Map<number, MinuteBucket>();
@@ -20,7 +20,7 @@ export class MetricsService {
   private lastCronRun: Date | null = null;
   private readonly startedAt = new Date();
 
-  // Registrada por el interceptor para cada request atendida.
+  // Recorded by the interceptor for each request served.
   recordRequest(durationMs: number, statusCode: number, userId?: string) {
     const minute = Math.floor(Date.now() / 60_000);
     const bucket = this.buckets.get(minute) ?? { count: 0, errors: 0, totalMs: 0 };
@@ -33,7 +33,7 @@ export class MetricsService {
     this.prune(minute);
   }
 
-  // El job de limpieza reporta cada ejecución (estado del cron en el panel).
+  // The cleanup job reports each run (cron status in the panel).
   markCronRun() {
     this.lastCronRun = new Date();
   }
@@ -42,7 +42,7 @@ export class MetricsService {
     return this.lastCronRun;
   }
 
-  // Resumen para el panel: última ventana de 1h y usuarios conectados.
+  // Panel summary: last 1h window and online users.
   snapshot() {
     const minute = Math.floor(Date.now() / 60_000);
     this.prune(minute);
@@ -55,7 +55,7 @@ export class MetricsService {
       count += b.count;
       errors += b.errors;
       totalMs += b.totalMs;
-      // El minuto anterior completo representa mejor el "por minuto" actual.
+      // The last full minute better represents the current "per minute".
       if (key === minute - 1) lastMinuteCount = b.count;
     }
 

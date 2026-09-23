@@ -1,28 +1,28 @@
-// Fuente única de las empresas del Grupo CorpSC. Se consume desde la sección
-// "Empresas del Grupo" (home), el cintillo superior, el navbar y el footer para
-// mantener una sola lista editable. Tu Chamba NO se lista a sí misma: cada
-// sitio del grupo enlaza solo a sus hermanos.
+// Single source of the CorpSC Group companies. Consumed by the "Empresas del
+// Grupo" section (home), the top strip, the navbar and the footer to keep a
+// single editable list. Tu Chamba does NOT list itself: each site in the group
+// links only to its siblings.
 
 export interface Company {
   slug: string;
   name: string;
   description: string;
-  // Descripción corta que acompaña al enlace en el cintillo (la larga no
-  // entra en la franja).
+  // Short description that goes with the link in the top strip (the long one
+  // doesn't fit in the strip).
   tagline: string;
-  // Acento de la marca en el cintillo. No se reutiliza `background` porque
-  // ese color es el de la captura (casi negro en varias marcas) y sobre el
-  // azul marino de la franja el punto no se vería.
+  // Brand accent in the top strip. `background` isn't reused because that
+  // color is the screenshot's (almost black for several brands) and the dot
+  // wouldn't be visible on the strip's navy blue.
   accent: string;
   url: string;
-  // Captura del sitio (en /public/empresas). Ver scripts/capturas.
+  // Site screenshot (in /public/empresas). See scripts/capturas.
   image: string;
-  // Color de fondo mientras carga la imagen (evita un flash en blanco). En el
-  // cintillo hace de punto de color de la marca.
+  // Background color while the image loads (avoids a white flash). In the
+  // top strip it serves as the brand's color dot.
   background: string;
 }
 
-// CorpSC es la matriz (dominio confirmado en la config de CORS del backend).
+// CorpSC is the parent company (domain confirmed in the backend's CORS config).
 export const COMPANIES: Company[] = [
   {
     slug: 'corpsc',
@@ -69,5 +69,5 @@ export const COMPANIES: Company[] = [
   },
 ];
 
-// Acceso destacado a la matriz (navbar y footer).
+// Featured link to the parent company (navbar and footer).
 export const CORPSC = COMPANIES[0];

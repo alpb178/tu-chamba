@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { Skeleton } from './ui';
 import { Icon } from './Icon';
 
-// Navegación del panel con su icono Material Symbols.
+// Panel navigation with its Material Symbols icon.
 const NAV = [
   { href: '/admin', label: 'Dashboard', icon: 'monitoring' },
   { href: '/admin/users', label: 'Usuarios', icon: 'group' },
@@ -26,31 +26,32 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  // El menú vive colapsado como riel de iconos. Se expande superpuesto al
-  // contenido: con hover/focus en escritorio (CSS) y con el botón ☰ en
-  // táctil, donde no existe hover (estado "pinned").
+  // The menu stays collapsed as an icon rail. It expands over the content:
+  // with hover/focus on desktop (CSS) and with the ☰ button on touch
+  // devices, where there is no hover ("pinned" state).
   const [pinned, setPinned] = useState(false);
-  // Al elegir una opción el menú se cierra al instante, aunque el cursor
-  // siga encima: se apaga la expansión por hover hasta que el mouse salga.
+  // Picking an option closes the menu instantly, even if the cursor is still
+  // over it: hover expansion is disabled until the mouse leaves.
   const [hoverEnabled, setHoverEnabled] = useState(true);
-  // Menú del usuario en la cabecera (cerrar sesión).
+  // User menu in the header (sign out).
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
-  // Guard: el panel exige un usuario administrador. Sin sesión o sin permisos
-  // redirige al login del sitio (sesión compartida con el portal).
+  // Guard: the panel requires an admin user. Without a session or
+  // permissions it redirects to the site login (session shared with the
+  // portal).
   useEffect(() => {
     if (!loading && (!user || !user.isAdmin)) {
       router.push('/login');
     }
   }, [loading, user, router]);
 
-  // Al navegar, el menú vuelve a colapsarse.
+  // On navigation, the menu collapses again.
   useEffect(() => {
     setPinned(false);
     setUserMenuOpen(false);
   }, [pathname]);
 
-  // Escape también lo colapsa.
+  // Escape also collapses it.
   useEffect(() => {
     if (!pinned) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setPinned(false);
@@ -58,8 +59,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [pinned]);
 
-  // Mientras se valida la sesión: silueta del panel (riel + contenido)
-  // en lugar de un "Cargando..." plano.
+  // While the session is being validated: panel skeleton (rail + content)
+  // instead of a plain "Cargando...".
   if (loading) {
     return (
       <div aria-hidden="true" className="flex min-h-screen">
@@ -83,17 +84,17 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   }
   if (!user || !user.isAdmin) return null;
 
-  // Expandido = fijado con ☰ (táctil); el hover/focus lo expande solo por
-  // CSS (clases group-hover/focus-within), sin JavaScript.
+  // Expanded = pinned with ☰ (touch); hover/focus expands it through CSS
+  // alone (group-hover/focus-within classes), without JavaScript.
   const expanded = pinned;
 
   return (
     <div className="flex min-h-screen">
-      {/* Hueco del riel en el layout: el aside real es fijo y al expandirse
-          se superpone al contenido sin empujarlo. */}
+      {/* Rail gap in the layout: the actual aside is fixed and, when
+          expanded, overlaps the content without pushing it. */}
       <div className="w-16 shrink-0" aria-hidden="true" />
 
-      {/* Fondo oscurecido solo en modo fijado (táctil). */}
+      {/* Dimmed backdrop only in pinned mode (touch). */}
       <div
         aria-hidden="true"
         onClick={() => setPinned(false)}
@@ -102,16 +103,16 @@ export function AdminLayout({ children }: { children: ReactNode }) {
         }`}
       />
 
-      {/* La expansión usa la curva "emphasized" de Material (arranque suave,
-          frenado largo) y anima también la sombra para que no aparezca de
-          golpe al final. */}
+      {/* The expansion uses Material's "emphasized" curve (soft start, long
+          deceleration) and also animates the shadow so it does not pop in
+          at the end. */}
       <aside
         onMouseLeave={() => setHoverEnabled(true)}
         className={`group fixed inset-y-0 left-0 z-50 flex flex-col overflow-hidden border-r border-outline-variant bg-surface-container-low transition-[width,box-shadow] duration-300 ease-[cubic-bezier(0.2,0,0,1)] ${
           hoverEnabled ? 'hover:w-64 hover:shadow-derek focus-within:w-64' : ''
         } ${expanded ? 'w-64 shadow-derek' : 'w-16'}`}
       >
-        {/* Cabecera del riel: ☰ fija el menú en táctil. */}
+        {/* Rail header: ☰ pins the menu on touch devices. */}
         <div className="flex h-16 shrink-0 items-center gap-2 border-b border-outline-variant px-3">
           <button
             type="button"
@@ -122,8 +123,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           >
             <Icon name={expanded ? 'close' : 'menu'} className="text-2xl" />
           </button>
-          {/* La etiqueta aparece con un pequeño retardo (cuando el ancho ya
-              avanzó) y se desvanece sin retardo al colapsar. */}
+          {/* The label appears with a small delay (once the width has
+              grown) and fades out without delay on collapse. */}
           <p
             className={`whitespace-nowrap text-sm font-medium text-on-surface-variant transition-opacity duration-200 ease-out group-hover:delay-100 group-focus-within:delay-100 group-hover:opacity-100 group-focus-within:opacity-100 ${
               expanded ? 'opacity-100' : 'opacity-0'
@@ -140,8 +141,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               href={n.href}
               title={n.label}
               onClick={(e) => {
-                // Cierra el menú al elegir una opción (también si se
-                // navega a la página actual, donde pathname no cambia).
+                // Closes the menu when an option is picked (also when
+                // navigating to the current page, where pathname does not change).
                 setPinned(false);
                 setHoverEnabled(false);
                 e.currentTarget.blur();
@@ -155,8 +156,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
               <span className="flex h-6 w-6 shrink-0 items-center justify-center">
                 <Icon name={n.icon} className="text-xl" />
               </span>
-              {/* La etiqueta solo se ve con el menú expandido (hover/fijado);
-                  entra con retardo, siguiendo al ancho, y sale sin él. */}
+              {/* The label is only visible with the menu expanded
+                  (hover/pinned); it enters with a delay, following the
+                  width, and leaves without one. */}
               <span
                 className={`whitespace-nowrap text-sm transition-opacity duration-200 ease-out group-hover:delay-100 group-focus-within:delay-100 group-hover:opacity-100 group-focus-within:opacity-100 ${
                   expanded ? 'opacity-100' : 'opacity-0'
@@ -171,8 +173,8 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-outline-variant bg-surface px-4 sm:px-6">
-          {/* Logo a la izquierda de la pantalla (junto al riel). Lleva al
-              portal principal de la aplicación. */}
+          {/* Logo on the left of the screen (next to the rail). Links to
+              the app's main portal. */}
           <Link href="/" className="flex min-w-0 items-center" aria-label="Ir al portal principal">
             <span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -183,7 +185,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
-          {/* Avatar del usuario: al hacer click se abre el menú de sesión. */}
+          {/* User avatar: clicking it opens the session menu. */}
           <div className="relative">
             <button
               type="button"
@@ -201,7 +203,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
 
             {userMenuOpen && (
               <>
-                {/* Click fuera cierra el menú. */}
+                {/* Clicking outside closes the menu. */}
                 <div
                   aria-hidden="true"
                   className="fixed inset-0 z-40"

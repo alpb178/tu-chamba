@@ -19,18 +19,18 @@ import {
 } from 'class-validator';
 import { Category, Department, JobType } from '@prisma/client';
 
-// Duraciones de publicación permitidas (en días). 3 es el valor por defecto.
+// Allowed listing durations (in days). 3 is the default.
 export const DURATION_DAYS = [3, 7, 15, 30];
 
-// Tope de números adicionales: los avisos publican dos o tres.
+// Cap on extra phone numbers: listings publish two or three.
 export const MAX_EXTRA_PHONES = 4;
 
-// Tope de la prioridad manual del panel. Dos dígitos alcanzan de sobra para
-// ordenar los destacados entre sí y mantienen legible la columna.
+// Cap on the panel's manual priority. Two digits are more than enough to
+// order featured listings among themselves and keep the column readable.
 export const MAX_PRIORITY = 99;
 
-// Un rango salarial necesita su extremo inferior y no puede ir al revés
-// ("Bs 4.500 a 3.500"). Solo aplica cuando llega salaryMax.
+// A salary range needs its lower bound and can't be reversed
+// ("Bs 4.500 a 3.500"). Only applies when salaryMax is present.
 function IsSalaryRange() {
   return (object: object, propertyName: string) =>
     registerDecorator({
@@ -40,7 +40,7 @@ function IsSalaryRange() {
       validator: {
         validate(max: unknown, args: ValidationArguments) {
           const { salary } = args.object as { salary?: number };
-          if (typeof max !== 'number') return true; // lo valida @IsNumber
+          if (typeof max !== 'number') return true; // validated by @IsNumber
           return typeof salary === 'number' && max >= salary;
         },
         defaultMessage() {
@@ -67,14 +67,14 @@ export class CreateAdDto {
   @IsString()
   requirements?: string;
 
-  // Opcional a nivel de API: la importación por CSV y el formulario del admin
-  // solo exigen descripción y teléfono. El sitio web la exige en su formulario.
+  // Optional at the API level: the CSV import and the admin form only require
+  // description and phone. The website requires it in its form.
   @ApiPropertyOptional({ example: 'Santa Cruz de la Sierra, zona norte' })
   @IsOptional()
   @IsString()
   location?: string;
 
-  // Referencia en texto libre: orienta al postulante pero no se filtra.
+  // Free-text reference: guides the applicant but isn't filtered on.
   @ApiPropertyOptional({ example: 'Frente al mercado Los Pozos, piso 2' })
   @IsOptional()
   @IsString()
@@ -91,7 +91,7 @@ export class CreateAdDto {
   @IsEnum(Category, { message: 'Selecciona una categoría válida' })
   category: Category;
 
-  // Coordenadas del pin elegido en el mapa (opcionales).
+  // Coordinates of the pin chosen on the map (optional).
   @ApiPropertyOptional({ example: -17.7833 })
   @IsOptional()
   @Type(() => Number)
@@ -113,8 +113,8 @@ export class CreateAdDto {
   @IsString()
   schedule?: string;
 
-  // Opcional: sin salario el anuncio se muestra como "a convenir". Con
-  // salaryMax el par se muestra como rango y salary es el extremo inferior.
+  // Optional: without a salary the listing shows as "a convenir". With
+  // salaryMax the pair shows as a range and salary is the lower bound.
   @ApiPropertyOptional({ example: 2500, description: 'Salario en Bs' })
   @IsOptional()
   @Type(() => Number)
@@ -138,7 +138,7 @@ export class CreateAdDto {
   @IsNotEmpty()
   phone: string;
 
-  // Números adicionales de contacto (los avisos de prensa publican dos o tres).
+  // Extra contact numbers (newspaper listings publish two or three).
   @ApiPropertyOptional({ type: [String], example: ['71111111', '3467010'] })
   @IsOptional()
   @IsArray()
@@ -153,8 +153,8 @@ export class CreateAdDto {
   @IsEnum(JobType)
   jobType: JobType;
 
-  // Solo el admin puede fijarla: el servicio la ignora si quien publica o
-  // edita no tiene acceso al panel.
+  // Only an admin can set it: the service ignores it if whoever publishes or
+  // edits has no panel access.
   @ApiPropertyOptional({
     description: 'Prioridad manual: el mayor va primero (0 = normal, solo admin)',
     default: 0,

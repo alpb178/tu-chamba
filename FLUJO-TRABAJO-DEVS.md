@@ -186,7 +186,8 @@ TipoTraza.ANUNCIO_ELIMINADO   ·  POST /visitas   ·  { anuncioId: string }
 
 El código legado en español **no se renombra "de paso"** en PRs de features
 (cambiaría contratos de API que consumen otros clientes). Su migración se
-planifica aparte — en tu-chamba, ver `docs/MIGRACION-CODIGO-INGLES.md`.
+planifica aparte — en tu-chamba ya se hizo (ver el commit `260291d` en el
+historial de git).
 
 ### Idioma de git: inglés
 

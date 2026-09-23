@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean } from 'class-validator';
 
-// Conceder o revocar acceso al panel de administración.
+// Grant or revoke access to the admin panel.
 export class SetAdminDto {
   @ApiProperty({ example: true })
   @IsBoolean()

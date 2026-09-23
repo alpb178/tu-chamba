@@ -8,8 +8,8 @@ import {
   ValidateIf,
 } from 'class-validator';
 
-// Edición de un usuario desde el panel de administración (datos de la cuenta
-// y, para cuentas locales, la contraseña).
+// Editing a user from the admin panel (account details and, for local
+// accounts, the password).
 export class UpdateUserDto {
   @ApiPropertyOptional({ example: 'Juan Pérez' })
   @IsOptional()
@@ -22,14 +22,14 @@ export class UpdateUserDto {
   @IsEmail({}, { message: 'El correo no es válido' })
   email?: string;
 
-  // String vacío = quitar el teléfono.
+  // Empty string = remove the phone number.
   @ApiPropertyOptional({ example: '70000000' })
   @ValidateIf((o) => o.phone != null)
   @IsString()
   phone?: string;
 
-  // Nueva contraseña (solo cuentas locales; las de Google se rechazan en el
-  // servicio). Mínimo 6 caracteres, igual que el registro.
+  // New password (local accounts only; Google accounts are rejected in the
+  // service). Minimum 6 characters, same as sign-up.
   @ApiPropertyOptional({ example: 'nuevaClave123' })
   @IsOptional()
   @IsString()

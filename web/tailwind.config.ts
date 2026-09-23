@@ -4,14 +4,14 @@ const {
 } = require('tailwindcss/lib/util/flattenColorPalette');
 import svgToDataUri from 'mini-svg-data-uri';
 
-// Sistema de diseño TuChamba: tokens Material 3 (azul primario + ámbar) sobre
-// el lenguaje visual editorial portado de Iris Natural (tipografía serif+sans,
-// sombras aceternity, esquinas rectas, fondos de grid/puntos y animaciones).
-// Los alias brand/accent apuntan a la misma paleta para que el código que aún
-// los usa quede automáticamente en el nuevo estilo.
+// TuChamba design system: Material 3 tokens (primary blue + amber) on top of
+// the editorial visual language ported from Iris Natural (serif+sans type,
+// aceternity shadows, square corners, grid/dot backgrounds and animations).
+// The brand/accent aliases point to the same palette so code that still uses
+// them automatically picks up the new style.
 const config: Config = {
   content: ['./src/**/*.{ts,tsx}'],
-  // Siempre modo claro: sin la clase 'dark' las variantes dark: no aplican.
+  // Always light mode: without the 'dark' class the dark: variants don't apply.
   darkMode: 'class',
   theme: {
     extend: {
@@ -49,28 +49,28 @@ const config: Config = {
         'inverse-primary': 'rgb(var(--c-inverse-primary) / <alpha-value>)',
         'outline': 'rgb(var(--c-outline) / <alpha-value>)',
         'outline-variant': 'rgb(var(--c-outline-variant) / <alpha-value>)',
-        // Alias del código existente -> tokens (cambian con el tema).
+        // Aliases from existing code -> tokens (they change with the theme).
         brand: {
           DEFAULT: 'rgb(var(--c-brand) / <alpha-value>)',
           dark: 'rgb(var(--c-brand-strong) / <alpha-value>)',
           light: 'rgb(var(--c-brand-light) / <alpha-value>)',
         },
-        // El acento ámbar apunta a los tokens (antes iba hardcodeado y
-        // podía divergir de la paleta si cambiaba el tema).
+        // The amber accent points to the tokens (it used to be hardcoded and
+        // could drift from the palette if the theme changed).
         accent: {
           DEFAULT: 'rgb(var(--c-secondary-container) / <alpha-value>)',
           dark: 'rgb(var(--c-secondary) / <alpha-value>)',
         },
       },
       fontFamily: {
-        // Cuerpo/UI: Libre Franklin. Titulares editoriales: Merriweather serif.
+        // Body/UI: Libre Franklin. Editorial headlines: Merriweather serif.
         sans: ['var(--font-libre-franklin)', 'system-ui', 'sans-serif'],
         libre: ['var(--font-libre-franklin)', 'system-ui', 'sans-serif'],
         display: ['var(--font-merriweather-garamond)', 'Georgia', 'serif'],
         merriweather: ['var(--font-merriweather-garamond)', 'Georgia', 'serif'],
       },
       boxShadow: {
-        // Sombras suaves multicapa del lenguaje aceternity (Iris Natural).
+        // Soft multi-layer shadows from the aceternity language (Iris Natural).
         derek: `0px 0px 0px 1px rgb(0 0 0 / 0.06),
         0px 1px 1px -0.5px rgb(0 0 0 / 0.06),
         0px 3px 3px -1.5px rgb(0 0 0 / 0.06),
@@ -88,28 +88,28 @@ const config: Config = {
         move: 'move 5s linear infinite',
         'spin-circle': 'spin-circle 3s linear infinite',
         meteor: 'meteor 5s linear infinite',
-        // Borde de los anuncios con prioridad: un color cada 5 s (tres tramos,
-        // 15 s de vuelta completa). Ver el keyframe para el reparto.
+        // Border of priority ads: one color every 5 s (three segments, 15 s
+        // for a full cycle). See the keyframe for the breakdown.
         'featured-border': 'featured-border 15s ease-in-out infinite',
       },
       keyframes: {
-        // El borde del anuncio destacado, cambiando de color cada 5 segundos.
+        // The featured ad's border, changing color every 5 seconds.
         //
-        // Cada tramo aguanta 3 s y cruza al siguiente en 2 s: el cambio se ve
-        // sin que el borde parpadee, y en un listado con varios destacados
-        // todos van a compás (misma animación, mismo arranque) en vez de
-        // titilar cada uno por su lado.
+        // Each segment holds for 3 s and crosses into the next over 2 s: the
+        // change is visible without the border flickering, and in a list with
+        // several featured ads they all move in step (same animation, same
+        // start) instead of each one twinkling on its own.
         //
-        // Solo se anima `border-color`, y eso no es pereza: es la única
-        // propiedad de la tarjeta que se puede mover sin que nada se
-        // descoloque. El grosor sigue en 1 px, así que el destacado ocupa
-        // exactamente lo mismo que el resto.
+        // Only `border-color` is animated, and that's not laziness: it's the
+        // only property of the card that can change without shifting
+        // anything. The width stays at 1 px, so the featured card takes up
+        // exactly the same space as the rest.
         //
-        // Los tres colores son los tres tonos de la paleta. El azul es
-        // `primary-container` (más saturado) y no `primary`, porque `primary`
-        // al 40 % es el borde del HOVER de una tarjeta normal y el tramo azul
-        // se leería como «tengo el cursor encima» en vez de «este va
-        // destacado».
+        // The three colors are the palette's three tones. The blue is
+        // `primary-container` (more saturated) rather than `primary`, because
+        // `primary` at 40 % is the HOVER border of a regular card and the blue
+        // segment would read as "the cursor is over me" instead of "this one
+        // is featured".
         'featured-border': {
           '0%, 100%': { borderColor: 'rgb(var(--c-secondary-container))' },
           '20%': { borderColor: 'rgb(var(--c-secondary-container))' },
@@ -138,22 +138,22 @@ const config: Config = {
       screens: {
         xs: '576px',
       },
-      // Esquinas rectas por defecto (estética editorial): `rounded` sin sufijo
-      // queda cuadrado; las píldoras de marca usan `rounded-full` explícito.
+      // Square corners by default (editorial look): `rounded` with no suffix
+      // stays square; brand pills use an explicit `rounded-full`.
       //
-      // Las TARJETAS son la excepción, y por eso tienen token propio en vez de
-      // un `rounded-2xl` repetido en treinta sitios: el radio de una tarjeta es
-      // una decisión de diseño que se toma una vez, y con la clase suelta el
-      // día que cambie hay que ir a buscarla a mano por todo el portal (que es
-      // exactamente cómo `FeaturedBrands` se quedó con un radio que no
-      // compartía nadie).
+      // CARDS are the exception, which is why they get their own token instead
+      // of a `rounded-2xl` repeated in thirty places: a card's radius is a
+      // design decision made once, and with a loose class, the day it changes
+      // you have to hunt it down by hand across the whole portal (which is
+      // exactly how `FeaturedBrands` ended up with a radius nobody else
+      // shared).
       //
-      //   rounded-card → superficies de contenido: tarjetas de anuncio, paneles
-      //                  de formulario, diálogos, tarjetas del panel.
-      //   rounded-tile → lo que va DENTRO o encima de una tarjeta: el tile del
-      //                  rubro, los menús desplegables. Menor a propósito: un
-      //                  radio interior igual al exterior se ve más redondo que
-      //                  el borde que lo contiene.
+      //   rounded-card → content surfaces: ad cards, form panels, dialogs,
+      //                  panel cards.
+      //   rounded-tile → what goes INSIDE or on top of a card: the category
+      //                  tile, dropdown menus. Smaller on purpose: an inner
+      //                  radius equal to the outer one looks rounder than the
+      //                  border that contains it.
       borderRadius: {
         DEFAULT: '0',
         card: '1rem',
@@ -164,8 +164,8 @@ const config: Config = {
   plugins: [
     require('tailwindcss-animate'),
     require('@tailwindcss/typography'),
-    // Fondos decorativos de rejilla y puntos por color (bg-grid-<color>, etc.)
-    // y la utilidad `highlight` (borde superior interior) del lenguaje aceternity.
+    // Decorative grid and dot backgrounds per color (bg-grid-<color>, etc.)
+    // and the `highlight` utility (inner top border) from the aceternity language.
     function ({ matchUtilities, theme }: any) {
       matchUtilities(
         {

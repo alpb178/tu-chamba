@@ -5,10 +5,10 @@ const NAVY = '#102136';
 const YELLOW = '#fdc101';
 const WHITE = '#ffffff';
 
-// Logo TuChamba (maletín + wordmark) vectorial, reutilizable.
+// Reusable vector TuChamba logo (briefcase + wordmark).
 export function Logo({ width = 200, showText = true }: { width?: number; showText?: boolean }) {
   if (!showText) {
-    // Solo el maletín (cuadrado).
+    // Just the briefcase (square).
     const size = width;
     return (
       <Svg width={size} height={size} viewBox="0 0 200 200">

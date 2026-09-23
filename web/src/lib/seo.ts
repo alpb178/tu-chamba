@@ -3,8 +3,8 @@ import { Ad, DEPARTMENT_LABEL, JobType } from './types';
 export const SITE =
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tu-chamba.corpsc.com';
 
-// Título del anuncio. El campo es obligatorio desde la migración de julio
-// 2026; la derivación desde la descripción queda como red de seguridad.
+// Listing title. The field is required since the July 2026 migration;
+// deriving it from the description remains as a safety net.
 export function adTitle(ad: Pick<Ad, 'title' | 'description'>): string {
   if (ad.title) return ad.title;
   const head = ad.description.split('|')[0].trim();
@@ -14,7 +14,7 @@ export function adTitle(ad: Pick<Ad, 'title' | 'description'>): string {
     : ad.description;
 }
 
-// Mapeo al vocabulario de schema.org/JobPosting.
+// Mapping to the schema.org/JobPosting vocabulary.
 const EMPLOYMENT_TYPE: Record<JobType, string> = {
   TIEMPO_COMPLETO: 'FULL_TIME',
   MEDIA_JORNADA: 'PART_TIME',
@@ -22,14 +22,14 @@ const EMPLOYMENT_TYPE: Record<JobType, string> = {
   POR_CONTRATO: 'CONTRACTOR',
   PASANTIA: 'INTERN',
   FREELANCE: 'CONTRACTOR',
-  // Sin jornada declarada (avisos importados): OTHER es el valor genérico
-  // del vocabulario de schema.org.
+  // No declared work schedule (imported listings): OTHER is the generic
+  // value in the schema.org vocabulary.
   A_CONVENIR: 'OTHER',
 };
 
-// JSON-LD JobPosting para los rich results de Google for Jobs.
-// Solo debe emitirse para anuncios vigentes (Google penaliza el markup
-// en ofertas vencidas; validThrough cubre la expiración natural).
+// JSON-LD JobPosting for Google for Jobs rich results.
+// Must only be emitted for live listings (Google penalizes the markup on
+// expired listings; validThrough covers natural expiration).
 export function jobPostingJsonLd(ad: Ad) {
   return {
     '@context': 'https://schema.org',
@@ -55,8 +55,8 @@ export function jobPostingJsonLd(ad: Ad) {
         addressCountry: 'BO',
       },
     },
-    // Un rango se declara con minValue/maxValue; un monto fijo, con value
-    // (ambas formas válidas para QuantitativeValue de Google for Jobs).
+    // A range is declared with minValue/maxValue; a fixed amount, with value
+    // (both valid forms for Google for Jobs QuantitativeValue).
     ...(ad.salary != null
       ? {
           baseSalary: {
@@ -85,7 +85,7 @@ export function jobPostingJsonLd(ad: Ad) {
   };
 }
 
-// WebSite con SearchAction: habilita la caja de búsqueda del sitio en Google.
+// WebSite with SearchAction: enables the sitelinks search box in Google.
 export function webSiteJsonLd() {
   return {
     '@context': 'https://schema.org',
@@ -110,8 +110,8 @@ export function organizationJsonLd() {
   };
 }
 
-// Serialización segura para <script type="application/ld+json">:
-// escapa "<" para que un texto malicioso no pueda cerrar la etiqueta.
+// Safe serialization for <script type="application/ld+json">:
+// escapes "<" so malicious text cannot close the tag.
 export function jsonLd(data: object): string {
   return JSON.stringify(data).replace(/</g, '\\u003c');
 }

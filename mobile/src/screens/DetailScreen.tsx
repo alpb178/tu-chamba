@@ -67,7 +67,7 @@ export function DetailScreen({ route, navigation }: Props) {
         Publicado por: {ad.createdBy?.name ?? '—'}
       </Text>
 
-      {/* Un botón por número: los avisos suelen publicar dos o tres. */}
+      {/* One button per number: listings often publish two or three. */}
       <View className="mt-6 gap-2">
         {adPhones(ad).map((phone, i) => (
           <Button

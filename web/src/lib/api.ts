@@ -37,8 +37,8 @@ export async function api<T>(
   try {
     res = await fetch(`${API_URL}${path}`, { ...options, headers });
   } catch {
-    // fetch lanza TypeError ("Failed to fetch") en fallos de red/CORS.
-    // Lo traducimos a un mensaje entendible para el usuario.
+    // fetch throws TypeError ("Failed to fetch") on network/CORS failures.
+    // We translate it into a message the user can understand.
     throw new ApiError(
       0,
       'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
@@ -53,7 +53,7 @@ export async function api<T>(
         ? body.message.join(', ')
         : body.message ?? message;
     } catch {
-      /* sin cuerpo JSON */
+      /* no JSON body */
     }
     throw new ApiError(res.status, message);
   }

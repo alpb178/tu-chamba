@@ -2,27 +2,28 @@ import { Injectable, NestMiddleware } from '@nestjs/common';
 import { AsyncLocalStorage } from 'async_hooks';
 import { NextFunction, Request, Response } from 'express';
 
-// Contexto del request vigente, disponible en cualquier punto del call stack
-// sin pasarlo por parámetro: TracesService lo lee al registrar una traza.
+// Context of the current request, available anywhere in the call stack
+// without passing it as a parameter: TracesService reads it when recording a
+// trace.
 export interface RequestContext {
   ip?: string;
   userAgent?: string;
-  // País (ISO-2) si un CDN lo aporta por cabecera; si no, TracesService lo
-  // resuelve por geo-IP a partir de `ip`.
+  // Country (ISO-2) if a CDN provides it via header; otherwise TracesService
+  // resolves it by geo-IP from `ip`.
   country?: string;
-  // Origen del request: utm_source o el host del Referer.
+  // Request source: utm_source or the Referer host.
   source?: string;
-  // Inicio del request: las trazas calculan con esto su tiempo de ejecución.
+  // Request start: traces use it to compute their execution time.
   startedAt: number;
 }
 
 export const requestContext = new AsyncLocalStorage<RequestContext>();
 
-// IP real del visitante. Detrás del proxy de Render la cabecera llega como
-// "cliente, proxy1, proxy2…": el primer valor es el cliente y los siguientes
-// son los saltos de la infraestructura. req.ip no sirve aquí porque, con
-// `trust proxy` a 1, Express devuelve el salto más cercano al servidor (la
-// IP del borde, que geolocaliza en EE. UU. y no dice nada del visitante).
+// The visitor's real IP. Behind Render's proxy the header arrives as
+// "client, proxy1, proxy2…": the first value is the client and the rest are
+// infrastructure hops. req.ip doesn't work here because, with `trust proxy`
+// set to 1, Express returns the hop closest to the server (the edge IP, which
+// geolocates to the US and says nothing about the visitor).
 function clientIp(req: Request): string | undefined {
   const raw = req.headers['x-forwarded-for'];
   const xff = Array.isArray(raw) ? raw[0] : raw;
@@ -30,8 +31,8 @@ function clientIp(req: Request): string | undefined {
   return first || req.ip;
 }
 
-// País desde cabeceras que suelen inyectar los CDN/proxies (Cloudflare,
-// Vercel, App Engine). Devuelve el ISO-2 en mayúsculas, o undefined.
+// Country from headers commonly injected by CDNs/proxies (Cloudflare,
+// Vercel, App Engine). Returns the uppercase ISO-2 code, or undefined.
 function countryFromHeaders(req: Request): string | undefined {
   const h = req.headers;
   const raw =
@@ -42,12 +43,12 @@ function countryFromHeaders(req: Request): string | undefined {
   const code = Array.isArray(raw) ? raw[0] : raw;
   if (!code || typeof code !== 'string') return undefined;
   const iso = code.toUpperCase().slice(0, 2);
-  // "XX"/"T1" son marcadores de "desconocido"/Tor de Cloudflare.
+  // "XX"/"T1" are Cloudflare's "unknown"/Tor markers.
   return iso === 'XX' || iso === 'T1' ? undefined : iso;
 }
 
-// Fuente/origen: prioriza utm_source (campañas); si no, el host del Referer
-// (sin "www."). Se recorta para no guardar cadenas enormes.
+// Source/origin: prefers utm_source (campaigns); otherwise the Referer host
+// (without "www."). Truncated to avoid storing huge strings.
 function sourceFromRequest(req: Request): string | undefined {
   const utm = req.query?.utm_source;
   const utmStr = Array.isArray(utm) ? utm[0] : utm;
@@ -64,8 +65,8 @@ function sourceFromRequest(req: Request): string | undefined {
   }
 }
 
-// Captura IP y user-agent de cada request, más país (cabecera de CDN o, en su
-// defecto, geo-IP sobre la IP del cliente) y fuente (utm/Referer).
+// Captures the IP and user-agent of each request, plus country (CDN header or,
+// failing that, geo-IP on the client IP) and source (utm/Referer).
 @Injectable()
 export class RequestContextMiddleware implements NestMiddleware {
   use(req: Request, _res: Response, next: NextFunction) {

@@ -7,8 +7,8 @@ import {
   parsePhones,
 } from './csv';
 
-describe('parseCsv (parser CSV robusto)', () => {
-  it('detecta el separador punto y coma y descarta líneas vacías', () => {
+describe('parseCsv (robust CSV parser)', () => {
+  it('detects the semicolon separator and drops empty lines', () => {
     const rows = parseCsv('a;b;c\n1;2;3\n\n');
     expect(rows).toEqual([
       ['a', 'b', 'c'],
@@ -16,12 +16,12 @@ describe('parseCsv (parser CSV robusto)', () => {
     ]);
   });
 
-  it('respeta comas dentro de comillas y las comillas escapadas', () => {
+  it('keeps commas inside quotes and escaped quotes', () => {
     const rows = parseCsv('descripcion,telefono\n"Hola, mundo ""x""",70012345');
     expect(rows[1]).toEqual(['Hola, mundo "x"', '70012345']);
   });
 
-  it('quita el BOM de Excel y soporta CRLF', () => {
+  it('strips the Excel BOM and supports CRLF', () => {
     const rows = parseCsv('﻿a,b\r\n1,2\r\n');
     expect(rows[0]).toEqual(['a', 'b']);
     expect(rows[1]).toEqual(['1', '2']);
@@ -29,29 +29,29 @@ describe('parseCsv (parser CSV robusto)', () => {
 });
 
 describe('extractTitle', () => {
-  it('toma la primera oración como título y deja el resto', () => {
+  it('takes the first sentence as the title and keeps the rest', () => {
     const { title, rest } = extractTitle('Vendedor de tienda. Turno tarde.');
     expect(title).toBe('Vendedor de tienda');
     expect(rest).toBe('Turno tarde.');
   });
-  it('sin puntuación usa toda la descripción como título', () => {
+  it('without punctuation uses the whole description as the title', () => {
     expect(extractTitle('Cajero medio tiempo').title).toBe('Cajero medio tiempo');
   });
 });
 
-describe('parseAdsCsv (validación e importación)', () => {
-  it('reporta cabeceras obligatorias faltantes', () => {
+describe('parseAdsCsv (validation and import)', () => {
+  it('reports missing required headers', () => {
     const res = parseAdsCsv('nombre,edad\nAna,30');
     expect(res.headerError).toMatch(/Faltan columnas/);
     expect(res.rows).toHaveLength(0);
   });
 
-  it('avisa cuando solo hay cabecera', () => {
+  it('warns when there is only a header', () => {
     const res = parseAdsCsv('descripcion,telefono');
     expect(res.headerError).toMatch(/solo contiene la cabecera/);
   });
 
-  it('marca error en filas sin descripción o sin teléfono', () => {
+  it('flags an error on rows without description or phone', () => {
     const res = parseAdsCsv(
       'descripcion,telefono\n,70012345\nVendedor,123',
     );
@@ -59,7 +59,7 @@ describe('parseAdsCsv (validación e importación)', () => {
     expect(res.rows[1].errors).toContain('El teléfono es obligatorio');
   });
 
-  it('completa defaults (depto, categoría, jornada) y deriva el título', () => {
+  it('fills defaults (department, category, job type) and derives the title', () => {
     const res = parseAdsCsv(
       'descripcion,telefono\n"Se busca cajero. Turno noche.",70012345',
     );
@@ -69,20 +69,20 @@ describe('parseAdsCsv (validación e importación)', () => {
     expect(row.values.description).toBe('Turno noche.');
     expect(row.values.department).toBe('SANTA_CRUZ');
     expect(row.values.category).toBe('OTRO');
-    // Sin jornada declarada no se asume tiempo completo (sería dato inventado).
+    // Without a declared job type, full-time is not assumed (it'd be made-up data).
     expect(row.values.jobType).toBe('A_CONVENIR');
     expect(row.values.durationDays).toBe(7);
     expect(row.line).toBe(2);
   });
 
-  it('parsea salario en formato boliviano (miles con punto)', () => {
+  it('parses salary in Bolivian format (dot as thousands separator)', () => {
     const res = parseAdsCsv(
       'descripcion,telefono,salario\nVendedor,70012345,"Bs 3.500"',
     );
     expect(res.rows[0].values.salary).toBe(3500);
   });
 
-  it('trata "No especificado" como celda vacía', () => {
+  it('treats "No especificado" as an empty cell', () => {
     const res = parseAdsCsv(
       'descripcion,telefono,ubicacion\nVendedor,70012345,No especificado',
     );
@@ -90,13 +90,13 @@ describe('parseAdsCsv (validación e importación)', () => {
   });
 });
 
-describe('parseSalary (montos y rangos)', () => {
-  it('un solo monto no genera rango', () => {
+describe('parseSalary (amounts and ranges)', () => {
+  it('a single amount does not produce a range', () => {
     expect(parseSalary('3000')).toEqual({ salary: 3000 });
     expect(parseSalary('Bs 2.500,50')).toEqual({ salary: 2500.5 });
   });
 
-  it('reconoce rangos con guion, "a" y guion largo', () => {
+  it('recognizes ranges with hyphen, "a" and en dash', () => {
     expect(parseSalary('3500-4500')).toEqual({ salary: 3500, salaryMax: 4500 });
     expect(parseSalary('2000 a 3000')).toEqual({ salary: 2000, salaryMax: 3000 });
     expect(parseSalary('Bs 2.700 – 2.800')).toEqual({
@@ -105,27 +105,27 @@ describe('parseSalary (montos y rangos)', () => {
     });
   });
 
-  it('ordena el rango al revés y descarta texto sin monto', () => {
+  it('fixes a reversed range and drops text without an amount', () => {
     expect(parseSalary('4500-3500')).toEqual({ salary: 3500, salaryMax: 4500 });
     expect(parseSalary('a convenir')).toBeNull();
   });
 });
 
-describe('parsePhones (varios números por celda)', () => {
-  it('separa por barra, coma y "y", sin repetidos', () => {
+describe('parsePhones (several numbers per cell)', () => {
+  it('splits by slash, comma and "y", without duplicates', () => {
     expect(parsePhones('77900185 / 67894829')).toEqual(['77900185', '67894829']);
     expect(parsePhones('70012345, 3467010')).toEqual(['70012345', '3467010']);
     expect(parsePhones('70012345 y 70012345')).toEqual(['70012345']);
   });
 
-  it('descarta lo que no llega a 7 dígitos', () => {
+  it('drops anything shorter than 7 digits', () => {
     expect(parsePhones('123 / 70012345')).toEqual(['70012345']);
     expect(parsePhones('No especificado')).toEqual([]);
   });
 });
 
-describe('parseAdsCsv — teléfonos, rangos y referencia', () => {
-  it('el primer número es el principal y el resto adicionales', () => {
+describe('parseAdsCsv — phones, ranges and reference', () => {
+  it('the first number is the main one and the rest are additional', () => {
     const res = parseAdsCsv(
       'descripcion,telefono\nVendedor,"77900185 / 67894829 / 3467010"',
     );
@@ -135,13 +135,13 @@ describe('parseAdsCsv — teléfonos, rangos y referencia', () => {
     expect(row.values.extraPhones).toEqual(['67894829', '3467010']);
   });
 
-  it('un salario en rango llena piso y techo', () => {
+  it('a salary range fills floor and ceiling', () => {
     const res = parseAdsCsv('descripcion,telefono,salario\nVendedor,70012345,3500-4500');
     expect(res.rows[0].values.salary).toBe(3500);
     expect(res.rows[0].values.salaryMax).toBe(4500);
   });
 
-  it('la columna de salario máximo se ignora si no supera el piso', () => {
+  it('the max salary column is ignored if it does not exceed the floor', () => {
     const res = parseAdsCsv(
       'descripcion,telefono,salario,salarioMax\nVendedor,70012345,3000,2500',
     );
@@ -149,7 +149,7 @@ describe('parseAdsCsv — teléfonos, rangos y referencia', () => {
     expect(res.rows[0].values.salaryMax).toBeUndefined();
   });
 
-  it('mapea los rubros de la fuente a los propios', () => {
+  it('maps the source categories to our own', () => {
     const res = parseAdsCsv(
       'descripcion,telefono,categoria\nA,70012345,HOGAR_LIMPIEZA\nB,70012345,CHOFERES\nC,70012345,VARIOS\nD,70012345,AGROPECUARIA',
     );
@@ -161,7 +161,7 @@ describe('parseAdsCsv — teléfonos, rangos y referencia', () => {
     ]);
   });
 
-  it('acepta las jornadas nuevas y sus sinónimos', () => {
+  it('accepts the new job types and their synonyms', () => {
     const res = parseAdsCsv(
       'descripcion,telefono,tipoJornada\nA,70012345,POR_CONTRATO\nB,70012345,practicas\nC,70012345,Independiente',
     );
@@ -172,7 +172,7 @@ describe('parseAdsCsv — teléfonos, rangos y referencia', () => {
     ]);
   });
 
-  it('lee la referencia de ubicación', () => {
+  it('reads the location reference', () => {
     const res = parseAdsCsv(
       'descripcion,telefono,referencia\nVendedor,70012345,"Frente al mercado Los Pozos"',
     );

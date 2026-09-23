@@ -8,15 +8,15 @@ import {
 } from './seo';
 
 describe('adTitle', () => {
-  it('usa el título cuando existe', () => {
+  it('uses the title when present', () => {
     expect(adTitle({ title: 'Vendedor', description: 'x' })).toBe('Vendedor');
   });
-  it('sin título toma la primera parte (antes de |) si mide 10-90', () => {
+  it('without a title takes the first part (before |) if it is 10-90 chars', () => {
     expect(
       adTitle({ title: '', description: 'Se busca cajero | zona centro' }),
     ).toBe('Se busca cajero');
   });
-  it('recorta descripciones largas sin cabecera válida', () => {
+  it('truncates long descriptions without a valid heading', () => {
     const desc = 'x'.repeat(100);
     const res = adTitle({ title: '', description: desc });
     expect(res.endsWith('…')).toBe(true);
@@ -24,8 +24,8 @@ describe('adTitle', () => {
   });
 });
 
-describe('jsonLd (serialización segura)', () => {
-  it('escapa "<" para no cerrar la etiqueta <script>', () => {
+describe('jsonLd (safe serialization)', () => {
+  it('escapes "<" so it cannot close the <script> tag', () => {
     const out = jsonLd({ x: '</script><script>alert(1)' });
     expect(out).not.toContain('</script>');
     expect(out).toContain('\\u003c');
@@ -33,7 +33,7 @@ describe('jsonLd (serialización segura)', () => {
 });
 
 describe('jobPostingJsonLd', () => {
-  it('produce un JobPosting con título, fechas y organización', () => {
+  it('produces a JobPosting with title, dates and organization', () => {
     const ad = {
       id: 'a1',
       title: 'Mesero',
@@ -52,13 +52,13 @@ describe('jobPostingJsonLd', () => {
   });
 });
 
-describe('builders JSON-LD del sitio', () => {
-  it('webSiteJsonLd declara un WebSite con acción de búsqueda', () => {
+describe('site JSON-LD builders', () => {
+  it('webSiteJsonLd declares a WebSite with a search action', () => {
     const ld = webSiteJsonLd() as Record<string, unknown>;
     expect(ld['@type']).toBe('WebSite');
     expect(ld).toHaveProperty('potentialAction');
   });
-  it('organizationJsonLd declara la Organización', () => {
+  it('organizationJsonLd declares the Organization', () => {
     const ld = organizationJsonLd() as Record<string, unknown>;
     expect(ld['@type']).toBe('Organization');
     expect(ld).toHaveProperty('name');

@@ -32,9 +32,9 @@ import { FeaturedBrands } from '@/components/FeaturedBrands';
 import { Icon } from '@/components/Icon';
 import { Button, Heading, Subheading } from '@/components/ui';
 
-// Chips de los filtros activos sobre el listado: recuerdan qué está
-// aplicado y se quitan de un toque (clave en móvil, donde el panel de
-// filtros vive colapsado).
+// Chips for the active filters above the list: they show what is
+// applied and can be removed with one tap (key on mobile, where the
+// filters panel stays collapsed).
 function FilterChips({
   filters,
   onChange,
@@ -78,7 +78,7 @@ function FilterChips({
   if (chips.length === 0) return null;
 
   return (
-    // Chips con borde (estilo editorial de Iris): esquinas rectas, sin relleno.
+    // Outlined chips (Iris editorial style): square corners, no fill.
     <div className="mb-4 flex flex-wrap items-center gap-2 text-xs">
       {chips.map((c) => (
         <button
@@ -105,8 +105,8 @@ function FilterChips({
   );
 }
 
-// Botón flotante para volver arriba en móvil: con scroll infinito la
-// lista se hace larga y no hay paginación para "escapar".
+// Floating back-to-top button on mobile: with infinite scroll the list
+// gets long and there is no pagination to "escape".
 function BackToTop() {
   const [visible, setVisible] = useState(false);
 
@@ -130,10 +130,10 @@ function BackToTop() {
   );
 }
 
-// Encabezado del catálogo con buscador de texto (estilo del listado de Iris):
-// reemplaza al buscador que antes vivía en el hero. Empuja ?q= a la URL
-// (fuente de verdad que resuelve page.tsx) sin mover el scroll. Es también el
-// ancla #ofertas a la que salta el CTA "Explorar ofertas" del hero.
+// Catalog header with a text search box (Iris listing style): replaces the
+// search box that used to live in the hero. Pushes ?q= to the URL (the
+// source of truth resolved by page.tsx) without moving the scroll. It is also
+// the #listings anchor that the hero's "Explorar ofertas" CTA jumps to.
 function CatalogHeader({
   search,
   dep,
@@ -154,7 +154,7 @@ function CatalogHeader({
   }
 
   return (
-    <div id="ofertas" className="scroll-mt-24">
+    <div id="listings" className="scroll-mt-24">
       <div className="mb-6 flex flex-col gap-4 border-b border-outline-variant pb-5">
         <Heading as="h1" size="md">
           Encuentra trabajos diarios al instante
@@ -186,8 +186,8 @@ function CatalogHeader({
   );
 }
 
-// Barra de herramientas sobre el listado (estilo Iris): conteo de resultados,
-// selector de orden y control de densidad; en móvil abre el drawer de filtros.
+// Toolbar above the list (Iris style): result count, sort selector and
+// density control; on mobile it opens the filters drawer.
 function Toolbar({
   total,
   dep,
@@ -212,7 +212,7 @@ function Toolbar({
   return (
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-xs">
       <div className="flex items-center gap-4">
-        {/* Móvil: abre el drawer de filtros. */}
+        {/* Mobile: opens the filters drawer. */}
         <button
           type="button"
           onClick={onOpenFilters}
@@ -249,8 +249,8 @@ function Toolbar({
           </select>
         </label>
 
-        {/* Densidad: cambia las clases del grid (una vs. dos columnas en
-            pantallas anchas). Solo tiene efecto en escritorio. */}
+        {/* Density: changes the grid classes (one vs. two columns on wide
+            screens). Only has an effect on desktop. */}
         <div className="hidden items-center gap-1 md:flex" role="group">
           <button
             type="button"
@@ -280,7 +280,7 @@ function Toolbar({
           </button>
         </div>
 
-        {/* Publicar (escritorio) + actualizar el listado. */}
+        {/* Publish (desktop) + refresh the list. */}
         <Link href={publishHref} className="hidden md:inline-flex">
           <Button variant="accent" className="px-4 py-2">
             Publicar oferta de trabajo
@@ -300,8 +300,8 @@ function Toolbar({
   );
 }
 
-// Portada. La búsqueda (?q= y ?dep=) llega resuelta desde el server
-// component (page.tsx), así el hero viaja en el HTML inicial.
+// Home page. The search (?q= and ?dep=) arrives resolved from the server
+// component (page.tsx), so the hero ships in the initial HTML.
 export function HomeClient({
   search,
   dep,
@@ -310,13 +310,13 @@ export function HomeClient({
   dep: Department | '';
 }) {
   const { user } = useAuth();
-  // CTA de publicar: sin sesión manda a registrarse y vuelve al formulario.
+  // Publish CTA: without a session it sends to sign-up and back to the form.
   const publishHref = user
     ? '/listings/new'
     : `/register?next=${encodeURIComponent('/listings/new')}`;
   const [data, setData] = useState<Paginated<Ad> | null>(null);
-  // Tarjetas visibles: en escritorio son las de la página actual; en móvil
-  // se acumulan las páginas a medida que se hace scroll.
+  // Visible cards: on desktop, those of the current page; on mobile, pages
+  // accumulate as the user scrolls.
   const [items, setItems] = useState<Ad[]>([]);
   const [facets, setFacets] = useState<Facets | null>(null);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
@@ -324,27 +324,27 @@ export function HomeClient({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  // Vista móvil (< md): tarjetas de dos en dos y paginación por scroll.
+  // Mobile view (< md): cards two by two and scroll-based pagination.
   const [isMobile, setIsMobile] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const listTopRef = useRef<HTMLElement | null>(null);
-  // Posición de scroll a restaurar tras un cambio de filtros: al resetear a
-  // la primera página la lista se reemplaza y encoge, y el navegador saltaría
-  // el scroll. Preservamos la posición para que filtrar no lo mueva (igual
-  // que la búsqueda con scroll:false).
+  // Scroll position to restore after a filter change: when resetting to the
+  // first page the list is replaced and shrinks, and the browser would jump
+  // the scroll. We preserve the position so filtering doesn't move it (same
+  // as the search with scroll:false).
   const pendingScrollRef = useRef<number | null>(null);
-  // Drawer de filtros en móvil (estilo Iris), orden y densidad del listado.
+  // Filters drawer on mobile (Iris style), list sort order and density.
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [sort, setSort] = useState<SortOption>('recientes');
+  const [sort, setSort] = useState<SortOption>('newest');
   const [density, setDensity] = useState<'comfortable' | 'compact'>(
     'comfortable',
   );
 
-  // Orden aplicado en cliente sobre las tarjetas ya cargadas (el backend no
-  // ordena). En escritorio ordena la página actual; en móvil, el acumulado.
+  // Client-side sorting of the already loaded cards (the backend doesn't
+  // sort). On desktop it sorts the current page; on mobile, the accumulated list.
   const sortedItems = useMemo(() => sortAds(items, sort), [items, sort]);
 
-  // Cambia los filtros sin mover el scroll (recuerda la posición actual).
+  // Changes the filters without moving the scroll (remembers the current position).
   const changeFilters = useCallback((f: Filters) => {
     pendingScrollRef.current = window.scrollY;
     setFilters(f);
@@ -359,19 +359,19 @@ export function HomeClient({
     return () => mq.removeEventListener('change', update);
   }, []);
 
-  // El departamento del hero inicializa el filtro del sidebar (una sola
-  // fuente de verdad: filters.department). Al cambiar, primera página.
+  // The hero's department initializes the sidebar filter (single source of
+  // truth: filters.department). When it changes, go to the first page.
   useEffect(() => {
     setFilters((f) => ({ ...f, department: dep ? [dep] : [] }));
     setPage(1);
   }, [dep]);
 
-  // Al cambiar la búsqueda, volvemos a la primera página.
+  // When the search changes, go back to the first page.
   useEffect(() => {
     setPage(1);
   }, [search]);
 
-  // Conteos para la barra de filtros (una vez).
+  // Counts for the filters bar (once).
   useEffect(() => {
     api<Facets>('/listings/facets')
       .then(setFacets)
@@ -379,8 +379,8 @@ export function HomeClient({
   }, []);
 
   const load = useCallback(async () => {
-    // En móvil las páginas siguientes se añaden al final (scroll infinito);
-    // en escritorio (o al volver a la página 1) se reemplaza el listado.
+    // On mobile the following pages are appended (infinite scroll); on
+    // desktop (or when going back to page 1) the list is replaced.
     const append = isMobile && page > 1;
     if (append) setLoadingMore(true);
     else setLoading(true);
@@ -393,14 +393,14 @@ export function HomeClient({
       if (filters.salaryMin != null) p.set('salaryMin', String(filters.salaryMin));
       if (filters.salaryMax != null) p.set('salaryMax', String(filters.salaryMax));
       if (search) p.set('search', search);
-      // Páginas de 10 (mismo tamaño que mobile).
+      // Pages of 10 (same size as mobile).
       p.set('page', String(page));
       p.set('limit', '10');
       const res = await api<Paginated<Ad>>(`/listings?${p}`);
       setData(res);
-      // Al acumular páginas en móvil se descartan ids ya presentes: si se
-      // publica un anuncio entre cargas, la paginación se desplaza y un mismo
-      // anuncio podría venir en dos páginas (clave duplicada en React).
+      // When accumulating pages on mobile, ids already present are dropped: if
+      // a listing is published between loads, pagination shifts and the same
+      // listing could come in two pages (duplicate key in React).
       setItems((prev) => {
         if (!append) return res.items;
         const seen = new Set(prev.map((a) => a.id));
@@ -418,9 +418,9 @@ export function HomeClient({
     load();
   }, [load]);
 
-  // Tras reemplazar la lista por un cambio de filtros, restaura el scroll
-  // antes de pintar para que no salte (solo cuando hay posición pendiente;
-  // la paginación y el scroll infinito no la fijan).
+  // After replacing the list due to a filter change, restore the scroll
+  // before painting so it doesn't jump (only when a position is pending;
+  // pagination and infinite scroll don't set it).
   useLayoutEffect(() => {
     if (pendingScrollRef.current != null) {
       window.scrollTo(0, pendingScrollRef.current);
@@ -428,14 +428,14 @@ export function HomeClient({
     }
   }, [items]);
 
-  // El botón de actualizar reinicia el listado desde la primera página.
+  // The refresh button restarts the list from the first page.
   const refresh = useCallback(() => {
     if (page !== 1) setPage(1);
     else load();
   }, [page, load]);
 
-  // Centinela del scroll infinito: al acercarse al final de la lista en
-  // móvil se pide la página siguiente.
+  // Infinite scroll sentinel: when nearing the end of the list on mobile,
+  // the next page is requested.
   useEffect(() => {
     if (!isMobile) return;
     const el = sentinelRef.current;
@@ -452,7 +452,7 @@ export function HomeClient({
           setPage((p) => p + 1);
         }
       },
-      // Empieza a cargar un poco antes de llegar al final.
+      // Starts loading a bit before reaching the end.
       { rootMargin: '300px' },
     );
     observer.observe(el);
@@ -463,14 +463,14 @@ export function HomeClient({
     <div className="space-y-8">
       <Hero />
 
-      {/* Si el listado no carga (p. ej. servidor caído), ocultamos filtros y
-          resultados: la portada queda solo con el hero y los destacados. */}
+      {/* If the list fails to load (e.g. server down), we hide filters and
+          results: the home page keeps only the hero and featured listings. */}
       {!error && (
         <>
         <CatalogHeader search={search} dep={dep} />
-        {/* Layout tipo Iris: columna de filtros de ~220px + listado. */}
+        {/* Iris-style layout: ~220px filters column + list. */}
         <div className="grid grid-cols-1 gap-x-8 md:grid-cols-[220px_1fr]">
-          {/* Escritorio: barra lateral fija al hacer scroll. */}
+          {/* Desktop: sidebar sticky on scroll. */}
           <div className="hidden self-start md:sticky md:top-24 md:block">
             <FiltersSidebar
               value={filters}
@@ -480,8 +480,8 @@ export function HomeClient({
           </div>
 
           <section ref={listTopRef} className="min-w-0 scroll-mt-24">
-            {/* Barra de herramientas: conteo, orden, densidad, publicar y
-                actualizar; en móvil abre el drawer de filtros. */}
+            {/* Toolbar: count, sort, density, publish and refresh; on mobile it
+                opens the filters drawer. */}
             <Toolbar
               total={data?.total ?? null}
               dep={dep}
@@ -494,12 +494,12 @@ export function HomeClient({
               onRefresh={refresh}
             />
 
-            {/* Filtros activos como chips removibles sobre la lista (visibles
-                también en el estado vacío para poder quitarlos). */}
+            {/* Active filters as removable chips above the list (also visible in
+                the empty state so they can be removed). */}
             <FilterChips filters={filters} onChange={changeFilters} />
 
-            {/* Skeleton solo en la primera carga; en las recargas la lista
-                anterior queda atenuada (transición suave, sin parpadeo). */}
+            {/* Skeleton only on the first load; on reloads the previous list is
+                dimmed (smooth transition, no flicker). */}
             {!data ? (
               <AdListSkeleton />
             ) : items.length === 0 ? (
@@ -530,18 +530,18 @@ export function HomeClient({
                   loading ? 'pointer-events-none opacity-60' : ''
                 }`}
               >
-                  {/* Móvil: CTA de publicar al inicio de la lista. */}
+                  {/* Mobile: publish CTA at the top of the list. */}
                   <Link href={publishHref} className="mb-3 block md:hidden">
                     <Button variant="accent" className="w-full px-4 py-2.5">
                       Publicar oferta de trabajo
                     </Button>
                   </Link>
 
-                  {/* Grid del listado: una columna (cómoda) o dos columnas en
-                      pantallas anchas (compacta). Las tarjetas de oferta ocupan
-                      toda la fila, así que la densidad solo cambia el nº de
-                      columnas en escritorio. Se pintan las ofertas ordenadas en
-                      cliente (sortedItems). */}
+                  {/* List grid: one column (comfortable) or two columns on wide
+                      screens (compact). Listing cards take the whole row, so
+                      density only changes the number of columns on desktop.
+                      The listings are rendered sorted on the client
+                      (sortedItems). */}
                   <div
                     className={`grid gap-3 md:gap-4 ${
                       density === 'compact'
@@ -554,14 +554,14 @@ export function HomeClient({
                     ))}
                   </div>
 
-                  {/* Móvil: el paso de página es por scroll (centinela). */}
+                  {/* Mobile: paging happens via scroll (sentinel). */}
                   <div ref={sentinelRef} aria-hidden className="md:hidden" />
                   {loadingMore && (
                     <p className="py-4 text-center text-sm text-on-surface-variant md:hidden">
                       Cargando más ofertas…
                     </p>
                   )}
-                  {/* Móvil: progreso del scroll infinito siempre visible. */}
+                  {/* Mobile: infinite scroll progress always visible. */}
                   {!loadingMore && data.total > 0 && (
                     <p className="py-3 text-center text-xs text-on-surface-variant md:hidden">
                       Mostrando {items.length} de {data.total}{' '}
@@ -569,7 +569,7 @@ export function HomeClient({
                     </p>
                   )}
 
-                  {/* Escritorio: paginación con botones. */}
+                  {/* Desktop: pagination with buttons. */}
                   <div className="hidden md:block">
                     <Pagination
                       page={data.page}
@@ -578,7 +578,7 @@ export function HomeClient({
                       limit={data.limit}
                       onPage={(p) => {
                         setPage(p);
-                        // Vuelve suavemente al inicio del listado.
+                        // Smoothly scrolls back to the top of the list.
                         listTopRef.current?.scrollIntoView({
                           behavior: 'smooth',
                           block: 'start',
@@ -591,7 +591,7 @@ export function HomeClient({
           </section>
         </div>
 
-        {/* Móvil: filtros en un drawer (estilo Iris) con backdrop difuminado. */}
+        {/* Mobile: filters in a drawer (Iris style) with a blurred backdrop. */}
         {mobileFiltersOpen && (
           <div
             className="fixed inset-0 z-50 flex md:hidden"

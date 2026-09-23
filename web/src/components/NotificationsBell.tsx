@@ -25,9 +25,9 @@ function timeAgo(date: string) {
   return new Date(date).toLocaleDateString('es-BO');
 }
 
-// Campana de notificaciones in-app (solo usuarios autenticados).
-// Refresca por polling; al hacer clic se marca leída y, si la notificación
-// referencia un anuncio, navega a su detalle.
+// In-app notifications bell (authenticated users only).
+// Refreshes by polling; on click the notification is marked as read and, if
+// it references an ad, navigates to its detail.
 export function NotificationsBell() {
   const { user } = useAuth();
   const router = useRouter();
@@ -48,7 +48,7 @@ export function NotificationsBell() {
     return () => clearInterval(timer);
   }, [user, load]);
 
-  // Cierra el panel al hacer clic fuera.
+  // Close the panel when clicking outside.
   useEffect(() => {
     if (!open) return;
     function onClick(e: MouseEvent) {
@@ -63,7 +63,7 @@ export function NotificationsBell() {
   async function openNotification(n: AppNotification) {
     setOpen(false);
     if (!n.read) {
-      // Optimista: no bloqueamos la navegación por el marcado.
+      // Optimistic: we don't block navigation on marking it read.
       api(`/notifications/${n.id}/read`, { method: 'PATCH' })
         .then(load)
         .catch(() => {});

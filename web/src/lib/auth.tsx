@@ -65,8 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.user;
   }
 
-  // Con Google la cuenta se crea directamente si no existe (correo ya
-  // verificado); el teléfono se completa después desde el perfil.
+  // With Google the account is created directly if it does not exist (email
+  // already verified); the phone is filled in later from the profile.
   async function loginWithGoogle(idToken: string) {
     const res = await api<{ accessToken: string; user: User }>('/auth/google', {
       method: 'POST',
@@ -77,18 +77,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res.user;
   }
 
-  // Recarga el usuario desde el backend (p. ej. tras verificar el correo).
+  // Reloads the user from the backend (e.g. after verifying the email).
   async function refresh() {
     try {
       setUser(await api<User>('/auth/me'));
     } catch {
-      /* sin sesión válida: no hacemos nada */
+      /* no valid session: do nothing */
     }
   }
 
   function logout() {
-    // Best-effort: deja la traza de cierre de sesión antes de descartar el
-    // token (el JWT es stateless, la sesión muere al borrarlo igualmente).
+    // Best-effort: leaves the sign-out trace before discarding the token
+    // (the JWT is stateless; the session dies when it is deleted anyway).
     api('/auth/logout', { method: 'POST' }).catch(() => {});
     clearToken();
     setUser(null);

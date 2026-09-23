@@ -25,8 +25,8 @@ export class AuthController {
     return this.auth.login(dto);
   }
 
-  // El JWT es stateless: el endpoint solo deja la traza de cierre de sesión
-  // para la auditoría (el cliente descarta el token).
+  // The JWT is stateless: the endpoint only leaves the sign-out trace for
+  // auditing (the client discards the token).
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('logout')
@@ -34,38 +34,38 @@ export class AuthController {
     return this.auth.logout(user);
   }
 
-  // Registro/login con Google (requiere GOOGLE_CLIENT_ID configurado).
+  // Sign-up/login with Google (requires GOOGLE_CLIENT_ID to be set).
   @Post('google')
   google(@Body() dto: GoogleAuthDto) {
     return this.auth.googleAuth(dto);
   }
 
-  // El Client ID de Google no es secreto: el frontend lo pide en runtime
-  // para configurarlo en un solo lugar (el API) sin rebuilds del web.
+  // The Google Client ID is not secret: the frontend requests it at runtime
+  // so it is configured in a single place (the API) without web rebuilds.
   @Get('google-client')
   googleClient() {
     return { clientId: process.env.GOOGLE_CLIENT_ID || null };
   }
 
-  // Verifica el correo con el token del enlace (público).
+  // Verifies the email with the link token (public).
   @Post('verify-email')
   verifyEmail(@Body() dto: VerifyEmailDto) {
     return this.auth.verifyEmail(dto.token);
   }
 
-  // Envía el enlace de restablecimiento (público; sin revelar si existe).
+  // Sends the reset link (public; without revealing whether the account exists).
   @Post('forgot-password')
   forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.auth.forgotPassword(dto.email);
   }
 
-  // Cambia la contraseña con el token del enlace (público).
+  // Changes the password with the link token (public).
   @Post('reset-password')
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.auth.resetPassword(dto.token, dto.password);
   }
 
-  // Reenvía el correo de verificación al usuario autenticado.
+  // Resends the verification email to the authenticated user.
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('resend-verification')

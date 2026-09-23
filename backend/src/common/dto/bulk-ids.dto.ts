@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ArrayMaxSize, ArrayNotEmpty, IsArray, IsUUID } from 'class-validator';
 
-// Borrado por lotes desde el panel: ids de los registros seleccionados.
+// Bulk delete from the panel: ids of the selected records.
 export class BulkIdsDto {
   @ApiProperty({ type: [String], description: 'Ids de los registros a borrar' })
   @IsArray()

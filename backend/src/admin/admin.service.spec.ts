@@ -14,8 +14,8 @@ function buildService() {
   return { service, prisma };
 }
 
-describe('AdminService.userActivity (sesionización)', () => {
-  it('excluye administradores del filtro base', async () => {
+describe('AdminService.userActivity (sessionization)', () => {
+  it('excludes admins from the base filter', async () => {
     const { service, prisma } = buildService();
     prisma.user.findMany.mockResolvedValue([]);
     prisma.pageView.groupBy.mockResolvedValue([]);
@@ -27,7 +27,7 @@ describe('AdminService.userActivity (sesionización)', () => {
     });
   });
 
-  it('agrega búsqueda por nombre o correo', async () => {
+  it('adds search by name or email', async () => {
     const { service, prisma } = buildService();
     prisma.user.findMany.mockResolvedValue([]);
     prisma.pageView.groupBy.mockResolvedValue([]);
@@ -41,7 +41,7 @@ describe('AdminService.userActivity (sesionización)', () => {
     ]);
   });
 
-  it('arma dos sesiones separadas por un hueco > 30 min y suma la estancia', async () => {
+  it('builds two sessions split by a > 30 min gap and sums the time spent', async () => {
     const { service, prisma } = buildService();
     const now = Date.now();
     prisma.user.findMany.mockResolvedValue([
@@ -49,7 +49,7 @@ describe('AdminService.userActivity (sesionización)', () => {
     ]);
     const last = new Date(now - 55 * MIN);
     prisma.pageView.groupBy.mockResolvedValue([{ userId: 'u1', _max: { createdAt: last } }]);
-    // Sesión A: -120, -115, -110 (10 min). Hueco de 50 min. Sesión B: -60, -55 (5 min).
+    // Session A: -120, -115, -110 (10 min). 50 min gap. Session B: -60, -55 (5 min).
     prisma.pageView.findMany.mockResolvedValue(
       [now - 120 * MIN, now - 115 * MIN, now - 110 * MIN, now - 60 * MIN, now - 55 * MIN].map(
         (t) => ({ userId: 'u1', createdAt: new Date(t) }),
@@ -65,7 +65,7 @@ describe('AdminService.userActivity (sesionización)', () => {
     expect(res.total).toBe(1);
   });
 
-  it('una sola vista cuenta como 1 sesión de 0 minutos', async () => {
+  it('a single view counts as 1 session of 0 minutes', async () => {
     const { service, prisma } = buildService();
     const now = Date.now();
     prisma.user.findMany.mockResolvedValue([
@@ -84,7 +84,7 @@ describe('AdminService.userActivity (sesionización)', () => {
     expect(res.items[0].avgSessionMinutes).toBe(0);
   });
 
-  it('usuario sin visitas: 0 sesiones y última visita null', async () => {
+  it('user without visits: 0 sessions and null last visit', async () => {
     const { service, prisma } = buildService();
     prisma.user.findMany.mockResolvedValue([
       { id: 'u1', name: 'Ana', email: 'a@t.com', phone: null, createdAt: new Date() },
@@ -97,25 +97,25 @@ describe('AdminService.userActivity (sesionización)', () => {
     expect(res.items[0].lastVisitAt).toBeNull();
   });
 
-  it('ordena por última visita descendente (sin visitas al final)', async () => {
+  it('sorts by last visit descending (users without visits last)', async () => {
     const { service, prisma } = buildService();
     const now = Date.now();
     prisma.user.findMany.mockResolvedValue([
-      { id: 'sinVisita', name: 'Z', email: 'z@t.com', phone: null, createdAt: new Date(now) },
-      { id: 'reciente', name: 'A', email: 'a@t.com', phone: null, createdAt: new Date(now) },
-      { id: 'viejo', name: 'B', email: 'b@t.com', phone: null, createdAt: new Date(now) },
+      { id: 'noVisits', name: 'Z', email: 'z@t.com', phone: null, createdAt: new Date(now) },
+      { id: 'recent', name: 'A', email: 'a@t.com', phone: null, createdAt: new Date(now) },
+      { id: 'old', name: 'B', email: 'b@t.com', phone: null, createdAt: new Date(now) },
     ]);
     prisma.pageView.groupBy.mockResolvedValue([
-      { userId: 'reciente', _max: { createdAt: new Date(now - MIN) } },
-      { userId: 'viejo', _max: { createdAt: new Date(now - 10 * HOUR) } },
+      { userId: 'recent', _max: { createdAt: new Date(now - MIN) } },
+      { userId: 'old', _max: { createdAt: new Date(now - 10 * HOUR) } },
     ]);
     prisma.pageView.findMany.mockResolvedValue([]);
 
     const res = await service.userActivity({});
-    expect(res.items.map((i) => i.id)).toEqual(['reciente', 'viejo', 'sinVisita']);
+    expect(res.items.map((i) => i.id)).toEqual(['recent', 'old', 'noVisits']);
   });
 
-  it('pagina el listado ya ordenado', async () => {
+  it('paginates the already sorted list', async () => {
     const { service, prisma } = buildService();
     const users = Array.from({ length: 5 }, (_, i) => ({
       id: `u${i}`,
@@ -137,14 +137,14 @@ describe('AdminService.userActivity (sesionización)', () => {
 });
 
 describe('AdminService.stats', () => {
-  it('agrega usuarios (sin admins), anuncios y visitas por día/hora', async () => {
+  it('aggregates users (excluding admins), listings and visits by day/hour', async () => {
     const { service, prisma } = buildService();
     const now = Date.now();
     prisma.user.count.mockResolvedValueOnce(10).mockResolvedValueOnce(3); // total, admins
     prisma.user.findMany.mockResolvedValue([{ createdAt: new Date(now) }]); // recentUsers (no admins)
     prisma.ad.count.mockResolvedValue(20);
     prisma.ad.findMany.mockResolvedValue([{ createdAt: new Date(now) }]);
-    // total, las de anuncios que aún existen, y las últimas 24 h.
+    // total, those for listings that still exist, and the last 24 h.
     prisma.visit.count
       .mockResolvedValueOnce(100)
       .mockResolvedValueOnce(60)
@@ -158,32 +158,32 @@ describe('AdminService.stats', () => {
     expect(res.users.byDay).toHaveLength(14);
     expect(res.ads.total).toBe(20);
     expect(res.visits.total).toBe(100);
-    // El resto del acumulado son visitas a anuncios ya borrados: el desglose
-    // evita que el total parezca contradecir a "Top anuncios".
+    // The rest of the total are visits to already deleted listings: the
+    // breakdown keeps the total from seeming to contradict "Top anuncios".
     expect(res.visits.liveAds).toBe(60);
     expect(prisma.visit.count.mock.calls[1][0].where.adId).toEqual({ not: null });
     expect(res.siteVisits.total).toBe(200);
-    // 24 franjas horarias.
+    // 24 hourly buckets.
     expect(res.siteVisits.byHour).toHaveLength(24);
     expect(res.siteVisits.byHour.reduce((s, h) => s + h.total, 0)).toBe(1);
-    // Los registros por día solo miran usuarios no admin.
+    // Sign-ups per day only count non-admin users.
     expect(prisma.user.findMany.mock.calls[0][0].where.isAdmin).toBe(false);
   });
 });
 
 describe('AdminService.topAds', () => {
-  it('conserva el orden del ranking y descarta anuncios ya borrados', async () => {
+  it('keeps the ranking order and drops already deleted listings', async () => {
     const { service, prisma } = buildService();
     prisma.visit.groupBy
-      // primer groupBy: totales por anuncio (orden del ranking)
+      // first groupBy: totals per listing (ranking order)
       .mockResolvedValueOnce([
         { adId: 'a1', _count: { _all: 30 } },
         { adId: 'a2', _count: { _all: 20 } },
-        { adId: 'borrado', _count: { _all: 15 } },
+        { adId: 'deleted', _count: { _all: 15 } },
       ])
-      // segundo groupBy: últimos 7 días
+      // second groupBy: last 7 days
       .mockResolvedValueOnce([{ adId: 'a1', _count: { _all: 7 } }]);
-    // 'borrado' no vuelve del findMany -> se excluye del ranking.
+    // 'deleted' is not returned by findMany -> excluded from the ranking.
     prisma.ad.findMany.mockResolvedValue([
       { id: 'a1', createdBy: { id: 'o', name: 'O', email: 'o@t' } },
       { id: 'a2', createdBy: { id: 'o', name: 'O', email: 'o@t' } },

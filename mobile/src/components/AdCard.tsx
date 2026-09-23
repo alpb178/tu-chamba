@@ -9,10 +9,10 @@ export function AdCard({ ad, onPress }: { ad: Ad; onPress: () => void }) {
       onPress={onPress}
       activeOpacity={0.8}
       className={`mb-3 rounded-lg border bg-white p-4 ${
-        // Los destacados por el panel se distinguen por el color del borde.
-        // Ámbar, el mismo criterio que en la web: es el color con el que la
-        // app ya habla de promoción, y el azul marino de `brand` es el color
-        // de todo lo demás.
+        // Ads featured from the panel stand out by their border color.
+        // Amber, same as on the web: it's the color the app already uses for
+        // promotion, while the navy blue of `brand` is the color of
+        // everything else.
         ad.featured ? 'border-accent' : 'border-gray-200'
       }`}
     >

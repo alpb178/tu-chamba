@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Rutas antiguas en español -> nuevas en inglés. Permanentes porque están
-  // indexadas por Google y enlazadas en correos ya enviados (verificación y
-  // restablecimiento conservan el ?token= al redirigir).
+  // Old Spanish routes -> new English ones. Permanent because they are
+  // indexed by Google and linked from emails already sent (verification and
+  // password reset keep the ?token= when redirecting).
   async redirects() {
     return [
       { source: '/anuncios/nuevo', destination: '/listings/new', permanent: true },

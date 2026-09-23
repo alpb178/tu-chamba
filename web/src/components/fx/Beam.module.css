@@ -12,7 +12,7 @@
   transform: translateY(-50%);
   width: var(--meteor-width, 50px);
   height: 2px;
-  /* Degradado del acento ámbar al azul de marca (tokens M3 de tu-chamba). */
+  /* Gradient from the amber accent to the brand blue (tu-chamba M3 tokens). */
   background: linear-gradient(
     90deg,
     rgb(var(--c-secondary-container)),

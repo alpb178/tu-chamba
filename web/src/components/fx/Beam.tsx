@@ -5,9 +5,9 @@ import { useEffect, useRef } from 'react';
 import styles from './Beam.module.css';
 
 /**
- * Meteoro decorativo que cruza un contenedor con un rastro en degradado y se
- * reinicia con parámetros aleatorios. Portado de Iris Natural. El contenedor
- * padre debe ser `relative` y recortar el desbordamiento.
+ * Decorative meteor that crosses a container with a gradient trail and
+ * restarts with random parameters. Ported from Iris Natural. The parent
+ * container must be `relative` and clip its overflow.
  */
 const Beam = ({
   showBeam = true,
@@ -52,7 +52,7 @@ const Beam = ({
     const meteor = meteorRef.current;
     if (!meteor) return;
     meteor.style.animation = 'none';
-    void meteor.offsetWidth; // fuerza un reflow para reiniciar la animación
+    void meteor.offsetWidth; // forces a reflow to restart the animation
     meteor.style.animation = '';
   };
 

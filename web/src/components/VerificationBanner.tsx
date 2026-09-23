@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
-// Aviso persistente para usuarios con sesión y correo sin verificar.
+// Persistent notice for logged-in users with an unverified email.
 export function VerificationBanner() {
   const { user, loading } = useAuth();
   const [sent, setSent] = useState(false);

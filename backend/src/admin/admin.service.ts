@@ -4,22 +4,22 @@ import { PrismaService } from '../prisma/prisma.service';
 import { QueryUserActivityDto } from './dto/query-user-activity.dto';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-// Ventana de la estadística de tiempo de estancia por usuario.
+// Window for the per-user time-on-site statistic.
 const ACTIVITY_DAYS = 30;
-// Un hueco mayor a 30 minutos entre páginas vistas abre una sesión nueva
-// (el criterio estándar de la analítica web).
+// A gap longer than 30 minutes between page views opens a new session
+// (the standard web analytics criterion).
 const SESSION_GAP_MS = 30 * 60 * 1000;
-// Días que cubren las series diarias del dashboard.
+// Days covered by the dashboard's daily series.
 const SERIES_DAYS = 14;
-// Las series se agrupan por día calendario de Bolivia, no UTC.
+// Series are grouped by Bolivian calendar day, not UTC.
 const TIME_ZONE = 'America/La_Paz';
 
-// Día calendario en Bolivia como 'YYYY-MM-DD' (en-CA da ese formato).
+// Calendar day in Bolivia as 'YYYY-MM-DD' (en-CA yields that format).
 function dayKey(date: Date) {
   return date.toLocaleDateString('en-CA', { timeZone: TIME_ZONE });
 }
 
-// Serie de los últimos SERIES_DAYS días con total 0 por defecto.
+// Series for the last SERIES_DAYS days, defaulting to a total of 0.
 function emptySeries() {
   const days = new Map<string, number>();
   for (let i = SERIES_DAYS - 1; i >= 0; i--) {
@@ -37,7 +37,7 @@ function countByDay(rows: { createdAt: Date }[]) {
   return Array.from(days, ([date, total]) => ({ date, total }));
 }
 
-// Distribución por hora del día (0-23) en hora de Bolivia.
+// Distribution by hour of day (0-23) in Bolivian time.
 function countByHour(rows: { createdAt: Date }[]) {
   const totals = Array.from({ length: 24 }, (_, hour) => ({ hour, total: 0 }));
   for (const { createdAt } of rows) {
@@ -57,10 +57,10 @@ function countByHour(rows: { createdAt: Date }[]) {
 export class AdminService {
   constructor(private prisma: PrismaService) {}
 
-  // KPIs del dashboard: usuarios, anuncios por día, visitas a anuncios
-  // y visitas al sitio (páginas vistas del portal).
+  // Dashboard KPIs: users, ads per day, ad visits and site visits
+  // (portal page views).
   async stats() {
-    // Margen de un día extra para no perder el inicio del primer día local.
+    // One extra day of margin so the start of the first local day isn't lost.
     const since = new Date(Date.now() - SERIES_DAYS * DAY_MS);
     const dayAgo = new Date(Date.now() - DAY_MS);
 
@@ -80,7 +80,7 @@ export class AdminService {
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.user.count({ where: { isAdmin: true } }),
-      // Registros por día para el dashboard, siempre sin administradores.
+      // Sign-ups per day for the dashboard, always excluding admins.
       this.prisma.user.findMany({
         where: { isAdmin: false, createdAt: { gte: since } },
         select: { createdAt: true },
@@ -91,10 +91,10 @@ export class AdminService {
         select: { createdAt: true },
       }),
       this.prisma.visit.count(),
-      // Al borrar un anuncio sus visitas se conservan con adId nulo (el
-      // histórico no se pierde), así que el acumulado incluye anuncios que ya
-      // no existen. "Top anuncios" y el contador de las tarjetas solo ven
-      // estas otras: sin el desglose, los dos números parecen contradecirse.
+      // When an ad is deleted its visits are kept with a null adId (history
+      // isn't lost), so the running total includes ads that no longer exist.
+      // "Top anuncios" and the card counters only see the remaining ones:
+      // without the breakdown, the two numbers seem to contradict each other.
       this.prisma.visit.count({ where: { adId: { not: null } } }),
       this.prisma.visit.count({ where: { createdAt: { gte: dayAgo } } }),
       this.prisma.visit.findMany({
@@ -115,7 +115,7 @@ export class AdminService {
     const pageViewsLast7Days = pageViewsByDay
       .slice(-7)
       .reduce((sum, d) => sum + d.total, 0);
-    // Distribución horaria sobre la última semana (ya traída para la serie).
+    // Hourly distribution over the last week (already fetched for the series).
     const weekAgo = new Date(Date.now() - 7 * DAY_MS);
     const pageViewsByHour = countByHour(
       recentPageViews.filter((v) => v.createdAt >= weekAgo),
@@ -130,7 +130,7 @@ export class AdminService {
       ads: { total: totalAds, byDay: countByDay(recentAds) },
       visits: {
         total: totalVisits,
-        // Del acumulado, las que corresponden a anuncios que siguen existiendo.
+        // Of the running total, those belonging to ads that still exist.
         liveAds: visitsOfLiveAds,
         last24h: visits24h,
         last7Days,
@@ -146,10 +146,10 @@ export class AdminService {
     };
   }
 
-  // Actividad de los usuarios registrados (excluye administradores): última
-  // visita al portal y tiempo de estancia, calculados sobre las páginas
-  // vistas que llegaron con sesión iniciada. Las sesiones se arman por
-  // huecos de inactividad (SESSION_GAP_MS) en los últimos ACTIVITY_DAYS días.
+  // Activity of registered users (excluding admins): last portal visit and
+  // time on site, computed from page views that arrived with a logged-in
+  // session. Sessions are split by inactivity gaps (SESSION_GAP_MS) over the
+  // last ACTIVITY_DAYS days.
   async userActivity(query: QueryUserActivityDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
@@ -161,8 +161,8 @@ export class AdminService {
       where.OR = [{ name: contains }, { email: contains }];
     }
 
-    // La última visita ordena el listado, así que se resuelve para todos
-    // los usuarios del filtro antes de paginar (son pocos campos).
+    // The last visit sorts the list, so it's resolved for every user matching
+    // the filter before paginating (it's only a few fields).
     const users = await this.prisma.user.findMany({
       where,
       select: { id: true, name: true, email: true, phone: true, createdAt: true },
@@ -179,12 +179,12 @@ export class AdminService {
     const sorted = [...users].sort((a, b) => {
       const la = lastByUser.get(a.id)?.getTime() ?? 0;
       const lb = lastByUser.get(b.id)?.getTime() ?? 0;
-      // Sin visitas van al final, ordenados por registro más reciente.
+      // Users without visits go last, sorted by most recent sign-up.
       return lb - la || b.createdAt.getTime() - a.createdAt.getTime();
     });
     const pageUsers = sorted.slice((page - 1) * limit, page * limit);
 
-    // Solo la página pedida carga sus páginas vistas para sesionizar.
+    // Only the requested page loads its page views for sessionizing.
     const views = await this.prisma.pageView.findMany({
       where: {
         userId: { in: pageUsers.map((u) => u.id) },
@@ -235,8 +235,8 @@ export class AdminService {
     };
   }
 
-  // Anuncios más clickeados: ranking por visitas al detalle. Las visitas
-  // de anuncios borrados quedan con adId null y no entran al ranking.
+  // Most clicked ads: ranking by detail-page visits. Visits to deleted ads
+  // keep a null adId and are left out of the ranking.
   async topAds(limit = 20) {
     const totals = await this.prisma.visit.groupBy({
       by: ['adId'],
@@ -267,7 +267,7 @@ export class AdminService {
     const adById = new Map(ads.map((a) => [a.id, a]));
     const last7ByAd = new Map(recent.map((r) => [r.adId, r._count._all]));
 
-    // Se conserva el orden del groupBy (más visitados primero).
+    // Keeps the groupBy order (most visited first).
     return totals.flatMap((t) => {
       const ad = adById.get(t.adId as string);
       if (!ad) return [];
@@ -281,8 +281,8 @@ export class AdminService {
     });
   }
 
-  // Clics en las tarjetas de "Sitios de interés" (empresas del Grupo CorpSC),
-  // agregados por empresa: total de 30 días y de 7 días, más visitados primero.
+  // Clicks on the "Sitios de interés" cards (Grupo CorpSC companies),
+  // aggregated per company: 30-day and 7-day totals, most visited first.
   async siteClicks() {
     const since30 = new Date(Date.now() - 30 * DAY_MS);
     const since7 = new Date(Date.now() - 7 * DAY_MS);
@@ -299,7 +299,7 @@ export class AdminService {
         where: { createdAt: { gte: since7 } },
         _count: { _all: true },
       }),
-      // Nombre visible más reciente registrado para cada empresa.
+      // Most recent display name recorded for each company.
       this.prisma.siteClick.groupBy({
         by: ['company'],
         _max: { label: true },

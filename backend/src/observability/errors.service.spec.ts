@@ -17,7 +17,7 @@ function buildService() {
 }
 
 describe('ErrorsService.record', () => {
-  it('recorta el mensaje y el stack, y no propaga fallos', async () => {
+  it('truncates the message and stack, and does not propagate failures', async () => {
     const { service, prisma } = buildService();
     await service.record('api', 'x'.repeat(2000), {
       stack: 's'.repeat(5000),
@@ -30,7 +30,7 @@ describe('ErrorsService.record', () => {
     expect(data.severity).toBe(ErrorSeverity.CRITICAL);
   });
 
-  it('es best-effort: si create lanza, no relanza', async () => {
+  it('is best-effort: if create throws, it does not rethrow', async () => {
     const { service, prisma } = buildService();
     prisma.errorLog.create.mockRejectedValue(new Error('db down'));
     await expect(service.record('api', 'boom')).resolves.toBeUndefined();
@@ -38,7 +38,7 @@ describe('ErrorsService.record', () => {
 });
 
 describe('ErrorsService.findAll', () => {
-  it('aplica filtros de severidad, estado, servicio y rango de fechas', async () => {
+  it('applies severity, status, service and date range filters', async () => {
     const { service, prisma } = buildService();
     await service.findAll({
       severity: ErrorSeverity.ERROR,
@@ -59,7 +59,7 @@ describe('ErrorsService.findAll', () => {
     expect(args.take).toBe(5);
   });
 
-  it('devuelve totales, pendientes y paginación', async () => {
+  it('returns totals, pending count and pagination', async () => {
     const { service, prisma } = buildService();
     prisma.errorLog.findMany.mockResolvedValue([{ id: 'e1' }]);
     prisma.errorLog.count
@@ -71,7 +71,7 @@ describe('ErrorsService.findAll', () => {
 });
 
 describe('ErrorsService.resolve / remove', () => {
-  it('resolve marca RESOLVED', async () => {
+  it('resolve marks RESOLVED', async () => {
     const { service, prisma } = buildService();
     prisma.errorLog.update.mockResolvedValue({ id: 'e1', status: 'RESOLVED' });
     await service.resolve('e1');
@@ -81,14 +81,14 @@ describe('ErrorsService.resolve / remove', () => {
     });
   });
 
-  it('remove borra una entrada', async () => {
+  it('remove deletes an entry', async () => {
     const { service, prisma } = buildService();
     prisma.errorLog.delete.mockResolvedValue({});
     await expect(service.remove('e1')).resolves.toEqual({ deleted: true });
     expect(prisma.errorLog.delete).toHaveBeenCalledWith({ where: { id: 'e1' } });
   });
 
-  it('removeMany borra por lotes', async () => {
+  it('removeMany deletes in bulk', async () => {
     const { service, prisma } = buildService();
     prisma.errorLog.deleteMany.mockResolvedValue({ count: 3 });
     await expect(service.removeMany(['e1', 'e2', 'e3'])).resolves.toEqual({
@@ -99,7 +99,7 @@ describe('ErrorsService.resolve / remove', () => {
     });
   });
 
-  it('removeAll vacía el registro', async () => {
+  it('removeAll clears the log', async () => {
     const { service, prisma } = buildService();
     prisma.errorLog.deleteMany.mockResolvedValue({ count: 7 });
     await expect(service.removeAll()).resolves.toEqual({ deleted: 7 });

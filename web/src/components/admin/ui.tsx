@@ -31,8 +31,8 @@ export function Button({
   );
 }
 
-// Acción de fila con solo icono: el nombre de la acción va en el tooltip
-// (title) y en aria-label para lectores de pantalla.
+// Icon-only row action: the action name goes in the tooltip (title) and in
+// aria-label for screen readers.
 export function IconButton({
   icon,
   label,
@@ -64,7 +64,7 @@ export function IconButton({
   );
 }
 
-// Checkbox de selección de filas (borrado por lotes) en las tablas.
+// Row selection checkbox (bulk delete) in tables.
 export function SelectCheckbox({
   label,
   ...props
@@ -97,7 +97,7 @@ export function FormField({ label, children }: { label: string; children: ReactN
   );
 }
 
-// Chips de jornada con los contenedores de la paleta (ámbar/verde/azul).
+// Schedule chips using the palette containers (amber/green/blue).
 const BADGE_COLORS: Record<JobType, string> = {
   DIARIA: 'bg-secondary-container text-on-secondary-container',
   TIEMPO_COMPLETO: 'bg-tertiary-container text-on-tertiary-container',
@@ -105,7 +105,7 @@ const BADGE_COLORS: Record<JobType, string> = {
   POR_CONTRATO: 'bg-secondary-container text-on-secondary-container',
   PASANTIA: 'bg-brand-light text-primary',
   FREELANCE: 'bg-tertiary-container text-on-tertiary-container',
-  // Sin jornada declarada: chip neutro, no compite con las jornadas reales.
+  // No stated schedule: neutral chip, doesn't compete with real schedules.
   A_CONVENIR: 'bg-surface-variant text-on-surface-variant',
 };
 
@@ -117,9 +117,8 @@ export function Badge({ type }: { type: JobType }) {
   );
 }
 
-// Estado efectivo del anuncio marcado con icono + etiqueta (mismo criterio en
-// todas las tablas): Activo (check verde), Vencido (reloj ámbar), Dado de baja
-// (bloqueo gris).
+// Effective ad status shown with icon + label (same criteria in every table):
+// "Activo" (green check), "Vencido" (amber clock), "Dado de baja" (grey lock).
 const STATUS_ICON: Record<EffectiveStatus, string> = {
   ACTIVO: 'check_circle',
   VENCIDO: 'schedule',
@@ -201,10 +200,10 @@ export function DataTable({
   );
 }
 
-// Tabla estándar del panel: encapsula los cuatro estados de una tabla con
-// datos remotos. Primera carga -> skeleton; recarga con datos previos ->
-// tabla atenuada (transición suave, sin parpadeo); error -> mensaje; sin
-// filas -> una fila de "sin datos" dentro de la propia tabla.
+// Standard panel table: encapsulates the four states of a table with remote
+// data. First load -> skeleton; reload with previous data -> dimmed table
+// (smooth transition, no flicker); error -> message; no rows -> a "no data"
+// row inside the table itself.
 export function AdminTable({
   headers,
   loading = false,
@@ -250,7 +249,7 @@ export function AdminTable({
   );
 }
 
-// Con href, el KPI es un acceso directo a la sección a la que pertenece.
+// With href, the KPI is a shortcut to the section it belongs to.
 export function StatCard({
   label,
   value,
@@ -284,13 +283,13 @@ export function StatCard({
   );
 }
 
-// ——— Skeletons: siluetas de carga con pulso, en vez de "Cargando..." ———
+// ——— Skeletons: pulsing loading silhouettes instead of "Cargando..." ———
 
 export function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse rounded bg-surface-container-high ${className}`} />;
 }
 
-// Tabla en carga: mismas cabeceras reales, filas con siluetas.
+// Loading table: same real headers, rows with silhouettes.
 export function TableSkeleton({
   headers,
   rows = 6,

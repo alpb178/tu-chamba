@@ -9,7 +9,7 @@ const SCRIPT_ID = 'google-gsi-client';
 
 declare global {
   interface Window {
-    // Google Identity Services (script cargado en runtime).
+    // Google Identity Services (script loaded at runtime).
     google?: {
       accounts: {
         id: {
@@ -21,11 +21,11 @@ declare global {
   }
 }
 
-// Botón "Continuar con Google". Si la cuenta no existe se crea al momento
-// (sin más datos: el teléfono se completa después desde el perfil).
-// El Client ID vive solo en el API (GET /auth/google-client): se consulta
-// en runtime, sin variable de entorno en el frontend.
-// `next`: ruta a la que volver tras entrar (p. ej. el anuncio compartido).
+// "Continuar con Google" button. If the account doesn't exist it is created on
+// the spot (no extra data: the phone is filled in later from the profile).
+// The Client ID lives only in the API (GET /auth/google-client): it is fetched
+// at runtime, with no environment variable in the frontend.
+// `next`: route to return to after signing in (e.g. the shared ad).
 export function GoogleSignIn({ next = '/' }: { next?: string }) {
   const { loginWithGoogle } = useAuth();
   const router = useRouter();
@@ -33,7 +33,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
   const [clientId, setClientId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Referencia estable para el callback de GIS (se inicializa una sola vez).
+  // Stable reference for the GIS callback (initialized only once).
   const onCredentialRef = useRef<(token: string) => void>(() => {});
   onCredentialRef.current = async (token: string) => {
     setError(null);
@@ -45,7 +45,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
     }
   };
 
-  // El Client ID se pide al API: una sola configuración para todo.
+  // The Client ID is requested from the API: a single config for everything.
   useEffect(() => {
     api<{ clientId: string | null }>('/auth/google-client')
       .then((r) => setClientId(r.clientId))
@@ -66,7 +66,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
         theme: 'outline',
         size: 'large',
         text: 'continue_with',
-        // Máximo que permite GIS: cubre el botón propio que tiene debajo.
+        // Maximum GIS allows: covers our own button underneath.
         width: 400,
       });
       return true;
@@ -94,9 +94,9 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
         <div className="h-px flex-1 bg-surface-container-high" />
       </div>
 
-      {/* Botón propio, siempre visible. Con el OAuth configurado, el botón
-          real de Google se superpone invisible y captura el clic; sin
-          configurar, se explica en vez de esconder la opción. */}
+      {/* Our own button, always visible. With OAuth configured, the real
+          Google button is overlaid invisibly and captures the click; when
+          not configured, we explain why instead of hiding the option. */}
       <div className="relative">
         <button
           type="button"

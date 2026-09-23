@@ -24,7 +24,7 @@ import {
 import { CustomSelect } from '@/components/admin/CustomSelect';
 import { useSelection } from '@/lib/admin/useSelection';
 
-// El panel se refresca solo, como un centro de monitoreo.
+// The panel refreshes itself, like a monitoring center.
 const REFRESH_MS = 15_000;
 
 const SERVICE_LABEL: Record<string, string> = {
@@ -73,7 +73,7 @@ export default function ActivityPage() {
   );
 }
 
-// ——— Estado de los servicios ———
+// ——— Service status ———
 
 function ServicesSection() {
   const [services, setServices] = useState<ServiceStatus[] | null>(null);
@@ -132,7 +132,7 @@ function ServicesSection() {
   );
 }
 
-// ——— Rendimiento ———
+// ——— Performance ———
 
 function MetricsSection() {
   const [m, setM] = useState<PerformanceMetrics | null>(null);
@@ -206,7 +206,7 @@ function MetricsSection() {
   );
 }
 
-// ——— Registro de errores ———
+// ——— Error log ———
 
 function ErrorsSection() {
   const [data, setData] = useState<(Paginated<ErrorLog> & { pending: number }) | null>(null);

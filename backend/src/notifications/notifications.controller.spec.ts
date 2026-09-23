@@ -4,8 +4,8 @@ function build() {
   const notifications = { findMine: jest.fn(), markAllRead: jest.fn(), markRead: jest.fn() };
   return { c: new NotificationsController(notifications as never), notifications };
 }
-describe('NotificationsController (delegación)', () => {
-  it('delega listar/marcar', () => {
+describe('NotificationsController (delegation)', () => {
+  it('delegates list/mark', () => {
     const { c, notifications } = build();
     c.findMine(u); expect(notifications.findMine).toHaveBeenCalledWith(u);
     c.markAllRead(u); expect(notifications.markAllRead).toHaveBeenCalledWith('u1');

@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 
-// Envío de correo. Usa SMTP si está configurado (SMTP_HOST/PORT/USER/PASS);
-// si no, registra el contenido en consola (útil en desarrollo, sin proveedor).
+// Email sending. Uses SMTP if configured (SMTP_HOST/PORT/USER/PASS);
+// otherwise logs the content to the console (handy in dev, no provider).
 @Injectable()
 export class MailService {
   private readonly logger = new Logger('MailService');
@@ -24,12 +24,12 @@ export class MailService {
     return process.env.SMTP_FROM ?? 'Tu Chamba <no-reply@tuchamba.com>';
   }
 
-  // Estado del servicio para el panel de Actividad del Sitio:
-  // sin SMTP configurado -> 'warning'; con SMTP se verifica la conexión.
+  // Service status for the Site Activity panel:
+  // no SMTP configured -> 'warning'; with SMTP the connection is verified.
   async healthCheck(): Promise<'up' | 'warning' | 'down'> {
     if (!this.transporter) return 'warning';
     try {
-      // verify() abre la conexión SMTP; con tope para no colgar el panel.
+      // verify() opens the SMTP connection; capped so it doesn't hang the panel.
       await Promise.race([
         this.transporter.verify(),
         new Promise((_, reject) =>
@@ -44,7 +44,7 @@ export class MailService {
 
   async send(to: string, subject: string, html: string) {
     if (!this.transporter) {
-      // Fallback de desarrollo: sin SMTP, dejamos el correo en el log.
+      // Development fallback: without SMTP, we leave the email in the log.
       this.logger.warn(
         `SMTP no configurado. Correo para ${to} — ${subject}\n${html}`,
       );

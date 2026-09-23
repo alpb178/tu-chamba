@@ -7,14 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Los @map/@@map apuntan a los nombres originales en español de la BD:
-// el código va en inglés pero la base de datos no cambia (ver
-// docs/MIGRACION-CODIGO-INGLES.md). Los VALORES de los enums tampoco se
-// migran: son códigos de dominio persistidos y visibles en URLs del portal.
+// The @map/@@map entries point to the original Spanish names in the DB:
+// the code is in English but the database does not change (see the English
+// code migration in git history, commit 260291d). Enum VALUES are not
+// migrated either: they are persisted domain codes visible in portal URLs.
 
-// A_CONVENIR cubre las ofertas que no declaran jornada (frecuente en las
-// importaciones de prensa): antes se guardaban como TIEMPO_COMPLETO, que era
-// un dato inventado.
+// A_CONVENIR covers listings that do not state a schedule (common in press
+// imports): they used to be stored as TIEMPO_COMPLETO, which was made-up
+// data.
 enum JobType {
   DIARIA
   TIEMPO_COMPLETO
@@ -27,7 +27,7 @@ enum JobType {
   @@map("TipoJornada")
 }
 
-// Los 9 departamentos de Bolivia (para filtrar por zona).
+// Bolivia's 9 departments (for filtering by area).
 enum Department {
   LA_PAZ
   SANTA_CRUZ
@@ -42,7 +42,7 @@ enum Department {
   @@map("Departamento")
 }
 
-// Rubros frecuentes en el mercado de "chamba" boliviano.
+// Common categories in the Bolivian "chamba" (odd-job) market.
 enum Category {
   VENTAS
   GASTRONOMIA
@@ -64,8 +64,8 @@ enum Category {
   @@map("Categoria")
 }
 
-// VENCIDO no se persiste: un anuncio con expiresAt en el pasado se considera
-// vencido al leer, y la limpieza horaria (AdsCleanupService) lo elimina.
+// VENCIDO is not persisted: an ad with expiresAt in the past is treated as
+// expired on read, and the hourly cleanup (AdsCleanupService) deletes it.
 enum AdStatus {
   ACTIVO
   DADO_DE_BAJA
@@ -99,7 +99,7 @@ enum NotificationType {
   @@map("TipoNotificacion")
 }
 
-// Eventos que registra la traza del sistema (auditoría, solo lectura).
+// Events recorded by the system audit trail (auditing, read-only).
 enum TraceType {
   LOGIN
   LOGOUT
@@ -125,7 +125,7 @@ enum TraceType {
   TRACE_DELETED
 }
 
-// Resultado de la operación auditada (los intentos fallidos también se trazan).
+// Outcome of the audited operation (failed attempts are logged too).
 enum TraceResult {
   OK
   ERROR
@@ -135,12 +135,12 @@ model User {
   id                 String    @id @default(uuid())
   email              String    @unique
   emailVerified      Boolean   @default(false)
-  // Nullable: las cuentas creadas con Google no tienen contraseña local.
+  // Nullable: accounts created with Google have no local password.
   password           String?
   name               String    @map("nombre")
   phone              String?   @map("telefono")
   googleId           String?   @unique
-  // Único distintivo entre usuarios: acceso al panel de administración.
+  // The only distinction between users: access to the admin panel.
   isAdmin            Boolean   @default(false) @map("esAdmin")
   ads                Ad[]
   interests          Interest[]
@@ -155,7 +155,7 @@ model User {
   updatedAt          DateTime  @updatedAt
 }
 
-// Token de verificación de correo (un solo uso, con expiración).
+// Email verification token (single use, with expiry).
 model VerificationToken {
   id        String   @id @default(uuid())
   token     String   @unique
@@ -167,7 +167,7 @@ model VerificationToken {
   @@index([userId])
 }
 
-// Token para restablecer la contraseña (un solo uso, con expiración).
+// Password reset token (single use, with expiry).
 model PasswordResetToken {
   id        String   @id @default(uuid())
   token     String   @unique
@@ -182,37 +182,37 @@ model PasswordResetToken {
 
 model Ad {
   id           String    @id @default(uuid())
-  // Título corto del puesto. Obligatorio; los anuncios previos a la migración
-  // se rellenaron con la primera oración de su descripción.
+  // Short job title. Required; ads predating the migration were backfilled
+  // with the first sentence of their description.
   title        String    @map("titulo")
   description  String    @map("descripcion")
-  // Requisitos del candidato, separados de la descripción del puesto.
+  // Candidate requirements, kept separate from the job description.
   requirements String?   @map("requisitos")
-  // Nullable solo por anuncios previos a la migración; la API lo exige al crear.
+  // Nullable only because of pre-migration ads; the API requires it on create.
   location     String?   @map("ubicacion")
-  // Texto libre para orientar al postulante ("frente al mercado Los Pozos"):
-  // a diferencia de location no se usa para filtrar, solo se muestra.
+  // Free text to guide the applicant ("frente al mercado Los Pozos"): unlike
+  // location it is not used for filtering, only displayed.
   locationReference String? @map("referenciaUbicacion")
-  // Departamento y rubro para filtrar (nullable por datos previos a la migración).
+  // Department and category for filtering (nullable due to pre-migration data).
   department   Department? @map("departamento")
   category     Category?   @map("categoria")
-  // Coordenadas del pin elegido en el mapa (opcional).
+  // Coordinates of the pin chosen on the map (optional).
   latitude     Float?    @map("latitud")
   longitude    Float?    @map("longitud")
   schedule     String?   @map("horario")
-  // Nullable: la importación por CSV permite ofertas sin salario ("a convenir").
-  // Con salaryMax el par es un rango ("Bs 3.500 a 4.500"); solo, es un monto
-  // fijo. salary siempre es el extremo inferior del rango.
+  // Nullable: the CSV import allows listings without a salary ("a convenir").
+  // With salaryMax the pair is a range ("Bs 3.500 a 4.500"); alone, it is a
+  // fixed amount. salary is always the lower bound of the range.
   salary       Decimal?  @map("salario") @db.Decimal(12, 2)
   salaryMax    Decimal?  @map("salarioMax") @db.Decimal(12, 2)
-  // Teléfono principal (el que se muestra primero y usa WhatsApp) y los
-  // adicionales: las ofertas de prensa suelen publicar dos o tres números.
+  // Main phone (shown first and used for WhatsApp) and the extra ones: press
+  // listings often publish two or three numbers.
   phone        String    @map("telefono")
   extraPhones  String[]  @default([]) @map("telefonosExtra")
   jobType      JobType   @map("tipoJornada")
   status       AdStatus  @default(ACTIVO) @map("estado")
-  // Prioridad manual del panel: el mayor va primero en el listado público y en
-  // el panel, por encima de cualquier criterio de relevancia. 0 = normal.
+  // Manual priority set from the panel: the highest goes first in the public
+  // listing and in the panel, above any relevance criteria. 0 = normal.
   priority     Int       @default(0) @map("prioridad")
   durationDays Int       @default(3) @map("duracionDias")
   expiresAt    DateTime  @map("expiraEn")
@@ -229,8 +229,8 @@ model Ad {
   @@map("Anuncio")
 }
 
-// Reseña de un usuario sobre un anuncio ajeno (máx. una por anuncio). El
-// dueño del anuncio se guarda desnormalizado para su calificación global.
+// A user's review of someone else's ad (at most one per ad). The ad owner is
+// stored denormalized for their overall rating.
 model Review {
   id        String   @id @default(uuid())
   rating    Int
@@ -239,8 +239,8 @@ model Review {
   authorId  String   @map("autorId")
   owner     User     @relation("ReviewsRecibidas", fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId   String   @map("duenoId")
-  // SetNull: al eliminarse el anuncio (limpieza de vencidos) la reseña se
-  // desvincula pero se conserva — la calificación del dueño no se pierde.
+  // SetNull: when the ad is deleted (expired cleanup) the review is unlinked
+  // but kept — the owner's rating is not lost.
   ad        Ad?      @relation(fields: [adId], references: [id], onDelete: SetNull)
   adId      String?  @map("anuncioId")
   createdAt DateTime @default(now())
@@ -249,16 +249,16 @@ model Review {
   @@unique([authorId, adId])
 }
 
-// Interés de un usuario en un anuncio ajeno: se registra al contactar
-// (Chatear/Llamar) y alimenta "anuncios de tu interés" y los conteos
-// que ve el dueño.
+// A user's interest in someone else's ad: recorded on contact
+// (Chatear/Llamar) and feeds "anuncios de tu interés" and the counts the
+// owner sees.
 model Interest {
   id        String   @id @default(uuid())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @map("usuarioId")
   ad        Ad       @relation(fields: [adId], references: [id], onDelete: Cascade)
   adId      String   @map("anuncioId")
-  // true cuando además contactó (Chatear/Llamar); dispara el aviso al dueño.
+  // true when they also made contact (Chatear/Llamar); triggers the owner notice.
   contacted Boolean  @default(false) @map("contacto")
   createdAt DateTime @default(now())
 
@@ -267,9 +267,9 @@ model Interest {
   @@map("Interes")
 }
 
-// Suscripción de un TRABAJADOR a nuevas ofertas por criterio. Un campo null
-// significa "cualquiera". Reemplaza el aviso masivo: solo se notifica a los
-// trabajadores cuya alerta coincide con el anuncio recién publicado.
+// A TRABAJADOR's subscription to new listings by criteria. A null field means
+// "any". Replaces the mass notice: only workers whose alert matches the newly
+// published ad are notified.
 model JobAlert {
   id         String      @id @default(uuid())
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -283,8 +283,8 @@ model JobAlert {
   @@map("AlertaEmpleo")
 }
 
-// Notificación in-app para usuarios autenticados. El vencimiento de anuncios
-// se genera al leer (lazy, sin cron); el resto en el momento del evento.
+// In-app notification for authenticated users. Ad expiry notices are generated
+// on read (lazy, no cron); the rest at the time of the event.
 model Notification {
   id        String           @id @default(uuid())
   type      NotificationType @map("tipo")
@@ -300,8 +300,8 @@ model Notification {
   @@map("Notificacion")
 }
 
-// Reporte de spam/abuso sobre un anuncio. La visibilidad del anuncio
-// solo cambia por decisión del ADMIN (no hay auto-ocultado).
+// Spam/abuse report on an ad. The ad's visibility only changes by ADMIN
+// decision (there is no auto-hiding).
 model Report {
   id         String       @id @default(uuid())
   reason     ReportReason @map("motivo")
@@ -317,9 +317,8 @@ model Report {
   @@map("Reporte")
 }
 
-// Visita a la página de detalle de un anuncio (registrada desde el portal).
-// La relación es opcional (SetNull) para que las métricas de visitas
-// sobrevivan al borrado físico del anuncio.
+// Visit to an ad's detail page (recorded from the portal). The relation is
+// optional (SetNull) so visit metrics survive the ad's hard delete.
 model Visit {
   id        String   @id @default(uuid())
   ad        Ad?      @relation(fields: [adId], references: [id], onDelete: SetNull)
@@ -330,11 +329,11 @@ model Visit {
   @@index([adId])
 }
 
-// Página vista en el portal (visita general al sitio, no solo a anuncios).
-// userId se guarda solo si la visita llegó con sesión iniciada: alimenta la
-// estadística de última visita y tiempo de estancia por usuario registrado.
-// Sin FK a propósito: la métrica sobrevive al borrado del usuario y las
-// visitas anónimas siguen siendo anónimas (userId null).
+// Page view on the portal (general site visit, not only to ads). userId is
+// stored only if the visit came with a signed-in session: it feeds the
+// last-visit and time-on-site stats per registered user. No FK on purpose:
+// the metric survives the user's deletion and anonymous visits stay
+// anonymous (userId null).
 model PageView {
   id        String   @id @default(uuid())
   path      String
@@ -345,15 +344,15 @@ model PageView {
   @@index([userId, createdAt])
 }
 
-// Clic en una tarjeta de "Sitios de interés" (empresas del Grupo CorpSC en la
-// home). Se registra desde el portal cuando el visitante abre el sitio de una
-// empresa hermana; alimenta la tabla de accesos del panel admin. Anónimo: solo
-// guardamos qué sitio se abrió y cuándo (sin datos personales).
+// Click on a "Sitios de interés" card (Grupo CorpSC companies on the home
+// page). Recorded from the portal when the visitor opens a sister company's
+// site; feeds the access table in the admin panel. Anonymous: we only store
+// which site was opened and when (no personal data).
 model SiteClick {
   id        String   @id @default(uuid())
-  // Identificador de la empresa (slug de lib/companies), p. ej. "corpsc".
+  // Company identifier (slug from lib/companies), e.g. "corpsc".
   company   String
-  // Nombre visible en el momento del clic (desnormalizado para el panel).
+  // Display name at click time (denormalized for the panel).
   label     String?
   createdAt DateTime @default(now())
 
@@ -361,10 +360,10 @@ model SiteClick {
   @@index([company])
 }
 
-// Traza del sistema: eventos relevantes para auditoría. El actor se
-// denormaliza (email) para que la traza sobreviva al borrado del usuario.
-// IP y user-agent se capturan automáticamente del request (ver
-// RequestContextMiddleware); resource apunta al recurso afectado
+// System audit trail: events relevant for auditing. The actor is
+// denormalized (email) so the trail survives the user's deletion.
+// IP and user-agent are captured automatically from the request (see
+// RequestContextMiddleware); resource points to the affected resource
 // ("ad:<id>", "user:<id>", "review:<id>", "report:<id>").
 model Trace {
   id          String      @id @default(uuid())
@@ -374,13 +373,13 @@ model Trace {
   actorEmail  String?
   ip          String?
   userAgent   String?
-  // País (ISO-2) resuelto por geo-IP o cabecera de CDN, y fuente/origen del
-  // request (utm_source o el host del Referer). Ambos opcionales.
+  // Country (ISO-2) resolved via geo-IP or CDN header, and the request's
+  // source/origin (utm_source or the Referer host). Both optional.
   country     String?
   source      String?
   resource    String?
   result      TraceResult @default(OK)
-  // Milisegundos desde el inicio del request hasta que ocurrió el evento.
+  // Milliseconds from the start of the request until the event occurred.
   durationMs  Int?
   createdAt   DateTime    @default(now())
 
@@ -389,7 +388,7 @@ model Trace {
   @@index([actorEmail])
 }
 
-// ——— Registro de errores del sistema (panel Actividad del Sitio) ———
+// ——— System error log ("Actividad del Sitio" panel) ———
 
 enum ErrorSeverity {
   WARNING
@@ -402,11 +401,11 @@ enum ErrorStatus {
   RESOLVED
 }
 
-// Errores capturados por el filtro global (5xx) y los procesos en segundo
-// plano. El admin puede marcarlos como resueltos desde el panel.
+// Errors captured by the global filter (5xx) and background processes. The
+// admin can mark them as resolved from the panel.
 model ErrorLog {
   id        String        @id @default(uuid())
-  // Origen: "api", "cron", "mail"...
+  // Source: "api", "cron", "mail"...
   service   String
   message   String
   stack     String?

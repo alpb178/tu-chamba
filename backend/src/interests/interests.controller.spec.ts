@@ -4,8 +4,8 @@ function build() {
   const interests = { register: jest.fn(), findMine: jest.fn(), status: jest.fn(), remove: jest.fn() };
   return { c: new InterestsController(interests as never), interests };
 }
-describe('InterestsController (delegación)', () => {
-  it('delega registrar/listar/estado/quitar', () => {
+describe('InterestsController (delegation)', () => {
+  it('delegates register/list/status/remove', () => {
     const { c, interests } = build();
     c.register({ adId: 'a1', contact: true } as never, u); expect(interests.register).toHaveBeenCalledWith('a1', u, true);
     c.findMine(u); expect(interests.findMine).toHaveBeenCalledWith('u1');

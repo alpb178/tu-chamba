@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { cleanRows } from './clean';
 
-// Construye una fila como la produce parseAdsCsv.
+// Builds a row the way parseAdsCsv produces it.
 function row(values: Record<string, unknown>) {
   return { line: 2, values, errors: [] } as never;
 }
 
-describe('cleanRows (preprocesado de anuncios)', () => {
-  it('quita el tramo con teléfono conservando lo demás de la oración', () => {
+describe('cleanRows (listing preprocessing)', () => {
+  it('removes the phone segment while keeping the rest of the sentence', () => {
     const res = cleanRows([
       row({ description: 'Se busca vendedor, llamar al 71111111', phone: '71111111' }),
     ]);
@@ -15,16 +15,17 @@ describe('cleanRows (preprocesado de anuncios)', () => {
     expect(res.rows[0].descriptionModified).toBe(true);
   });
 
-  it('marca para eliminar la fila que queda sin descripción tras limpiar', () => {
+  it('flags for removal a row left without a description after cleaning', () => {
     const res = cleanRows([
       row({ description: 'Escribe al wsp 70000000', phone: '70000000' }),
     ]);
-    // Si toda la descripción era contacto, queda vacía -> motivo de eliminación.
+    // If the whole description was contact info, it ends up empty -> removal
+    // reason.
     expect(res.rows[0].removedReasons.length).toBeGreaterThan(0);
     expect(res.stats.removed).toBe(1);
   });
 
-  it('una descripción limpia no se marca como modificada', () => {
+  it('a clean description is not flagged as modified', () => {
     const res = cleanRows([
       row({ description: 'Atención al cliente en tienda', phone: '70012345' }),
     ]);
@@ -32,12 +33,12 @@ describe('cleanRows (preprocesado de anuncios)', () => {
     expect(res.rows[0].removedReasons).toHaveLength(0);
   });
 
-  it('la fila sin teléfono se marca para eliminar', () => {
+  it('a row without a phone is flagged for removal', () => {
     const res = cleanRows([row({ description: 'Vendedor de tienda' })]);
     expect(res.rows[0].removedReasons).toContain('Sin teléfono de contacto');
   });
 
-  it('cuenta el total de filas procesadas', () => {
+  it('counts the total of processed rows', () => {
     const res = cleanRows([
       row({ description: 'A', phone: '70012345' }),
       row({ description: 'B', phone: '70012346' }),

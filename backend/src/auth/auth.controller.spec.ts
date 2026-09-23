@@ -8,8 +8,8 @@ function build() {
   };
   return { c: new AuthController(auth as never), auth };
 }
-describe('AuthController (delegación)', () => {
-  it('delega el ciclo de autenticación', () => {
+describe('AuthController (delegation)', () => {
+  it('delegates the authentication lifecycle', () => {
     const { c, auth } = build();
     c.register({} as never); expect(auth.register).toHaveBeenCalled();
     c.login({} as never); expect(auth.login).toHaveBeenCalled();
@@ -21,7 +21,7 @@ describe('AuthController (delegación)', () => {
     c.resend(u); expect(auth.resendVerification).toHaveBeenCalledWith('u1');
     c.me(u); expect(auth.me).toHaveBeenCalledWith('u1');
   });
-  it('googleClient devuelve el clientId del entorno o null', () => {
+  it('googleClient returns the clientId from the environment or null', () => {
     const { c } = build();
     const res = c.googleClient();
     expect(res).toHaveProperty('clientId');

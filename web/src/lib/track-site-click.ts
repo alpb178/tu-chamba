@@ -1,15 +1,15 @@
 import { api } from './api';
 import type { Company } from './companies';
 
-// Registra el acceso a un sitio del Grupo CorpSC (métrica "Sitios de interés"
-// del panel admin). La consumen la sección de tarjetas de la home y el
-// cintillo superior. Best-effort: los enlaces abren en pestaña nueva, así que
-// el fetch alcanza a completarse; si falla, no afecta la navegación.
+// Records a click on a Grupo CorpSC site (the admin panel's "Sitios de
+// interés" metric). Used by the home page card section and the top ticker.
+// Best-effort: links open in a new tab, so the fetch has time to complete; if
+// it fails, navigation is unaffected.
 export function trackSiteClick(company: Company) {
   api('/visits', {
     method: 'POST',
     body: JSON.stringify({ company: company.slug, label: company.name }),
   }).catch(() => {
-    /* noop: el tracking es best-effort */
+    /* noop: tracking is best-effort */
   });
 }

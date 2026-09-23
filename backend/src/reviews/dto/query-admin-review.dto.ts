@@ -9,7 +9,7 @@ import {
   Min,
 } from 'class-validator';
 
-// Filtros del reporte de reseñas del panel admin.
+// Filters for the admin panel's reviews report.
 export class QueryAdminReviewDto {
   @ApiPropertyOptional({ description: 'Comentario, autor o calificado (parcial)' })
   @IsOptional()

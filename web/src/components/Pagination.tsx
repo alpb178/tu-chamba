@@ -2,10 +2,9 @@
 
 import { Icon } from './Icon';
 
-// Paginación numerada (estilo "card footer with page buttons"): a la
-// izquierda el rango mostrado y a la derecha los botones de página con
-// puntos suspensivos para saltos grandes. Solo se usa en escritorio; en
-// móvil el paso de página es por scroll.
+// Numbered pagination ("card footer with page buttons" style): the shown
+// range on the left and the page buttons on the right, with ellipses for
+// large jumps. Only used on desktop; on mobile paging happens via scroll.
 function pageItems(page: number, totalPages: number): (number | '…')[] {
   if (totalPages <= 7) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);

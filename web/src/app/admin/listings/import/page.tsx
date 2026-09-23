@@ -48,8 +48,8 @@ const CLEAN_HEADERS = [
   '',
 ];
 
-// Los teléfonos se editan como una sola celda ("77900185 / 67894829"): al
-// salir del campo se vuelven a repartir en principal y adicionales.
+// Phones are edited as a single cell ("77900185 / 67894829"): on blur they
+// are split again into main and additional numbers.
 function phonesCellValue(v: Partial<CsvAd>) {
   return [v.phone, ...(v.extraPhones ?? [])].filter(Boolean).join(' / ');
 }
@@ -65,8 +65,8 @@ function phonesCellPatch(raw: string): Partial<CsvAd> {
 const CELL_INPUT_CLASS =
   'w-full border border-outline-variant bg-surface-container-lowest px-2 py-1.5 text-sm text-on-surface outline-none placeholder:text-outline focus:border-primary focus:ring-1 focus:ring-primary';
 
-// Celdas editables no controladas: el estado se actualiza al salir del campo
-// (onBlur) para no re-renderizar toda la tabla en cada tecla.
+// Uncontrolled editable cells: state updates when leaving the field (onBlur)
+// so the whole table doesn't re-render on every keystroke.
 function CellTextarea({
   value,
   onCommit,
@@ -138,7 +138,7 @@ function CellSelect<T extends string>({
   );
 }
 
-// Reglas mínimas de una fila importable (las mismas del parser CSV).
+// Minimum rules for an importable row (the same as the CSV parser).
 function validateValues(v: Partial<CsvAd>): string[] {
   const errors: string[] = [];
   if (!v.title) errors.push('El título es obligatorio');
@@ -162,19 +162,19 @@ export default function ImportAdsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [parsed, setParsed] = useState<ParsedCsv | null>(null);
-  // Filas del archivo descartadas de entrada por no tener descripción o teléfono.
+  // File rows dropped upfront for lacking a description or phone.
   const [discarded, setDiscarded] = useState(0);
-  // Vista previa del preprocesado (limpieza); null = vista del archivo tal cual.
+  // Preview of the preprocessing (cleanup); null = the file as-is.
   const [cleaned, setCleaned] = useState<CleanResult | null>(null);
-  // Cambia en cada limpieza para remontar las celdas editables con los
-  // valores recién procesados (son campos no controlados).
+  // Changes on every cleanup to remount the editable cells with the freshly
+  // processed values (they are uncontrolled fields).
   const [cleanGen, setCleanGen] = useState(0);
   const [importing, setImporting] = useState(false);
   const [created, setCreated] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Selección para quitar varias filas de la vista previa a la vez. Las
-  // filas se identifican por su número de línea del archivo.
+  // Selection for removing several preview rows at once. Rows are
+  // identified by their line number in the file.
   const visibleRows = cleaned ? cleaned.rows : parsed?.rows ?? [];
   const { selected, allInPage, toggleOne, togglePage, clear } = useSelection(
     visibleRows.map((r) => String(r.line)),
@@ -188,15 +188,15 @@ export default function ImportAdsPage() {
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    // Permite volver a elegir el mismo archivo tras corregirlo.
+    // Allows picking the same file again after fixing it.
     e.target.value = '';
     if (!file) return;
     setFileName(file.name);
     setCreated(null);
     setError(null);
     setCleaned(null);
-    // Los anuncios sin descripción o sin teléfono se eliminan de entrada:
-    // no aparecen en la vista previa ni se importan.
+    // Listings without a description or phone are dropped upfront: they
+    // don't show in the preview and aren't imported.
     const result = parseAdsCsv(await file.text());
     const kept = result.rows.filter((r) => r.errors.length === 0);
     setDiscarded(result.rows.length - kept.length);
@@ -204,7 +204,7 @@ export default function ImportAdsPage() {
     clear();
   }
 
-  // Edición de la vista previa original: revalida la fila al guardar.
+  // Editing the original preview: revalidates the row on save.
   function updateRawRow(line: number, patch: Partial<CsvAd>) {
     setParsed((p) => {
       if (!p) return p;
@@ -219,7 +219,7 @@ export default function ImportAdsPage() {
     });
   }
 
-  // Edición de la vista previa limpia: recalcula si la fila queda eliminada.
+  // Editing the cleaned preview: recomputes whether the row ends up removed.
   function updateCleanRow(line: number, patch: Partial<CsvAd>) {
     setCleaned((c) => {
       if (!c) return c;
@@ -234,7 +234,7 @@ export default function ImportAdsPage() {
     });
   }
 
-  // Quita una fila de la vista previa: no se importará (el archivo no cambia).
+  // Removes a row from the preview: it won't be imported (the file is unchanged).
   function removeRawRow(line: number) {
     setParsed((p) =>
       p ? { ...p, rows: p.rows.filter((r) => r.line !== line) } : p,
@@ -247,7 +247,7 @@ export default function ImportAdsPage() {
     );
   }
 
-  // Quita todas las filas seleccionadas de la vista previa visible.
+  // Removes all selected rows from the visible preview.
   function removeSelectedRows() {
     const keep = (r: { line: number }) => !selected.has(String(r.line));
     if (cleaned) {
@@ -260,8 +260,8 @@ export default function ImportAdsPage() {
 
   function runClean() {
     if (!parsed) return;
-    // Las filas que la limpieza deja sin descripción (o sin teléfono) se
-    // eliminan de la vista; el resumen conserva el conteo en "eliminados".
+    // Rows left without a description (or phone) by the cleanup are removed
+    // from the view; the summary keeps the count under "eliminados".
     const result = cleanRows(parsed.rows);
     setCleaned({
       ...result,
@@ -328,7 +328,7 @@ export default function ImportAdsPage() {
         </div>
       </div>
 
-      {/* Formato esperado */}
+      {/* Expected format */}
       <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-5 text-sm text-on-surface-variant shadow-aceternity">
         <p className="font-medium text-on-surface">Formato del archivo</p>
         <p className="mt-2">
@@ -470,7 +470,7 @@ export default function ImportAdsPage() {
             </div>
           </div>
 
-          {/* Resumen del preprocesado */}
+          {/* Preprocessing summary */}
           {cleaned && (
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
               {(
@@ -663,7 +663,7 @@ export default function ImportAdsPage() {
                         const n = Number(v);
                         const salary =
                           v.trim() && Number.isFinite(n) && n > 0 ? n : undefined;
-                        // Sin piso no hay rango posible: se limpia el techo.
+                        // Without a floor there's no possible range: the ceiling is cleared.
                         updateRawRow(row.line, {
                           salary,
                           ...(salary == null ? { salaryMax: undefined } : {}),
@@ -679,7 +679,7 @@ export default function ImportAdsPage() {
                       className="w-24"
                       onCommit={(v) => {
                         const n = Number(v);
-                        // Solo es rango si supera el piso; si no, monto fijo.
+                        // It's only a range if it exceeds the floor; otherwise a fixed amount.
                         const valid =
                           v.trim() &&
                           Number.isFinite(n) &&

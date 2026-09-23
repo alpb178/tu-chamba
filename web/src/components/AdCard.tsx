@@ -17,14 +17,14 @@ const STATUS_STYLE = {
   DADO_DE_BAJA: 'bg-surface-container-high text-on-surface-variant',
 };
 
-// Icono que marca el estado del anuncio (mismo criterio que el panel admin).
+// Icon marking the listing status (same approach as the admin panel).
 const STATUS_ICON = {
   ACTIVO: 'check_circle',
   VENCIDO: 'schedule',
   DADO_DE_BAJA: 'block',
 };
 
-// Icono Material Symbols por rubro para el tile de la tarjeta.
+// Material Symbols icon per category for the card tile.
 const CATEGORY_ICON: Record<Category, string> = {
   VENTAS: 'storefront',
   GASTRONOMIA: 'restaurant',
@@ -44,8 +44,8 @@ const CATEGORY_ICON: Record<Category, string> = {
   OTRO: 'business_center',
 };
 
-// showStatus: solo en vistas del dueño ("Mis anuncios"); el listado
-// público únicamente contiene anuncios vigentes.
+// showStatus: only in owner views ("Mis anuncios"); the public list
+// only contains active listings.
 export function AdCard({
   ad,
   showStatus = false,
@@ -54,33 +54,32 @@ export function AdCard({
   showStatus?: boolean;
 }) {
   const status = adEffectiveStatus(ad);
-  // Visitas al detalle del anuncio (contador social en la tarjeta).
+  // Views of the listing detail (social counter on the card).
   const views = ad._count?.visits ?? 0;
-  // Los destacados por el panel se distinguen por el color del borde (mismo
-  // grosor, así no se descolocan respecto al resto de tarjetas), y ese color va
-  // cambiando cada 5 segundos: ámbar → verde → azul, en bucle.
+  // Listings featured from the panel stand out by their border color (same
+  // width, so they don't shift relative to the other cards), and that color
+  // changes every 5 seconds: amber → green → blue, in a loop.
   //
-  // El color de reposo es ÁMBAR y no azul, que es lo que llevaba: el azul es el
-  // color del HOVER de una tarjeta normal (`hover:border-primary/40`), así que
-  // pasar el cursor por cualquier anuncio lo disfrazaba de destacado. El ámbar
-  // es además el color con el que el portal ya habla de promoción (el botón de
-  // publicar oferta), así que el borde se lee sin leyenda.
+  // The resting color is AMBER, not blue as it used to be: blue is the HOVER
+  // color of a regular card (`hover:border-primary/40`), so hovering over any
+  // listing disguised it as featured. Amber is also the color the portal
+  // already uses to talk about promotion (the publish listing button), so the
+  // border reads without a legend.
   //
-  // `motion-safe:` y no la animación a secas: con
-  // `prefers-reduced-motion: reduce` el borde se queda quieto en el ámbar, que
-  // es el mismo criterio que ya aplican `FeaturedBrands` y `SlideBurst`. Un
-  // borde que cambia de color sin parar es justo lo que esa preferencia existe
-  // para apagar.
+  // `motion-safe:` rather than the bare animation: with
+  // `prefers-reduced-motion: reduce` the border stays still on amber, the same
+  // approach `FeaturedBrands` and `SlideBurst` already follow. A border that
+  // keeps changing color is exactly what that preference exists to turn off.
   //
-  // El `hover:` sobrevive por lo mismo: cuando la animación está apagada sigue
-  // siendo el único acuse de recibo del cursor. Con la animación en marcha, la
-  // regla de animación gana y el hover no se ve — a propósito, porque el borde
-  // ya está diciendo algo más importante.
+  // The `hover:` survives for the same reason: when the animation is off it
+  // is still the only acknowledgement of the cursor. With the animation
+  // running, the animation rule wins and the hover isn't visible — on purpose,
+  // because the border is already saying something more important.
   //
-  // Ya no lleva el `ring` de antes. Estaba para que el borde pareciera de 2 px
-  // sin ocupar 2 px, y un `--tw-ring-color` no se puede interpolar (las
-  // propiedades personalizadas sin `@property` saltan de golpe): el aro se
-  // habría quedado ámbar dando tumbos mientras el borde cruzaba al verde.
+  // It no longer has the old `ring`. It was there so the border looked 2 px
+  // wide without taking up 2 px, and a `--tw-ring-color` can't be interpolated
+  // (custom properties without `@property` jump abruptly): the ring would have
+  // stayed amber, lurching, while the border crossed over to green.
   const border = ad.featured
     ? 'border-accent hover:border-accent-dark motion-safe:animate-featured-border'
     : 'border-outline-variant hover:border-primary/40';
@@ -89,14 +88,14 @@ export function AdCard({
       href={`/listings/${ad.id}`}
       className={`group relative block overflow-hidden rounded-card border bg-surface-container-lowest p-4 shadow-aceternity transition-all duration-300 hover:-translate-y-1 hover:shadow-derek focus:outline-none focus-visible:ring-2 focus-visible:ring-primary md:p-6 ${border}`}
     >
-      {/* Detalle decorativo que crece al pasar el cursor. */}
+      {/* Decorative detail that grows on hover. */}
       <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-primary/5 transition-transform duration-500 group-hover:scale-150" />
 
-      {/* En móvil el salario baja bajo el título. */}
+      {/* On mobile the salary drops below the title. */}
       <div className="relative z-10 flex flex-col gap-2 md:flex-row md:items-start md:justify-between md:gap-4">
         <div className="flex min-w-0 gap-3 md:gap-4">
-          {/* El tile del rubro también se ve en móvil (ancla visual de la
-              tarjeta ahora que va una por fila). */}
+          {/* The category tile is also shown on mobile (visual anchor of the
+              card now that there is one per row). */}
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-tile border border-outline-variant bg-surface-container sm:h-16 sm:w-16">
             <Icon
               name={CATEGORY_ICON[ad.category ?? 'OTRO']}
@@ -150,8 +149,8 @@ export function AdCard({
               </span>
             )}
           </div>
-          {/* Monto fijo o rango ("Bs 3.500 a 4.500"); el rango va más chico
-              para que no rompa la tarjeta. */}
+          {/* Fixed amount or range ("Bs 3.500 a 4.500"); the range is smaller
+              so it doesn't break the card. */}
           <div
             className={`font-display font-bold text-primary ${
               ad.salaryMax != null ? 'text-base md:text-xl' : 'text-lg md:text-2xl'
@@ -164,7 +163,7 @@ export function AdCard({
 
       <div className="relative z-10 mt-4 flex items-center justify-between border-t border-outline-variant pt-3 md:mt-6 md:pt-4">
         <div className="flex flex-wrap items-center gap-1">
-          {/* Señal de confianza: publicante con correo verificado. */}
+          {/* Trust signal: publisher with a verified email. */}
           {ad.createdBy?.emailVerified && (
             <span className="mr-1 flex items-center gap-0.5 rounded-full bg-tertiary-container px-2 py-0.5 text-xs font-medium text-on-tertiary-container">
               <Icon name="verified" className="text-sm" /> Verificado
@@ -189,8 +188,8 @@ export function AdCard({
             )
           )}
         </div>
-        {/* Toda la tarjeta es el enlace; la acción "Ver detalles" queda
-            como icono con tooltip. */}
+        {/* The whole card is the link; the "Ver detalles" action is shown
+            as an icon with a tooltip. */}
         <span
           title="Ver detalles"
           className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-on-primary transition-all group-hover:brightness-110 md:h-10 md:w-10"

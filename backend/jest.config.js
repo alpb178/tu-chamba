@@ -1,4 +1,4 @@
-/** Tests unitarios de servicios y controladores (Prisma mockeado, sin BD). */
+/** Unit tests for services and controllers (Prisma mocked, no DB). */
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
@@ -6,8 +6,8 @@ module.exports = {
   testRegex: '.*\\.spec\\.ts$',
   moduleFileExtensions: ['js', 'json', 'ts'],
   clearMocks: true,
-  // Cobertura sobre la lógica de la app; se excluye el andamiaje (módulos,
-  // DTOs, bootstrap) que no tiene comportamiento propio que testear.
+  // Coverage over the app logic; scaffolding (modules, DTOs, bootstrap) with
+  // no behavior of its own to test is excluded.
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.spec.ts',

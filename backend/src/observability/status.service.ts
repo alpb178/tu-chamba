@@ -14,10 +14,10 @@ export interface ServiceStatus {
   latencyMs?: number;
 }
 
-// El cron corre cada hora: sin ejecuciones en 2h algo anda mal.
+// The cron runs hourly: no runs in 2h means something is wrong.
 const CRON_STALE_MS = 2 * 60 * 60 * 1000;
 
-// Estado en vivo de los servicios y métricas técnicas de la instancia.
+// Live service status and technical metrics of the instance.
 @Injectable()
 export class StatusService {
   constructor(
@@ -29,7 +29,7 @@ export class StatusService {
   async services(): Promise<ServiceStatus[]> {
     const [db, mail] = await Promise.all([this.dbStatus(), this.mailStatus()]);
     return [
-      // Si este endpoint respondió, la API está arriba por definición.
+      // If this endpoint responded, the API is up by definition.
       { key: 'api', state: 'up', detail: 'Respondiendo peticiones' },
       db,
       mail,
@@ -97,7 +97,7 @@ export class StatusService {
     };
   }
 
-  // Indicadores técnicos de la instancia (proceso + host).
+  // Technical indicators of the instance (process + host).
   async performance() {
     const load = os.loadavg()[0];
     const cores = os.cpus().length || 1;
@@ -108,7 +108,7 @@ export class StatusService {
       ...this.metrics.snapshot(),
       uptimeSeconds: Math.round(process.uptime()),
       cpu: {
-        // Carga promedio (1 min) normalizada por núcleos, en porcentaje.
+        // Load average (1 min) normalized by cores, as a percentage.
         loadPercent: Math.min(100, Math.round((load / cores) * 100)),
         cores,
       },

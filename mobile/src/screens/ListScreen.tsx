@@ -20,12 +20,12 @@ import { AdListSkeleton } from '@/components/Skeleton';
 type Props = NativeStackScreenProps<RootStackParamList, 'List'>;
 const JOB_TYPES: (JobType | '')[] = ['', 'DIARIA', 'TIEMPO_COMPLETO', 'MEDIA_JORNADA'];
 
-// Tamaño de página compartido con la web (paginación de 10 en 10).
+// Page size shared with the web (pages of 10).
 const PAGE_SIZE = 10;
 
 export function ListScreen({ navigation }: Props) {
   const { user } = useAuth();
-  // Cualquier usuario con sesión puede publicar.
+  // Any logged-in user can publish.
   const canPublish = Boolean(user);
   const [items, setItems] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(false);
@@ -33,7 +33,7 @@ export function ListScreen({ navigation }: Props) {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState('');
   const [jobType, setJobType] = useState<JobType | ''>('');
-  // Página actual en ref: onEndReached no debe recrear el callback.
+  // Current page in a ref: onEndReached must not recreate the callback.
   const pageRef = useRef(1);
 
   const fetchPage = useCallback(
@@ -48,7 +48,7 @@ export function ListScreen({ navigation }: Props) {
     [jobType, search],
   );
 
-  // Primera página (también para pull-to-refresh y cambio de filtros).
+  // First page (also for pull-to-refresh and filter changes).
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -61,14 +61,14 @@ export function ListScreen({ navigation }: Props) {
     }
   }, [fetchPage]);
 
-  // Scroll infinito: agrega la página siguiente al llegar al final.
+  // Infinite scroll: appends the next page on reaching the end.
   const loadMore = useCallback(async () => {
     if (loadingMore || loading || pageRef.current >= totalPages) return;
     setLoadingMore(true);
     try {
       const res = await fetchPage(pageRef.current + 1);
       pageRef.current = res.page;
-      // Evita duplicados si un anuncio nuevo desplazó los resultados.
+      // Avoids duplicates if a new listing shifted the results.
       setItems((prev) => {
         const seen = new Set(prev.map((a) => a.id));
         return [...prev, ...res.items.filter((a) => !seen.has(a.id))];

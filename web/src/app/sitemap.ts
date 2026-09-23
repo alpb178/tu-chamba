@@ -16,8 +16,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE}/cookies`, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
-  // Todos los anuncios vigentes, paginando el tope de 100 de la API
-  // (best-effort; si la API falla, se omiten).
+  // All active listings, paging through the API's 100-item cap
+  // (best-effort; if the API fails, they're skipped).
   const items = await fetchAllAds();
   const ads: MetadataRoute.Sitemap = items.map((a) => ({
     url: `${SITE}/listings/${a.id}`,

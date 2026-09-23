@@ -5,9 +5,9 @@ export const metadata: Metadata = {
   title: 'Tu Chamba — Administración',
 };
 
-// Layout del panel: solo el "chrome" del administrador (riel lateral + guard
-// de sesión). El <html>/<body>, las fuentes y el AuthProvider los provee el
-// layout raíz, compartidos con el sitio.
+// Panel layout: only the admin "chrome" (side rail + session guard). The
+// <html>/<body>, fonts and AuthProvider come from the root layout, shared
+// with the site.
 export default function AdminRootLayout({
   children,
 }: {

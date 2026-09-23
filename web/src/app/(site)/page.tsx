@@ -4,21 +4,21 @@ import { DEPARTMENT_LABEL, Department } from '@/lib/types';
 
 type Search = { q?: string; dep?: string };
 
-// Las variantes con búsqueda (?q=, ?dep=) canonicalizan a la portada:
-// evita indexar infinitas combinaciones de parámetros como duplicados.
+// Search variants (?q=, ?dep=) canonicalize to the home page: avoids
+// indexing endless parameter combinations as duplicates.
 export const metadata: Metadata = {
   alternates: { canonical: '/' },
 };
 
-// Server component: resuelve la búsqueda de la URL y renderiza la portada
-// (el hero y su texto viajan en el HTML inicial, indexable).
+// Server component: resolves the search from the URL and renders the home
+// page (the hero and its text ship in the initial, indexable HTML).
 export default async function HomePage({
   searchParams,
 }: {
   searchParams: Promise<Search>;
 }) {
   const { q = '', dep = '' } = await searchParams;
-  // Solo departamentos válidos (la URL la escribe cualquiera).
+  // Only valid departments (anyone can write the URL).
   const department = dep in DEPARTMENT_LABEL ? (dep as Department) : '';
   return <HomeClient search={q.trim()} dep={department} />;
 }

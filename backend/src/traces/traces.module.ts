@@ -1,8 +1,8 @@
 import { Global, Module } from '@nestjs/common';
 import { TracesService } from './traces.service';
 
-// Global: cualquier módulo puede registrar trazas sin importar este módulo
-// (mismo criterio que PrismaModule).
+// Global: any module can record traces without importing this module
+// (same approach as PrismaModule).
 @Global()
 @Module({
   providers: [TracesService],

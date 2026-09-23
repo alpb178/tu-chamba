@@ -19,7 +19,7 @@ async function main() {
     },
   });
 
-  const empleador = await prisma.user.upsert({
+  const employer = await prisma.user.upsert({
     where: { email: 'empleador@tuchamba.com' },
     update: {},
     create: {
@@ -43,7 +43,7 @@ async function main() {
     },
   });
 
-  // Anuncios de ejemplo (uno por cada tipo de jornada)
+  // Sample listings (one per work schedule type)
   const count = await prisma.ad.count();
   if (count === 0) {
     const expiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
@@ -61,7 +61,7 @@ async function main() {
           phone: '71111111',
           jobType: JobType.DIARIA,
           expiresAt,
-          createdById: empleador.id,
+          createdById: employer.id,
         },
         {
           title: 'Vendedor/a de tienda',
@@ -76,7 +76,7 @@ async function main() {
           phone: '71111111',
           jobType: JobType.TIEMPO_COMPLETO,
           expiresAt,
-          createdById: empleador.id,
+          createdById: employer.id,
         },
         {
           title: 'Recepcionista turno tarde',
@@ -90,7 +90,7 @@ async function main() {
           phone: '71111111',
           jobType: JobType.MEDIA_JORNADA,
           expiresAt,
-          createdById: empleador.id,
+          createdById: employer.id,
         },
       ],
     });

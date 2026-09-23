@@ -23,10 +23,10 @@ function buildService() {
 }
 
 const user: AuthUser = { id: 'u2', email: 'b@t.com', isAdmin: false };
-const ad = { id: 'a1', createdById: 'owner1', description: 'Prueba' };
+const ad = { id: 'a1', createdById: 'owner1', description: 'Test' };
 
 describe('InterestsService.register', () => {
-  it('ver el detalle registra el interés SIN notificar', async () => {
+  it('viewing the detail records the interest WITHOUT notifying', async () => {
     const { service, prisma, notifications } = buildService();
     prisma.ad.findUnique.mockResolvedValue(ad);
     prisma.interest.findUnique.mockResolvedValue(null);
@@ -38,7 +38,7 @@ describe('InterestsService.register', () => {
     expect(notifications.notifyInterest).not.toHaveBeenCalled();
   });
 
-  it('contactar de primeras crea el interés contactado y notifica', async () => {
+  it('contacting first creates a contacted interest and notifies', async () => {
     const { service, prisma, notifications } = buildService();
     prisma.ad.findUnique.mockResolvedValue(ad);
     prisma.interest.findUnique.mockResolvedValue(null);
@@ -50,7 +50,7 @@ describe('InterestsService.register', () => {
     expect(notifications.notifyInterest).toHaveBeenCalledWith(ad, 'u2');
   });
 
-  it('contactar tras haber visto notifica una sola vez (transición)', async () => {
+  it('contacting after viewing notifies only once (transition)', async () => {
     const { service, prisma, notifications } = buildService();
     prisma.ad.findUnique.mockResolvedValue(ad);
     prisma.interest.findUnique.mockResolvedValue({
@@ -66,7 +66,7 @@ describe('InterestsService.register', () => {
     expect(notifications.notifyInterest).toHaveBeenCalledTimes(1);
   });
 
-  it('re-contactar no vuelve a notificar', async () => {
+  it('contacting again does not notify again', async () => {
     const { service, prisma, notifications } = buildService();
     prisma.ad.findUnique.mockResolvedValue(ad);
     prisma.interest.findUnique.mockResolvedValue({
@@ -80,7 +80,7 @@ describe('InterestsService.register', () => {
     expect(notifications.notifyInterest).not.toHaveBeenCalled();
   });
 
-  it('re-visitar no duplica (carrera P2002 tolerada)', async () => {
+  it('revisiting does not duplicate (P2002 race tolerated)', async () => {
     const { service, prisma, notifications } = buildService();
     prisma.ad.findUnique.mockResolvedValue(ad);
     prisma.interest.findUnique
@@ -98,7 +98,7 @@ describe('InterestsService.register', () => {
     expect(notifications.notifyInterest).not.toHaveBeenCalled();
   });
 
-  it('ignora el interés en el anuncio propio', async () => {
+  it('ignores interest in the own listing', async () => {
     const { service, prisma, notifications } = buildService();
     prisma.ad.findUnique.mockResolvedValue(ad);
 
@@ -111,7 +111,7 @@ describe('InterestsService.register', () => {
     expect(notifications.notifyInterest).not.toHaveBeenCalled();
   });
 
-  it('anuncio inexistente → 404', async () => {
+  it('nonexistent listing → 404', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue(null);
 
@@ -122,7 +122,7 @@ describe('InterestsService.register', () => {
 });
 
 describe('InterestsService.remove / status', () => {
-  it('quitar borra solo el interés propio sobre ese anuncio', async () => {
+  it('remove deletes only the own interest in that listing', async () => {
     const { service, prisma } = buildService();
     prisma.interest.deleteMany.mockResolvedValue({ count: 1 });
 
@@ -132,7 +132,7 @@ describe('InterestsService.remove / status', () => {
     });
   });
 
-  it('status refleja si ya mostró interés', async () => {
+  it('status reflects whether interest was already shown', async () => {
     const { service, prisma } = buildService();
     prisma.interest.findUnique.mockResolvedValue({ id: 'i1' });
     expect((await service.status('a1', 'u2')).interested).toBe(true);

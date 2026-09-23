@@ -9,9 +9,9 @@ import {
 import { Icon } from './Icon';
 import { cn } from '@/lib/cn';
 
-// Primitivas de UI del sitio con el lenguaje editorial portado de Iris Natural:
-// esquinas rectas, sombra "aceternity", ligera elevación al hover y píldoras
-// reservadas a los CTA de marca. Mantiene la paleta M3 (azul + ámbar).
+// Site UI primitives with the editorial language ported from Iris Natural:
+// square corners, "aceternity" shadow, slight lift on hover and pills
+// reserved for brand CTAs. Keeps the M3 palette (blue + amber).
 
 export function Button({
   className = '',
@@ -27,8 +27,8 @@ export function Button({
       'border border-outline-variant bg-surface-container-lowest text-on-surface-variant font-medium hover:-translate-y-0.5 hover:border-primary hover:text-primary',
     danger:
       'bg-error text-on-error font-semibold shadow-aceternity hover:-translate-y-0.5 hover:shadow-md hover:brightness-110',
-    // Píldora del CTA principal ("Publicar oferta de trabajo"), en el ámbar de
-    // marca (mismo token que los filtros). Única forma redondeada.
+    // Pill for the main CTA ("Publicar oferta de trabajo"), in the brand amber
+    // (same token as the filters). The only rounded shape.
     accent:
       'rounded-full bg-secondary-container text-on-secondary-container font-bold uppercase tracking-[0.12em] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-lg',
   }[variant];
@@ -44,7 +44,7 @@ export function Button({
   );
 }
 
-// Acción con solo icono: el nombre va en el tooltip (title) y en aria-label.
+// Icon-only action: the name goes in the tooltip (title) and in aria-label.
 export function IconButton({
   icon,
   label,
@@ -101,7 +101,7 @@ export function FormField({
   children,
 }: {
   label: string;
-  // Muestra el asterisco de campo obligatorio junto a la etiqueta.
+  // Shows the required-field asterisk next to the label.
   required?: boolean;
   children: ReactNode;
 }) {
@@ -120,10 +120,10 @@ export function FormField({
   );
 }
 
-// ——— Primitivas editoriales (portadas de Iris Natural) ———
+// ——— Editorial primitives (ported from Iris Natural) ———
 
-// Tarjeta base con borde, sombra aceternity y esquinas redondeadas
-// (`rounded-card`, el token compartido por todas las tarjetas del portal).
+// Base card with border, aceternity shadow and rounded corners
+// (`rounded-card`, the token shared by every card in the portal).
 export function Card({
   className,
   children,
@@ -143,8 +143,8 @@ export function Card({
   );
 }
 
-// Titular editorial (serif Merriweather) con tamaños escalables. Usa la
-// utilidad text-balance en lugar de react-wrap-balancer.
+// Editorial headline (Merriweather serif) with scalable sizes. Uses the
+// text-balance utility instead of react-wrap-balancer.
 export function Heading({
   className,
   as: Tag = 'h2',
@@ -178,7 +178,7 @@ export function Heading({
   );
 }
 
-// Subtítulo/entradilla de sección.
+// Section subtitle/lead.
 export function Subheading({
   className,
   as: Tag = 'p',

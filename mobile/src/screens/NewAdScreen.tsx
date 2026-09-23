@@ -17,8 +17,8 @@ const JOB_TYPES: JobType[] = [
   'A_CONVENIR',
 ];
 
-// Números adicionales en un solo campo ("67894829 / 3467010"), como en el
-// panel: al guardar se reparten en principal y adicionales.
+// Additional numbers in a single field ("67894829 / 3467010"), as in the
+// panel: on save they're split into the primary and additional ones.
 function splitPhones(raw: string) {
   const valid = raw
     .split(/[/,;|]/)
@@ -65,7 +65,7 @@ export function NewAdScreen({ route, navigation }: Props) {
       const payload = {
         description: form.description,
         salary: form.salary.trim() ? Number(form.salary) : undefined,
-        // El techo solo viaja si forma un rango válido con el piso.
+        // The ceiling is only sent if it forms a valid range with the floor.
         salaryMax:
           form.salary.trim() &&
           form.salaryMax.trim() &&

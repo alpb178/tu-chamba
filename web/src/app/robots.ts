@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      // Rutas privadas o sin valor de indexación.
+      // Private routes or routes with no indexing value.
       disallow: [
         '/my-listings',
         '/alerts',

@@ -12,10 +12,10 @@ function host() {
 }
 
 describe('ErrorLogFilter', () => {
-  it('persiste los errores 5xx en el registro', () => {
+  it('persists 5xx errors to the log', () => {
     const errors = { record: jest.fn() };
     const filter = new ErrorLogFilter(errors as never);
-    // Evita que el filtro base intente responder de verdad.
+    // Keeps the base filter from actually trying to respond.
     jest.spyOn(ErrorLogFilter.prototype, 'catch');
     const superCatch = jest
       .spyOn(Object.getPrototypeOf(ErrorLogFilter.prototype), 'catch')
@@ -30,7 +30,7 @@ describe('ErrorLogFilter', () => {
     superCatch.mockRestore();
   });
 
-  it('no registra errores 4xx (cliente)', () => {
+  it('does not log 4xx (client) errors', () => {
     const errors = { record: jest.fn() };
     const filter = new ErrorLogFilter(errors as never);
     const superCatch = jest
