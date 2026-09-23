@@ -1,7 +1,7 @@
 import { MetricsService } from './metrics.service';
 
 describe('MetricsService', () => {
-  it('acumula solicitudes, errores y latencia de la última hora', () => {
+  it('accumulates requests, errors and latency for the last hour', () => {
     const m = new MetricsService();
     m.recordRequest(100, 200, 'u1');
     m.recordRequest(300, 200, 'u2');
@@ -14,14 +14,14 @@ describe('MetricsService', () => {
     expect(s.connectedUsers).toBe(2);
   });
 
-  it('un mismo usuario cuenta una sola vez como conectado', () => {
+  it('the same user counts only once as connected', () => {
     const m = new MetricsService();
     m.recordRequest(10, 200, 'u1');
     m.recordRequest(10, 200, 'u1');
     expect(m.snapshot().connectedUsers).toBe(1);
   });
 
-  it('expone la última ejecución del cron', () => {
+  it('exposes the last cron run', () => {
     const m = new MetricsService();
     expect(m.cronLastRun).toBeNull();
     m.markCronRun();

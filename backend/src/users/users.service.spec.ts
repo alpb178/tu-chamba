@@ -27,7 +27,7 @@ function buildService() {
 const actor: AuthUser = { id: 'adm', email: 'admin@t.com', isAdmin: true };
 
 describe('UsersService.updateProfile', () => {
-  it('actualiza nombre y teléfono del propio usuario', async () => {
+  it('updates the name and phone of the user themselves', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue({ id: 'u1' });
     prisma.user.update.mockResolvedValue({ id: 'u1' });
@@ -39,7 +39,7 @@ describe('UsersService.updateProfile', () => {
     expect(call.data.phone).toBe('7000');
   });
 
-  it('teléfono vacío se guarda como null (quitarlo)', async () => {
+  it('empty phone is saved as null (removes it)', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue({ id: 'u1' });
     prisma.user.update.mockResolvedValue({ id: 'u1' });
@@ -50,47 +50,47 @@ describe('UsersService.updateProfile', () => {
     expect(call.data).not.toHaveProperty('name');
   });
 
-  it('cambia la contraseña verificando la actual', async () => {
+  it('changes the password after verifying the current one', async () => {
     const { service, prisma } = buildService();
-    const oldHash = await bcrypt.hash('vieja123', 4);
+    const oldHash = await bcrypt.hash('oldpw123', 4);
     prisma.user.findUnique.mockResolvedValue({ id: 'u1', password: oldHash });
     prisma.user.update.mockResolvedValue({ id: 'u1' });
 
     await service.updateProfile('u1', {
-      currentPassword: 'vieja123',
-      password: 'nueva123',
+      currentPassword: 'oldpw123',
+      password: 'newpw123',
     });
     const data = prisma.user.update.mock.calls[0][0].data;
-    expect(await bcrypt.compare('nueva123', data.password)).toBe(true);
+    expect(await bcrypt.compare('newpw123', data.password)).toBe(true);
   });
 
-  it('rechaza el cambio con la contraseña actual incorrecta', async () => {
+  it('rejects the change with a wrong current password', async () => {
     const { service, prisma } = buildService();
-    const oldHash = await bcrypt.hash('vieja123', 4);
+    const oldHash = await bcrypt.hash('oldpw123', 4);
     prisma.user.findUnique.mockResolvedValue({ id: 'u1', password: oldHash });
 
     await expect(
       service.updateProfile('u1', {
-        currentPassword: 'equivocada',
-        password: 'nueva123',
+        currentPassword: 'wrongpass',
+        password: 'newpw123',
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(prisma.user.update).not.toHaveBeenCalled();
   });
 
-  it('las cuentas de Google (sin contraseña) definen una sin la actual', async () => {
+  it('Google accounts (no password) set one without the current one', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue({ id: 'u1', password: null });
     prisma.user.update.mockResolvedValue({ id: 'u1' });
 
-    await service.updateProfile('u1', { password: 'nueva123' });
+    await service.updateProfile('u1', { password: 'newpw123' });
     const data = prisma.user.update.mock.calls[0][0].data;
-    expect(await bcrypt.compare('nueva123', data.password)).toBe(true);
+    expect(await bcrypt.compare('newpw123', data.password)).toBe(true);
   });
 });
 
 describe('UsersService.setAdmin', () => {
-  it('concede y revoca el flag esAdmin', async () => {
+  it('grants and revokes the isAdmin flag', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue({ id: 'u1', email: 'a@t.com' });
     prisma.user.update.mockResolvedValue({ id: 'u1', isAdmin: true });
@@ -103,7 +103,7 @@ describe('UsersService.setAdmin', () => {
 });
 
 describe('UsersService.createAdmin', () => {
-  it('crea la cuenta con isAdmin y correo verificado', async () => {
+  it('creates the account with isAdmin and a verified email', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue(null);
     prisma.user.create.mockResolvedValue({ id: 'u9', email: 'n@t.com' });
@@ -120,29 +120,29 @@ describe('UsersService.createAdmin', () => {
 });
 
 describe('UsersService.adminUpdate', () => {
-  it('falla si el usuario no existe', async () => {
+  it('fails if the user does not exist', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue(null);
     await expect(
-      service.adminUpdate('u1', { name: 'Nuevo' }, actor),
+      service.adminUpdate('u1', { name: 'New' }, actor),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('rechaza cambiar a un correo ya registrado por otra cuenta', async () => {
+  it('rejects changing to an email already registered by another account', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique
-      .mockResolvedValueOnce({ id: 'u1', email: 'viejo@t.com' }) // ensureExists
-      .mockResolvedValueOnce({ id: 'otro' }); // email tomado
+      .mockResolvedValueOnce({ id: 'u1', email: 'old@t.com' }) // ensureExists
+      .mockResolvedValueOnce({ id: 'other' }); // email taken
     await expect(
-      service.adminUpdate('u1', { email: 'tomado@t.com' }, actor),
+      service.adminUpdate('u1', { email: 'taken@t.com' }, actor),
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
-  it('actualiza nombre, correo y teléfono, y deja traza USER_UPDATED', async () => {
+  it('updates name, email and phone, and records a USER_UPDATED trace', async () => {
     const { service, prisma, traces } = buildService();
     prisma.user.findUnique
-      .mockResolvedValueOnce({ id: 'u1', email: 'viejo@t.com' }) // ensureExists
-      .mockResolvedValueOnce(null); // correo nuevo libre
+      .mockResolvedValueOnce({ id: 'u1', email: 'old@t.com' }) // ensureExists
+      .mockResolvedValueOnce(null); // new email is free
     prisma.user.update.mockResolvedValue({ id: 'u1' });
 
     await service.adminUpdate(
@@ -153,7 +153,7 @@ describe('UsersService.adminUpdate', () => {
     const data = prisma.user.update.mock.calls[0][0].data;
     expect(data.name).toBe('Ana');
     expect(data.email).toBe('ana@t.com');
-    expect(data.phone).toBeNull(); // teléfono vacío -> null
+    expect(data.phone).toBeNull(); // empty phone -> null
     expect(traces.record).toHaveBeenCalledWith(
       TraceType.USER_UPDATED,
       expect.any(String),
@@ -164,7 +164,7 @@ describe('UsersService.adminUpdate', () => {
 });
 
 describe('UsersService.createAdmin', () => {
-  it('rechaza correo ya registrado', async () => {
+  it('rejects an already registered email', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue({ id: 'x' });
     await expect(
@@ -172,41 +172,41 @@ describe('UsersService.createAdmin', () => {
     ).rejects.toBeInstanceOf(ConflictException);
   });
 
-  it('usa el name indicado como usuario', async () => {
+  it('uses the given name as the username', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue(null);
     prisma.user.create.mockResolvedValue({ id: 'a1', email: 'a@t.com' });
     await service.createAdmin(
-      { email: 'a@t.com', password: 'secret1', name: 'soporte' },
+      { email: 'a@t.com', password: 'secret1', name: 'support' },
       actor,
     );
-    expect(prisma.user.create.mock.calls[0][0].data.name).toBe('soporte');
+    expect(prisma.user.create.mock.calls[0][0].data.name).toBe('support');
   });
 
-  it('sin name, el usuario sale del prefijo del correo', async () => {
+  it('without name, the username comes from the email prefix', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue(null);
-    prisma.user.create.mockResolvedValue({ id: 'a1', email: 'nuevo-admin@t.com' });
+    prisma.user.create.mockResolvedValue({ id: 'a1', email: 'new-admin@t.com' });
     await service.createAdmin(
-      { email: 'nuevo-admin@t.com', password: 'secret1' },
+      { email: 'new-admin@t.com', password: 'secret1' },
       actor,
     );
-    expect(prisma.user.create.mock.calls[0][0].data.name).toBe('nuevo-admin');
+    expect(prisma.user.create.mock.calls[0][0].data.name).toBe('new-admin');
   });
 });
 
 describe('UsersService.removeMany / removeAllClients', () => {
-  it('removeMany nunca borra al propio actor del lote', async () => {
+  it('removeMany never deletes the actor from the batch', async () => {
     const { service, prisma } = buildService();
     prisma.user.deleteMany.mockResolvedValue({ count: 2 });
     await service.removeMany(['u1', 'u2', actor.id], actor);
-    // El id del actor se filtra del lote.
+    // The actor's id is filtered out of the batch.
     expect(prisma.user.deleteMany).toHaveBeenCalledWith({
       where: { id: { in: ['u1', 'u2'] } },
     });
   });
 
-  it('removeAllClients borra solo no-admins con traza resumen', async () => {
+  it('removeAllClients deletes only non-admins with a summary trace', async () => {
     const { service, prisma, traces } = buildService();
     prisma.user.deleteMany.mockResolvedValue({ count: 6 });
     const res = await service.removeAllClients(actor);

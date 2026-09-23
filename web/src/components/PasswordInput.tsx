@@ -3,8 +3,8 @@
 import { InputHTMLAttributes, useState } from 'react';
 import { Icon } from './Icon';
 
-// Campo de contraseña con "ojito" para mostrar/ocultar el valor.
-// Mismos estilos que Input, con el botón integrado a la derecha.
+// Password field with an "eye" toggle to show/hide the value.
+// Same styles as Input, with the button built in on the right.
 export function PasswordInput({
   className = '',
   ...props

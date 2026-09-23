@@ -3,9 +3,9 @@ import { BaseExceptionFilter } from '@nestjs/core';
 import { Request } from 'express';
 import { ErrorsService } from './errors.service';
 
-// Filtro global: la respuesta al cliente no cambia (delega en el filtro base
-// de Nest), pero los errores 5xx quedan persistidos para el panel de
-// Actividad del Sitio.
+// Global filter: the client response doesn't change (it delegates to Nest's
+// base filter), but 5xx errors are persisted for the site activity panel
+// ("Actividad del Sitio").
 @Catch()
 export class ErrorLogFilter extends BaseExceptionFilter {
   constructor(private errors: ErrorsService) {

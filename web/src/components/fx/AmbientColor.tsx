@@ -1,10 +1,10 @@
 'use client';
 
 /**
- * Luz ambiental fija: tres gradientes radiales rotados que tiñen sutilmente el
- * fondo. Portado de Iris Natural y adaptado a los tokens de marca de tu-chamba
- * (azul primario + ámbar + verde) sin dependencia del contexto de tema (el
- * sitio es siempre claro).
+ * Fixed ambient light: three rotated radial gradients that subtly tint the
+ * background. Ported from Iris Natural and adapted to tu-chamba's brand tokens
+ * (primary blue + amber + green) with no dependency on the theme context (the
+ * site is always light).
  */
 export const AmbientColor = () => {
   const primaryOpacity = 0.05;

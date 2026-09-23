@@ -9,8 +9,8 @@ import { AdCard } from '@/components/AdCard';
 import { AdListSkeleton, Skeleton } from '@/components/Skeleton';
 import { Button } from '@/components/ui';
 
-// Anuncios en los que el usuario mostró interés: todos aquellos cuyos
-// detalles abrió con sesión (y los que contactó por Chatear/Llamar).
+// Listings the user showed interest in: every listing whose details they
+// opened while logged in (and those they contacted via Chatear/Llamar).
 export default function InterestsPage() {
   const { user, loading: authLoading } = useRequireAuth();
   const [items, setItems] = useState<Interest[]>([]);

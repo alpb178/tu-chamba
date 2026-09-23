@@ -9,11 +9,11 @@ import {
 } from '@/lib/types';
 import { AdCard } from '@/components/AdCard';
 
-// El nombre del parámetro debe coincidir con el segmento de ruta [department]
-// de la URL pública SEO (/jobs/la-paz).
+// The param name must match the [department] route segment of the public
+// SEO URL (/jobs/la-paz).
 type Params = { params: Promise<{ department: string }> };
 
-// Genera las 9 páginas de departamento en build (indexables y rápidas).
+// Generates the 9 department pages at build time (indexable and fast).
 export function generateStaticParams() {
   return Object.values(DEPARTMENT_SLUG).map((department) => ({ department }));
 }

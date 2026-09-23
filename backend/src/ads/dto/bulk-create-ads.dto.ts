@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { CreateAdDto } from './create-ad.dto';
 
-// Límite defensivo para la importación por CSV del panel admin.
+// Defensive limit for the admin panel's CSV import.
 export const BULK_MAX_ITEMS = 500;
 
 export class BulkCreateAdsDto {

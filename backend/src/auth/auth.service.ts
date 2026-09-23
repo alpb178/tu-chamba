@@ -20,7 +20,7 @@ import { TraceResult, TraceType, User } from '@prisma/client';
 const VERIF_TTL_MS = 24 * 60 * 60 * 1000;
 const RESET_TTL_MS = 60 * 60 * 1000;
 
-// Payload relevante del ID token de Google (endpoint tokeninfo).
+// Relevant payload of the Google ID token (tokeninfo endpoint).
 interface GoogleTokenInfo {
   aud: string;
   sub: string;
@@ -38,8 +38,8 @@ export class AuthService {
     private traces: TracesService,
   ) {}
 
-  // Crea un token de verificación y envía el correo (o lo registra en dev).
-  private async enviarVerificacion(user: User) {
+  // Creates a verification token and sends the email (or logs it in dev).
+  private async sendVerification(user: User) {
     await this.prisma.verificationToken.deleteMany({ where: { userId: user.id } });
     const token = randomBytes(32).toString('hex');
     await this.prisma.verificationToken.create({
@@ -57,8 +57,8 @@ export class AuthService {
     );
   }
 
-  // hasPassword: el perfil distingue "cambiar" (cuentas con contraseña)
-  // de "definir" (cuentas creadas con Google, sin contraseña local).
+  // hasPassword: the profile tells "cambiar" (accounts with a password)
+  // apart from "definir" (accounts created with Google, no local password).
   private sanitize(user: User) {
     const { password, ...rest } = user;
     return { ...rest, hasPassword: Boolean(password) };
@@ -93,7 +93,7 @@ export class AuthService {
       },
     });
 
-    await this.enviarVerificacion(user);
+    await this.sendVerification(user);
     await this.traces.record(
       TraceType.REGISTER,
       `Nuevo usuario registrado: ${user.email}`,
@@ -102,7 +102,7 @@ export class AuthService {
     return this.session(user);
   }
 
-  // Verifica el correo a partir del token del enlace.
+  // Verifies the email from the link token.
   async verifyEmail(token: string) {
     const vt = await this.prisma.verificationToken.findUnique({
       where: { token },
@@ -125,14 +125,14 @@ export class AuthService {
     return { verified: true };
   }
 
-  // Reenvía el correo de verificación al usuario autenticado.
+  // Resends the verification email to the authenticated user.
   async resendVerification(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException();
     if (user.emailVerified) {
       throw new BadRequestException('Tu correo ya está verificado');
     }
-    await this.enviarVerificacion(user);
+    await this.sendVerification(user);
     return { sent: true };
   }
 
@@ -144,7 +144,7 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    // Cuentas creadas con Google no tienen contraseña local.
+    // Accounts created with Google have no local password.
     if (!user.password) {
       throw new UnauthorizedException(
         'Esta cuenta usa Google para iniciar sesión',
@@ -166,9 +166,9 @@ export class AuthService {
     return this.session(user);
   }
 
-  // Busca la cuenta por correo o, si el texto no parece un correo, por
-  // nombre de usuario (sin distinguir mayúsculas). El nombre no es único:
-  // si hay más de una cuenta con ese nombre se pide usar el correo.
+  // Finds the account by email or, if the text doesn't look like an email, by
+  // username (case-insensitive). The name is not unique: if more than one
+  // account has that name, the user is asked to use the email.
   private async findByIdentifier(identifier: string) {
     if (!identifier) return null;
     if (identifier.includes('@')) {
@@ -186,7 +186,7 @@ export class AuthService {
     return matches[0] ?? null;
   }
 
-  // Cierre de sesión: el JWT es stateless, solo queda la traza de auditoría.
+  // Logout: the JWT is stateless, only the audit trace is recorded.
   async logout(user: { id: string; email: string }) {
     await this.traces.record(
       TraceType.LOGOUT,
@@ -197,8 +197,8 @@ export class AuthService {
     return { ok: true };
   }
 
-  // Intento de inicio de sesión fallido (usuario inexistente o contraseña
-  // incorrecta): queda auditado con resultado ERROR, junto a IP y navegador.
+  // Failed login attempt (unknown user or wrong password): audited with
+  // result ERROR, along with IP and browser.
   private async failedLogin(email: string, userId?: string) {
     await this.traces.record(
       TraceType.LOGIN,
@@ -208,8 +208,8 @@ export class AuthService {
     );
   }
 
-  // Registro/login con Google: si el correo no existe, la cuenta se crea
-  // directamente (el teléfono es opcional y se completa desde el perfil).
+  // Sign-up/login with Google: if the email doesn't exist, the account is
+  // created directly (the phone is optional and filled in from the profile).
   async googleAuth(dto: GoogleAuthDto) {
     const payload = await this.verifyGoogleToken(dto.idToken);
 
@@ -218,9 +218,9 @@ export class AuthService {
     });
 
     if (user) {
-      // Vincula la cuenta Google a un usuario existente con el mismo correo.
-      // Google ya verificó ese correo (validado en verifyGoogleToken), así
-      // que la cuenta queda verificada aunque no hubiera confirmado el suyo.
+      // Links the Google account to an existing user with the same email.
+      // Google already verified that email (checked in verifyGoogleToken), so
+      // the account becomes verified even if the user never confirmed it.
       if (!user.googleId || !user.emailVerified) {
         user = await this.prisma.user.update({
           where: { id: user.id },
@@ -241,7 +241,7 @@ export class AuthService {
         password: null,
         name: payload.name || payload.email.split('@')[0],
         googleId: payload.sub,
-        // Google ya verificó el correo (validado en verifyGoogleToken).
+        // Google already verified the email (checked in verifyGoogleToken).
         emailVerified: true,
       },
     });
@@ -281,8 +281,8 @@ export class AuthService {
     return payload;
   }
 
-  // Restablecimiento de contraseña: siempre responde {sent:true} para no
-  // revelar qué correos están registrados.
+  // Password reset: always responds {sent:true} so as not to reveal
+  // which emails are registered.
   async forgotPassword(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user) return { sent: true };
@@ -307,8 +307,8 @@ export class AuthService {
     return { sent: true };
   }
 
-  // Cambia la contraseña con el token del correo. Probar la propiedad del
-  // correo también verifica la cuenta.
+  // Changes the password with the emailed token. Proving ownership of the
+  // email also verifies the account.
   async resetPassword(token: string, password: string) {
     const rt = await this.prisma.passwordResetToken.findUnique({
       where: { token },

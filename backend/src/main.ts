@@ -9,12 +9,12 @@ async function bootstrap() {
 
   app.setGlobalPrefix('api');
 
-  // Detrás del proxy de Render: req.ip debe traer la IP real del cliente
-  // (X-Forwarded-For), no la del proxy. Las trazas de auditoría la guardan.
+  // Behind Render's proxy: req.ip must hold the real client IP
+  // (X-Forwarded-For), not the proxy's. Audit traces store it.
   app.set('trust proxy', 1);
 
-  // El límite por defecto de Express (100 KB) se queda corto para la
-  // importación masiva del panel admin (hasta 500 ofertas por request).
+  // Express's default limit (100 KB) falls short for the admin panel's bulk
+  // import (up to 500 offers per request).
   app.useBodyParser('json', { limit: '5mb' });
   app.useBodyParser('urlencoded', { extended: true, limit: '5mb' });
 
@@ -26,8 +26,8 @@ async function bootstrap() {
     }),
   );
 
-  // Orígenes permitidos siempre (producción). CORS compara solo el origen
-  // (esquema + host), sin ruta ni barra final.
+  // Always-allowed origins (production). CORS compares only the origin
+  // (scheme + host), with no path or trailing slash.
   const defaultOrigins = [
     'https://tu-chamba.corpsc.com',
     'https://admin-chamba.corpsc.com',
@@ -39,7 +39,7 @@ async function bootstrap() {
   const origins = [...new Set([...defaultOrigins, ...envOrigins])];
   app.enableCors({
     origin: (origin, cb) => {
-      // Permite herramientas sin origin (curl) y cualquier localhost en desarrollo.
+      // Allows tools without an origin (curl) and any localhost in development.
       if (!origin || origins.includes(origin) || /^http:\/\/localhost:\d+$/.test(origin)) {
         cb(null, true);
       } else {

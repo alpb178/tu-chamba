@@ -8,8 +8,8 @@ import {
   ValidateIf,
 } from 'class-validator';
 
-// Una visita es a un anuncio (adId), al sitio en general (path) o un clic en
-// una tarjeta de "Sitios de interés" (company). Debe venir exactamente uno.
+// A visit is to a listing (adId), to the site in general (path) or a click on
+// a "Sitios de interés" card (company). Exactly one must be present.
 export class CreateVisitDto {
   @ApiPropertyOptional({ description: 'ID del anuncio visitado' })
   @ValidateIf((o: CreateVisitDto) => o.path === undefined && o.company === undefined)

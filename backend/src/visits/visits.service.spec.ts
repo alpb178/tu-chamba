@@ -11,7 +11,7 @@ function buildService() {
 }
 
 describe('VisitsService.record', () => {
-  it('registra la visita cuando el anuncio existe', async () => {
+  it('records the visit when the ad exists', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue({ id: 'a1' });
 
@@ -19,7 +19,7 @@ describe('VisitsService.record', () => {
     expect(prisma.visit.create).toHaveBeenCalledWith({ data: { adId: 'a1' } });
   });
 
-  it('ignora anuncios inexistentes sin fallar', async () => {
+  it('ignores nonexistent ads without failing', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue(null);
 
@@ -29,19 +29,19 @@ describe('VisitsService.record', () => {
 });
 
 describe('VisitsService.recordPageView', () => {
-  it('registra la página vista con la ruta', async () => {
+  it('records the page view with the path', async () => {
     const { service, prisma } = buildService();
 
     await expect(service.recordPageView('/listings')).resolves.toEqual({
       ok: true,
     });
-    // Sin sesión, la página vista queda anónima (userId null).
+    // Without a session, the page view stays anonymous (userId null).
     expect(prisma.pageView.create).toHaveBeenCalledWith({
       data: { path: '/listings', userId: null },
     });
   });
 
-  it('descarta query string y fragmento de la ruta', async () => {
+  it('strips the query string and fragment from the path', async () => {
     const { service, prisma } = buildService();
 
     await service.recordPageView('/listings?department=LA_PAZ#top');
@@ -50,7 +50,7 @@ describe('VisitsService.recordPageView', () => {
     });
   });
 
-  it('asocia la página vista al usuario cuando llega con sesión', async () => {
+  it('links the page view to the user when a session is present', async () => {
     const { service, prisma } = buildService();
 
     await service.recordPageView('/listings', 'user-1');
@@ -59,7 +59,7 @@ describe('VisitsService.recordPageView', () => {
     });
   });
 
-  it('recorta rutas más largas de 200 caracteres', async () => {
+  it('truncates paths longer than 200 characters', async () => {
     const { service, prisma } = buildService();
 
     await service.recordPageView('/' + 'x'.repeat(300));

@@ -7,15 +7,15 @@ import { MetricsService } from '../observability/metrics.service';
 import { ErrorsService } from '../observability/errors.service';
 import { GoogleIndexingService } from '../indexing/google-indexing.service';
 
-// Recorte para el mensaje de la notificación al dueño.
+// Truncation for the owner notification message.
 function summary(description: string) {
   return description.length > 60 ? `${description.slice(0, 60)}…` : description;
 }
 
-// Elimina los anuncios cuya vigencia ya pasó (expiresAt en el pasado),
-// cualquiera sea su estado. Antes de borrar, avisa a cada dueño con una
-// notificación sin adId (las reseñas se desvinculan vía SET NULL y las
-// visitas conservan sus filas; intereses y reportes caen en cascada).
+// Deletes listings whose validity has passed (expiresAt in the past),
+// regardless of status. Before deleting, notifies each owner with a
+// notification without adId (reviews are unlinked via SET NULL and visits
+// keep their rows; interests and reports cascade).
 @Injectable()
 export class AdsCleanupService implements OnApplicationBootstrap {
   private readonly logger = new Logger(AdsCleanupService.name);
@@ -28,8 +28,8 @@ export class AdsCleanupService implements OnApplicationBootstrap {
     private indexing: GoogleIndexingService,
   ) {}
 
-  // Barrido al arrancar: cubre los vencidos acumulados mientras el
-  // servicio estuvo dormido o entre deploys.
+  // Sweep on startup: covers listings that expired while the service was
+  // asleep or between deploys.
   async onApplicationBootstrap() {
     await this.run();
   }
@@ -39,7 +39,7 @@ export class AdsCleanupService implements OnApplicationBootstrap {
     await this.run();
   }
 
-  // Ejecuta el barrido reportando estado y fallos al panel de actividad.
+  // Runs the sweep, reporting status and failures to the activity panel.
   private async run() {
     try {
       await this.sweep();
@@ -79,9 +79,9 @@ export class AdsCleanupService implements OnApplicationBootstrap {
       `Limpieza automática: ${expired.length} ${expired.length === 1 ? 'anuncio vencido eliminado' : 'anuncios vencidos eliminados'}`,
       null,
     );
-    // Saca las URLs del índice de Google. Tope de 100 por barrido para no
-    // agotar la cuota diaria de la Indexing API (200/día por defecto); el
-    // resto lo depura el sitemap.
+    // Removes the URLs from Google's index. Capped at 100 per sweep so as not
+    // to exhaust the Indexing API daily quota (200/day by default); the
+    // sitemap cleans up the rest.
     for (const ad of expired.slice(0, 100)) {
       void this.indexing.notifyDeleted(ad.id);
     }

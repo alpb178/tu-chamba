@@ -5,32 +5,32 @@ describe('adEffectiveStatus', () => {
   const future = new Date(Date.now() + 86400_000).toISOString();
   const past = new Date(Date.now() - 86400_000).toISOString();
 
-  it('DADO_DE_BAJA manda sobre la vigencia', () => {
+  it('DADO_DE_BAJA takes precedence over expiry', () => {
     expect(adEffectiveStatus({ status: 'DADO_DE_BAJA', expiresAt: future })).toBe(
       'DADO_DE_BAJA',
     );
   });
-  it('activo vigente / vencido según expiresAt', () => {
+  it('active: current / expired depending on expiresAt', () => {
     expect(adEffectiveStatus({ status: 'ACTIVO', expiresAt: future })).toBe('ACTIVO');
     expect(adEffectiveStatus({ status: 'ACTIVO', expiresAt: past })).toBe('VENCIDO');
   });
 });
 
 describe('formatUserAgent', () => {
-  it('sin dato devuelve guion', () => {
+  it('returns a dash when there is no value', () => {
     expect(formatUserAgent(null)).toBe('—');
   });
-  it('detecta Chrome en móvil', () => {
+  it('detects Chrome on mobile', () => {
     expect(
       formatUserAgent('Mozilla/5.0 (iPhone) AppleWebKit Chrome/126 Safari/537'),
     ).toBe('Chrome · Móvil');
   });
-  it('detecta Firefox en escritorio', () => {
+  it('detects Firefox on desktop', () => {
     expect(formatUserAgent('Mozilla/5.0 (Windows NT 10) Firefox/120')).toBe(
       'Firefox · Escritorio',
     );
   });
-  it('Edge tiene prioridad sobre Chrome (comparten cadena)', () => {
+  it('Edge takes precedence over Chrome (they share a string)', () => {
     expect(
       formatUserAgent('Mozilla/5.0 Chrome/126 Edg/126 Safari/537'),
     ).toBe('Edge · Escritorio');

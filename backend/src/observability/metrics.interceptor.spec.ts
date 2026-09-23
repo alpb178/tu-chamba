@@ -12,7 +12,7 @@ function ctx(user?: { id: string }) {
 }
 
 describe('MetricsInterceptor', () => {
-  it('registra la solicitud exitosa con su código y el usuario', async () => {
+  it('records a successful request with its status code and user', async () => {
     const metrics = { recordRequest: jest.fn() };
     const interceptor = new MetricsInterceptor(metrics as never);
     const next = { handle: () => of('ok') };
@@ -24,7 +24,7 @@ describe('MetricsInterceptor', () => {
     );
   });
 
-  it('registra el error con su estado HTTP', async () => {
+  it('records the error with its HTTP status', async () => {
     const metrics = { recordRequest: jest.fn() };
     const interceptor = new MetricsInterceptor(metrics as never);
     const next = { handle: () => throwError(() => new HttpException('no', 403)) };

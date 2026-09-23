@@ -1,6 +1,6 @@
 import { JobType, JOB_TYPE_LABEL } from '@/lib/types';
 
-// Chips de jornada con los contenedores de la paleta (ámbar/verde/azul).
+// Work schedule chips using the palette containers (amber/green/blue).
 const COLORS: Record<JobType, string> = {
   DIARIA: 'bg-secondary-container text-on-secondary-container',
   TIEMPO_COMPLETO: 'bg-tertiary-container text-on-tertiary-container',
@@ -8,7 +8,7 @@ const COLORS: Record<JobType, string> = {
   POR_CONTRATO: 'bg-secondary-container text-on-secondary-container',
   PASANTIA: 'bg-brand-light text-primary',
   FREELANCE: 'bg-tertiary-container text-on-tertiary-container',
-  // Sin jornada declarada: chip neutro, no compite con las jornadas reales.
+  // No declared schedule: neutral chip, doesn't compete with real schedules.
   A_CONVENIR: 'bg-surface-variant text-on-surface-variant',
 };
 

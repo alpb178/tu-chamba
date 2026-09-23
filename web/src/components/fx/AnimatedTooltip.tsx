@@ -18,9 +18,9 @@ export type TooltipItem = {
 };
 
 /**
- * Avatares solapados con tooltip animado (rotación/spring al pasar el cursor).
- * Portado de Iris Natural y desacoplado de Strapi: recibe la imagen como URL y
- * los textos por props. Adaptado a tokens M3 de tu-chamba.
+ * Overlapping avatars with an animated tooltip (rotation/spring on hover).
+ * Ported from Iris Natural and decoupled from Strapi: takes the image as a URL
+ * and the texts via props. Adapted to tu-chamba's M3 tokens.
  */
 export const AnimatedTooltip = ({ items }: { items: TooltipItem[] }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);

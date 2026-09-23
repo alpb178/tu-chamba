@@ -20,26 +20,26 @@ import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator
 export class InterestsController {
   constructor(private interests: InterestsService) {}
 
-  // Registra interés en un anuncio: al abrir el detalle (silencioso) o al
-  // contactar (contact=true, avisa al dueño la primera vez).
+  // Records interest in an ad: when opening the detail (silent) or on contact
+  // (contact=true, notifies the owner the first time).
   @Post()
   register(@Body() dto: CreateInterestDto, @CurrentUser() user: AuthUser) {
     return this.interests.register(dto.adId, user, dto.contact ?? false);
   }
 
-  // Anuncios en los que el usuario mostró interés.
+  // Ads the user has shown interest in.
   @Get('mine')
   findMine(@CurrentUser() user: AuthUser) {
     return this.interests.findMine(user.id);
   }
 
-  // ¿Ya mostré interés en este anuncio? (para pintar el estado en el detalle)
+  // Have I already shown interest in this ad? (to render the state in the detail)
   @Get('status/:adId')
   status(@Param('adId') adId: string, @CurrentUser() user: AuthUser) {
     return this.interests.status(adId, user.id);
   }
 
-  // Quitar un anuncio de mi lista de interés.
+  // Remove an ad from my interest list.
   @Delete(':adId')
   remove(@Param('adId') adId: string, @CurrentUser() user: AuthUser) {
     return this.interests.remove(adId, user.id);

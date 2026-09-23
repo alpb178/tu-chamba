@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 
-// Selección de filas para el borrado por lotes de las tablas del panel.
-// Los ids marcados se conservan al cambiar de página o de filtro.
+// Row selection for batch deletion in the panel tables.
+// Checked ids are kept when changing page or filter.
 export function useSelection(pageIds: string[]) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -19,7 +19,7 @@ export function useSelection(pageIds: string[]) {
     });
   }
 
-  // Marca o desmarca todas las filas de la página visible.
+  // Checks or unchecks all rows on the visible page.
   function togglePage() {
     setSelected((prev) => {
       const next = new Set(prev);

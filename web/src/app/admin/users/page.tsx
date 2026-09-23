@@ -21,19 +21,20 @@ import { PasswordInput } from '@/components/PasswordInput';
 import { useSelection } from '@/lib/admin/useSelection';
 import { IconBrandGoogle } from '@tabler/icons-react';
 
-// Filas de 10 en 10, con paginación en cliente (el endpoint devuelve todo).
+// Rows in pages of 10, with client-side pagination (the endpoint returns
+// everything).
 const PAGE_SIZE = 10;
 
 const HEADERS = ['Usuario', 'Correo', 'Rol', 'Origen', 'Registro', 'Anuncios'];
 
-// Estilo de chip para los badges de Rol y Origen (esquinas redondas solo aquí).
+// Chip style for the Rol and Origen badges (rounded corners only here).
 const BADGE_BASE =
   'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.08em]';
 
 type UserRow = User & { _count?: { ads: number } };
 
-// Alta de un administrador: correo, contraseña y usuario opcional (el
-// usuario también sirve para iniciar sesión; si falta, sale del correo).
+// Admin creation: email, password and optional username (the username can
+// also be used to log in; if missing, it's derived from the email).
 function CreateAdminDialog({
   open,
   onClose,
@@ -49,9 +50,9 @@ function CreateAdminDialog({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // El diálogo sigue montado al cerrarse (solo deja de renderizar): al
-  // reabrirlo, el formulario debe arrancar vacío aunque se haya cancelado
-  // a medio escribir.
+  // The dialog stays mounted when closed (it just stops rendering): on
+  // reopening, the form must start empty even if it was cancelled
+  // mid-typing.
   useEffect(() => {
     if (!open) return;
     setEmail('');
@@ -88,8 +89,8 @@ function CreateAdminDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      {/* autoComplete=off + new-password: sin esto Chrome rellena el par
-          correo/contraseña con las credenciales guardadas del panel. */}
+      {/* autoComplete=off + new-password: without this Chrome fills the
+          email/password pair with the panel's saved credentials. */}
       <form
         onSubmit={submit}
         autoComplete="off"
@@ -160,15 +161,15 @@ export default function UsersPage() {
   const [confirmBulk, setConfirmBulk] = useState(false);
   const [confirmAll, setConfirmAll] = useState(false);
 
-  // Búsqueda (nombre/correo), filtro de rol y página, todo en cliente.
+  // Search (name/email), role filter and page, all client-side.
   const [q, setQ] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [page, setPage] = useState(1);
 
-  // El borrado total conserva a los administradores.
+  // The full wipe keeps the administrators.
   const clientCount = users.filter((u) => !u.isAdmin).length;
 
-  // Filtrado por término (nombre + correo) y por rol (derivado de isAdmin).
+  // Filtering by term (name + email) and by role (derived from isAdmin).
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
     return users.filter((u) => {
@@ -181,13 +182,13 @@ export default function UsersPage() {
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
-  // Si al borrar/filtrar la página actual queda fuera de rango, retrocede.
+  // If deleting/filtering leaves the current page out of range, step back.
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
 
   const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  // La selección "de la página" opera solo sobre las filas visibles.
+  // The "page" selection only acts on the visible rows.
   const pageIds = useMemo(() => pageRows.map((u) => u.id), [pageRows]);
   const { selected, allInPage, toggleOne, togglePage, clear } = useSelection(pageIds);
 
@@ -202,7 +203,7 @@ export default function UsersPage() {
 
   useEffect(load, []);
 
-  // Al cambiar la búsqueda o el filtro, vuelve a la primera página.
+  // When the search or filter changes, go back to the first page.
   function onSearch(v: string) {
     setQ(v);
     setPage(1);
@@ -212,7 +213,7 @@ export default function UsersPage() {
     setPage(1);
   }
 
-  // Concede o revoca el acceso a este panel (único distintivo entre usuarios).
+  // Grants or revokes access to this panel (the only distinction between users).
   async function setAdmin(id: string, isAdmin: boolean) {
     await api(`/users/${id}/admin`, {
       method: 'PATCH',
@@ -249,7 +250,7 @@ export default function UsersPage() {
     <div className="space-y-4">
       <h1 className="text-2xl font-semibold text-on-surface">Usuarios</h1>
 
-      {/* Barra superior: buscar + filtro de rol a la izquierda, acciones a la derecha. */}
+      {/* Top bar: search + role filter on the left, actions on the right. */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative w-full sm:w-64">
           <Icon

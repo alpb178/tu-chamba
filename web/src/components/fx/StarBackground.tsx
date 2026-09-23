@@ -18,14 +18,14 @@ interface StarBackgroundProps {
   minTwinkleSpeed?: number;
   maxTwinkleSpeed?: number;
   className?: string;
-  /** RGB de las estrellas ("r, g, b"). El <canvas> no resuelve vars CSS, así
-   *  que debe ser un color concreto. Por defecto, blancas (secciones oscuras). */
+  /** Star RGB ("r, g, b"). <canvas> doesn't resolve CSS vars, so it must
+   *  be a concrete color. Defaults to white (dark sections). */
   starColor?: string;
 }
 
 /**
- * Fondo de estrellas titilantes dibujado en <canvas> 2D. Portado de Iris
- * Natural. Pensado para secciones oscuras (estrellas blancas por defecto).
+ * Twinkling star background drawn on a 2D <canvas>. Ported from Iris
+ * Natural. Meant for dark sections (white stars by default).
  */
 const StarBackground: React.FC<StarBackgroundProps> = ({
   starDensity = 0.00015,

@@ -7,7 +7,7 @@ import { api } from '@/lib/api';
 import { Button, FormField } from '@/components/ui';
 import { PasswordInput } from '@/components/PasswordInput';
 
-// Define la contraseña nueva con el token del enlace del correo.
+// Sets the new password using the token from the email link.
 function ResetForm() {
   const token = useSearchParams().get('token') ?? '';
   const [password, setPassword] = useState('');

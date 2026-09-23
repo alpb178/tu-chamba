@@ -39,7 +39,7 @@ const ad = { id: 'a1', createdById: 'owner1', description: 'Anuncio de prueba' }
 const dto = { adId: 'a1', rating: 4, comment: 'Bien' };
 
 describe('ReviewsService.create', () => {
-  it('cualquier usuario puede calificar un anuncio ajeno', async () => {
+  it('any user can rate a listing owned by someone else', async () => {
     const { service, prisma, notifications } = buildService();
     prisma.ad.findUnique.mockResolvedValue(ad);
     prisma.review.create.mockResolvedValue({
@@ -55,7 +55,7 @@ describe('ReviewsService.create', () => {
     expect(notifications.notifyReview).toHaveBeenCalled();
   });
 
-  it('nadie puede calificar su propio anuncio', async () => {
+  it('nobody can rate their own listing', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue(ad);
 
@@ -64,7 +64,7 @@ describe('ReviewsService.create', () => {
     );
   });
 
-  it('una sola reseña por anuncio (P2002 → 409)', async () => {
+  it('only one review per listing (P2002 → 409)', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue(ad);
     prisma.review.create.mockRejectedValue(
@@ -81,7 +81,7 @@ describe('ReviewsService.create', () => {
 });
 
 describe('ReviewsService.findByOwner', () => {
-  it('marca alreadyReviewed cuando el usuario ya calificó ese anuncio', async () => {
+  it('sets alreadyReviewed when the user already rated that listing', async () => {
     const { service, prisma } = buildService();
     prisma.review.findMany.mockResolvedValue([]);
     prisma.review.aggregate.mockResolvedValue({
@@ -98,8 +98,8 @@ describe('ReviewsService.findByOwner', () => {
   });
 });
 
-describe('ReviewsService.update (moderación)', () => {
-  it('falla si la reseña no existe', async () => {
+describe('ReviewsService.update (moderation)', () => {
+  it('fails if the review does not exist', async () => {
     const { service, prisma } = buildService();
     prisma.review.findUnique.mockResolvedValue(null);
     await expect(
@@ -107,7 +107,7 @@ describe('ReviewsService.update (moderación)', () => {
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('actualiza calificación y comentario (recortado) y deja traza', async () => {
+  it('updates rating and comment (trimmed) and records a trace', async () => {
     const { service, prisma, traces } = buildService();
     prisma.review.findUnique.mockResolvedValue({ id: 'r1', rating: 5 });
     prisma.review.update.mockResolvedValue({ id: 'r1', rating: 3 });
@@ -125,7 +125,7 @@ describe('ReviewsService.update (moderación)', () => {
 });
 
 describe('ReviewsService.remove', () => {
-  it('falla si no existe', async () => {
+  it('fails if it does not exist', async () => {
     const { service, prisma } = buildService();
     prisma.review.findUnique.mockResolvedValue(null);
     await expect(service.remove('r1', adminUser)).rejects.toBeInstanceOf(
@@ -133,15 +133,15 @@ describe('ReviewsService.remove', () => {
     );
   });
 
-  it('un usuario ajeno (no autor, no admin) no puede borrarla', async () => {
+  it('an unrelated user (not author, not admin) cannot delete it', async () => {
     const { service, prisma } = buildService();
-    prisma.review.findUnique.mockResolvedValue({ id: 'r1', authorId: 'otro' });
+    prisma.review.findUnique.mockResolvedValue({ id: 'r1', authorId: 'other' });
     await expect(
       service.remove('r1', { id: 'x', email: 'x@t', isAdmin: false }),
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
-  it('el autor puede borrar su reseña', async () => {
+  it('the author can delete their review', async () => {
     const { service, prisma } = buildService();
     prisma.review.findUnique.mockResolvedValue({ id: 'r1', authorId: 'author', rating: 4 });
     prisma.review.delete.mockResolvedValue({});
@@ -150,9 +150,9 @@ describe('ReviewsService.remove', () => {
     });
   });
 
-  it('el admin puede moderar (borrar) cualquier reseña', async () => {
+  it('the admin can moderate (delete) any review', async () => {
     const { service, prisma } = buildService();
-    prisma.review.findUnique.mockResolvedValue({ id: 'r1', authorId: 'otro', rating: 2 });
+    prisma.review.findUnique.mockResolvedValue({ id: 'r1', authorId: 'other', rating: 2 });
     prisma.review.delete.mockResolvedValue({});
     await expect(service.remove('r1', adminUser)).resolves.toEqual({
       deleted: true,
@@ -161,7 +161,7 @@ describe('ReviewsService.remove', () => {
 });
 
 describe('ReviewsService.removeMany / removeAll', () => {
-  it('removeMany borra por lotes con traza resumen', async () => {
+  it('removeMany deletes in bulk with a summary trace', async () => {
     const { service, prisma, traces } = buildService();
     prisma.review.deleteMany.mockResolvedValue({ count: 2 });
     await expect(service.removeMany(['r1', 'r2'], adminUser)).resolves.toEqual({
@@ -177,7 +177,7 @@ describe('ReviewsService.removeMany / removeAll', () => {
     );
   });
 
-  it('removeAll borra todas', async () => {
+  it('removeAll deletes all of them', async () => {
     const { service, prisma } = buildService();
     prisma.review.deleteMany.mockResolvedValue({ count: 8 });
     await expect(service.removeAll(adminUser)).resolves.toEqual({ deleted: 8 });
@@ -185,8 +185,8 @@ describe('ReviewsService.removeMany / removeAll', () => {
   });
 });
 
-describe('ReviewsService.findAllAdmin (reporte de moderación)', () => {
-  it('filtra por calificación, búsqueda y rango de fechas, y pagina', async () => {
+describe('ReviewsService.findAllAdmin (moderation report)', () => {
+  it('filters by rating, search and date range, and paginates', async () => {
     const { service, prisma } = buildService();
     prisma.review.findMany.mockResolvedValue([{ id: 'r1' }]);
     (prisma.review as { count: jest.Mock }).count = jest.fn().mockResolvedValue(1);

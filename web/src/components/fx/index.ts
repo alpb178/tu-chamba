@@ -1,7 +1,7 @@
-// Librería de efectos visuales del lenguaje "aceternity", portada de Iris
-// Natural y adaptada a los tokens M3 y al helper `cn` de tu-chamba.
-// Los componentes pesados (WebGL/partículas) son "use client" y conviene
-// cargarlos con next/dynamic { ssr: false } donde se usen.
+// Visual effects library in the "aceternity" language, ported from Iris
+// Natural and adapted to tu-chamba's M3 tokens and `cn` helper.
+// The heavy components (WebGL/particles) are "use client" and are best
+// loaded with next/dynamic { ssr: false } where they are used.
 
 export { Tilt3D } from './Tilt3D';
 export { SlideBurst } from './SlideBurst';

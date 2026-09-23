@@ -10,8 +10,8 @@ import { PasswordInput } from '@/components/PasswordInput';
 import { PhoneField } from '@/components/PhoneField';
 import { Skeleton } from '@/components/Skeleton';
 
-// Perfil único: datos personales y contraseña (sin tipos de cuenta).
-// El correo identifica la cuenta y no se puede modificar.
+// Single profile: personal data and password (no account types).
+// The email identifies the account and can't be changed.
 export default function ProfilePage() {
   const { user, loading } = useRequireAuth();
   const { refresh } = useAuth();
@@ -29,7 +29,7 @@ export default function ProfilePage() {
     if (user) setForm({ name: user.name, phone: user.phone ?? '' });
   }, [user]);
 
-  // Las cuentas de Google no tienen contraseña local: pueden definir una.
+  // Google accounts have no local password: they can set one.
   const hasPassword = Boolean(user?.hasPassword);
   const changingPassword = passwords.password.length > 0;
 
@@ -58,7 +58,7 @@ export default function ProfilePage() {
         }),
       });
       await refresh();
-      // Tras guardar, siempre a la página principal.
+      // After saving, always go to the home page.
       router.push('/');
     } catch (err) {
       setError((err as Error).message);

@@ -6,8 +6,8 @@ import { VerificationBanner } from '@/components/VerificationBanner';
 import { TrackPageView } from '@/components/TrackPageView';
 import { jsonLd, organizationJsonLd, webSiteJsonLd } from '@/lib/seo';
 
-// SEO del sitio público. El layout raíz aporta metadataBase; aquí se define lo
-// específico del portal (no aplica al panel /admin, que tiene el suyo).
+// SEO for the public site. The root layout provides metadataBase; here we
+// define what is specific to the portal (not the /admin panel, which has its own).
 export const metadata: Metadata = {
   title: {
     default: 'Tu Chamba — Empleos y trabajos en Bolivia',
@@ -19,17 +19,17 @@ export const metadata: Metadata = {
     siteName: 'Tu Chamba',
     locale: 'es_BO',
     type: 'website',
-    // Banner de marca al compartir enlaces en redes/WhatsApp.
+    // Brand banner when sharing links on social media/WhatsApp.
     images: ['/banner.jpeg'],
   },
-  // Verificación de Google Search Console (genera la <meta> en el <head>).
+  // Google Search Console verification (generates the <meta> in the <head>).
   verification: {
     google: 'RAbSkpDPrtoFPzaYMThMDULsfBn4bjGRobJb6z5krXQ',
   },
 };
 
-// Chrome del sitio público: barra de navegación, banner de verificación, área
-// principal centrada y pie. La sesión (AuthProvider) la provee el layout raíz.
+// Public site chrome: navigation bar, verification banner, centered main area
+// and footer. The session (AuthProvider) is provided by the root layout.
 export default function SiteLayout({
   children,
 }: {
@@ -37,8 +37,8 @@ export default function SiteLayout({
 }) {
   return (
     <>
-      {/* Datos estructurados del sitio: buscador propio en Google
-          (SearchAction) y la organización con su logo. */}
+      {/* Site structured data: our own search box on Google
+          (SearchAction) and the organization with its logo. */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(webSiteJsonLd()) }}

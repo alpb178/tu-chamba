@@ -21,7 +21,7 @@ export class QueryTraceDto {
   @IsEnum(TraceResult)
   result?: TraceResult;
 
-  // Email del actor (búsqueda parcial, sin distinguir mayúsculas).
+  // Actor email (partial, case-insensitive match).
   @ApiPropertyOptional({ example: 'ana@' })
   @IsOptional()
   @IsString()

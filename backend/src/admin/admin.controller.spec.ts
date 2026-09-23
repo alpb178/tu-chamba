@@ -5,8 +5,8 @@ function build() {
   const traces = { findAll: jest.fn(), removeAll: jest.fn(), remove: jest.fn(), removeMany: jest.fn() };
   return { c: new AdminController(admin as never, traces as never), admin, traces };
 }
-describe('AdminController (delegación)', () => {
-  it('delega KPIs y auditoría', () => {
+describe('AdminController (delegation)', () => {
+  it('delegates KPIs and audit', () => {
     const { c, admin, traces } = build();
     c.stats(); expect(admin.stats).toHaveBeenCalled();
     c.topAds(); expect(admin.topAds).toHaveBeenCalled();

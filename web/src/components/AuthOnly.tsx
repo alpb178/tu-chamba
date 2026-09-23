@@ -3,11 +3,11 @@
 import { ReactNode } from 'react';
 import { useAuth } from '@/lib/auth';
 
-// Envuelve secciones del detalle que solo ven los usuarios con sesión
-// (salario, zona, publicante, reseñas...). Sin sesión no se renderiza nada:
-// el visitante anónimo solo ve la parte superior del anuncio y el aviso de
-// iniciar sesión de AdActions. Es un gate de presentación (como el corte de
-// la descripción); el teléfono y la ubicación siguen protegidos en el API.
+// Wraps detail sections that only signed-in users see (salary, area,
+// poster, reviews...). Without a session nothing is rendered: the anonymous
+// visitor only sees the top of the listing and the AdActions sign-in
+// prompt. It is a presentation gate (like the description cutoff); the
+// phone and location remain protected in the API.
 export function AuthOnly({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   if (!user) return null;

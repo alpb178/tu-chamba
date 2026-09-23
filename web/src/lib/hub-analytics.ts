@@ -1,13 +1,13 @@
 /**
- * Sitios del grupo, por dominio.
+ * Group sites, by domain.
  *
- * El registro canónico de slugs vive en el hub (`api/prisma/seed.ts` de
- * corpsc-admin) y es el que decide con qué nombre se guarda cada clic. Se
- * repite aquí en lugar de leerlo del cintillo de este sitio porque un slug
- * distinto —"dando-muela" en vez de "dandomuela"— partiría la misma métrica en
- * dos cubos que nadie cuadraría después.
+ * The canonical slug registry lives in the hub (`api/prisma/seed.ts` in
+ * corpsc-admin) and decides the name each click is stored under. It is
+ * repeated here instead of read from this site's ticker because a different
+ * slug —"dando-muela" instead of "dandomuela"— would split the same metric
+ * into two buckets nobody would reconcile later.
  *
- * El dominio se compara sin "www.": es el mismo sitio.
+ * The domain is compared without "www.": it is the same site.
  */
 const GROUP_SITES: Record<string, string> = {
   'corpsc.com': 'corpsc',
@@ -28,11 +28,12 @@ const GROUP_SITES: Record<string, string> = {
 };
 
 /**
- * `null` si el enlace no va a un sitio del grupo: un ancla, un mailto, otra web.
+ * `null` if the link doesn't go to a group site: an anchor, a mailto, another
+ * website.
  *
- * Se resuelve SIN base de respaldo a propósito. Con una, un enlace relativo
- * —`/empleos`— se resolvería contra el dominio de este mismo sitio y se
- * contaría como un clic que se va hacia nosotros mismos.
+ * It is resolved WITHOUT a fallback base on purpose. With one, a relative
+ * link —`/empleos`— would resolve against this very site's domain and would
+ * count as an outbound click to ourselves.
  */
 export function resolveGroupSite(href: string, ownHost?: string): string | null {
   let url: URL;
@@ -45,7 +46,7 @@ export function resolveGroupSite(href: string, ownHost?: string): string | null 
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
 
   const host = url.host.replace(/^www\./, '');
-  // Un enlace a este mismo sitio es navegación, no un clic que se va.
+  // A link to this same site is navigation, not an outbound click.
   if (ownHost && host === ownHost.replace(/^www\./, '')) return null;
 
   return GROUP_SITES[host] ?? null;

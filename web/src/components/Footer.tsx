@@ -7,11 +7,11 @@ import { Icon } from './Icon';
 
 const SUPPORT_EMAIL = 'alesx2soporte@gmail.com';
 
-// Footer invertido (fondo tinta, texto claro) al estilo editorial de Iris.
+// Inverted footer (ink background, light text) in Iris's editorial style.
 const linkClass =
   'text-sm text-inverse-on-surface/70 transition hover:text-inverse-on-surface focus:outline-none focus-visible:underline';
 
-// Micro-etiqueta de columna: mayúsculas con tracking amplio.
+// Column micro-label: uppercase with wide tracking.
 const colTitleClass =
   'mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-inverse-on-surface/60';
 
@@ -30,7 +30,7 @@ function FooterCol({
   );
 }
 
-// Botón social circular con leve elevación al hover.
+// Circular social button with a slight lift on hover.
 function SocialLink({
   href,
   label,
@@ -40,7 +40,7 @@ function SocialLink({
 }: {
   href: string;
   label: string;
-  // Icono por nombre (sistema Icon) o un nodo propio (p. ej. icono de marca).
+  // Icon by name (Icon system) or a custom node (e.g. a brand icon).
   icon?: string;
   iconNode?: ReactNode;
   external?: boolean;
@@ -114,7 +114,7 @@ export function Footer() {
           </div>
         </div>
 
-        {/* Landing SEO por departamento (se conserva del footer anterior). */}
+        {/* SEO landing per department (kept from the previous footer). */}
         <nav
           aria-label="Empleos por departamento"
           className="border-t border-inverse-on-surface/15 pt-6"

@@ -7,8 +7,8 @@ import { loadSlim } from '@tsparticles/slim';
 import { motion, useAnimation } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
-// Resuelve variables CSS (var(...)/rgb(var(...))/hsl(var(...))) al color
-// calculado real, porque tsparticles no entiende variables CSS.
+// Resolves CSS variables (var(...)/rgb(var(...))/hsl(var(...))) to the actual
+// computed color, because tsparticles doesn't understand CSS variables.
 const resolveCSSVariable = (colorValue: string): string => {
   if (
     colorValue.startsWith('var(--') ||
@@ -38,9 +38,9 @@ type ParticlesProps = {
 };
 
 /**
- * Campo de partículas tipo "sparkles". Portado de Iris Natural; el color por
- * defecto es el azul de marca de tu-chamba y el fondo es transparente (el
- * llamante lo coloca sobre la superficie que quiera).
+ * "Sparkles" particle field. Ported from Iris Natural; the default color is
+ * tu-chamba's brand blue and the background is transparent (the caller
+ * places it over whatever surface it wants).
  */
 export const SparklesCore = (props: ParticlesProps) => {
   const {

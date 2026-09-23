@@ -21,7 +21,7 @@ function buildService() {
 const actor = { id: 'adm', email: 'admin@t.com' };
 
 describe('TracesService.record', () => {
-  it('captura IP y user-agent del contexto del request', async () => {
+  it('captures IP and user-agent from the request context', async () => {
     const { service, prisma } = buildService();
 
     await requestContext.run(
@@ -43,7 +43,7 @@ describe('TracesService.record', () => {
     });
   });
 
-  it('guarda recurso y resultado cuando se indican', async () => {
+  it('stores resource and result when provided', async () => {
     const { service, prisma } = buildService();
 
     await service.record('LOGIN', 'Intento fallido', { email: 'x@y.z' }, {
@@ -55,7 +55,7 @@ describe('TracesService.record', () => {
 
     expect(prisma.trace.create.mock.calls[0][0].data).toMatchObject({
       result: 'ERROR',
-      // Fuera de un request (p. ej. cron) no hay contexto: quedan nulos.
+      // Outside a request (e.g. cron) there is no context: they stay null.
       ip: null,
       userAgent: null,
     });
@@ -65,7 +65,7 @@ describe('TracesService.record', () => {
     });
   });
 
-  it('no propaga errores de la base de datos (best-effort)', async () => {
+  it('does not propagate database errors (best-effort)', async () => {
     const { service, prisma } = buildService();
     prisma.trace.create.mockRejectedValue(new Error('BD caída'));
 
@@ -74,7 +74,7 @@ describe('TracesService.record', () => {
 });
 
 describe('TracesService.findAll', () => {
-  it('aplica los filtros de tipo, resultado, actor y fechas', async () => {
+  it('applies the type, result, actor and date filters', async () => {
     const { service, prisma } = buildService();
     prisma.trace.findMany.mockResolvedValue([]);
     prisma.trace.count.mockResolvedValue(0);
@@ -101,7 +101,7 @@ describe('TracesService.findAll', () => {
 });
 
 describe('TracesService.remove', () => {
-  it('falla si la traza no existe', async () => {
+  it('fails if the trace does not exist', async () => {
     const { service, prisma } = buildService();
     prisma.trace.findUnique.mockResolvedValue(null);
     await expect(service.remove('t1', actor)).rejects.toBeInstanceOf(
@@ -109,14 +109,14 @@ describe('TracesService.remove', () => {
     );
   });
 
-  it('borra la traza y audita la eliminación con una traza nueva', async () => {
+  it('deletes the trace and audits the deletion with a new trace', async () => {
     const { service, prisma } = buildService();
     prisma.trace.findUnique.mockResolvedValue({ id: 't1', description: 'Login' });
     prisma.trace.delete.mockResolvedValue({});
     const res = await service.remove('t1', actor);
     expect(res).toEqual({ deleted: true });
     expect(prisma.trace.delete).toHaveBeenCalledWith({ where: { id: 't1' } });
-    // La eliminación deja su propia traza (TRACE_DELETED).
+    // The deletion leaves its own trace (TRACE_DELETED).
     expect(prisma.trace.create).toHaveBeenCalled();
     expect(prisma.trace.create.mock.calls[0][0].data.type).toBe(
       TraceType.TRACE_DELETED,
@@ -125,7 +125,7 @@ describe('TracesService.remove', () => {
 });
 
 describe('TracesService.removeMany / removeAll', () => {
-  it('removeMany borra por lotes y deja traza resumen', async () => {
+  it('removeMany deletes in bulk and leaves a summary trace', async () => {
     const { service, prisma } = buildService();
     prisma.trace.deleteMany.mockResolvedValue({ count: 5 });
     const res = await service.removeMany(['t1', 't2'], actor);
@@ -136,7 +136,7 @@ describe('TracesService.removeMany / removeAll', () => {
     expect(prisma.trace.create).toHaveBeenCalled();
   });
 
-  it('removeAll vacía el historial dejando la traza resumen', async () => {
+  it('removeAll empties the history leaving the summary trace', async () => {
     const { service, prisma } = buildService();
     prisma.trace.deleteMany.mockResolvedValue({ count: 42 });
     const res = await service.removeAll(actor);

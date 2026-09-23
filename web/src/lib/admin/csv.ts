@@ -8,7 +8,7 @@ import {
   JOB_TYPE_LABEL,
 } from './types';
 
-// Payload de una oferta lista para enviar a POST /listings/bulk.
+// Payload of a job listing ready to send to POST /listings/bulk.
 export interface CsvAd {
   title: string;
   description: string;
@@ -18,40 +18,41 @@ export interface CsvAd {
   department: Department;
   category: Category;
   schedule?: string;
-  // Sin salario el anuncio queda "a convenir" (no se asigna valor por defecto).
-  // Con salaryMax el par es un rango y salary es su extremo inferior.
+  // Without a salary the listing is "a convenir" (no default value is set).
+  // With salaryMax the pair is a range and salary is its lower bound.
   salary?: number;
   salaryMax?: number;
   phone: string;
-  // Números adicionales del aviso ("77900185 / 67894829"): el primero va en
-  // phone y el resto aquí.
+  // Additional numbers in the ad ("77900185 / 67894829"): the first goes in
+  // phone and the rest here.
   extraPhones?: string[];
   jobType: JobType;
   durationDays: number;
 }
 
-// Tope de números adicionales por anuncio (igual que en la API).
+// Cap on additional numbers per listing (same as in the API).
 export const MAX_EXTRA_PHONES = 4;
 
-// Resultado de una fila del archivo: valores mapeados (para la vista previa)
-// y errores de validación. Sin errores, `values` es un CsvAd completo.
+// Result for one file row: mapped values (for the preview) and validation
+// errors. With no errors, `values` is a complete CsvAd.
 export interface CsvRowResult {
-  // Línea del archivo (1-based, contando la cabecera) para reportar errores.
+  // File line (1-based, counting the header) for error reporting.
   line: number;
   values: Partial<CsvAd>;
   errors: string[];
 }
 
 export interface ParsedCsv {
-  // Error de estructura (cabecera inválida); si existe, no hay filas.
+  // Structural error (invalid header); if present, there are no rows.
   headerError?: string;
   rows: CsvRowResult[];
 }
 
-// ——— Parser CSV mínimo (RFC 4180) ———
-// Soporta campos entrecomillados (con comas, saltos de línea y "" escapadas)
-// y detecta si el separador es coma o punto y coma (Excel en español exporta
-// con ';'). Suficiente para las plantillas del panel sin sumar dependencias.
+// ——— Minimal CSV parser (RFC 4180) ———
+// Supports quoted fields (with commas, line breaks and escaped "") and
+// detects whether the separator is a comma or a semicolon (Spanish-locale
+// Excel exports with ';'). Enough for the panel's templates without adding
+// dependencies.
 
 function detectDelimiter(text: string): ',' | ';' {
   const firstLine = text.slice(0, text.indexOf('\n') === -1 ? undefined : text.indexOf('\n'));
@@ -61,7 +62,7 @@ function detectDelimiter(text: string): ',' | ';' {
 }
 
 export function parseCsv(text: string): string[][] {
-  const src = text.replace(/^\uFEFF/, ''); // BOM de Excel
+  const src = text.replace(/^\uFEFF/, ''); // Excel BOM
   const delimiter = detectDelimiter(src);
   const rows: string[][] = [];
   let row: string[] = [];
@@ -100,13 +101,13 @@ export function parseCsv(text: string): string[][] {
     row.push(field);
     rows.push(row);
   }
-  // Filas totalmente vacías (líneas en blanco al final, etc.) se descartan.
+  // Fully empty rows (trailing blank lines, etc.) are dropped.
   return rows.filter((r) => r.some((cell) => cell.trim() !== ''));
 }
 
-// ——— Mapeo de cabeceras y valores ———
+// ——— Header and value mapping ———
 
-// "Tipo de jornada" -> "tipodejornada": sin tildes ni separadores.
+// "Tipo de jornada" -> "tipodejornada": no accents or separators.
 function normalizeKey(s: string) {
   return s
     .toLowerCase()
@@ -115,7 +116,7 @@ function normalizeKey(s: string) {
     .replace(/[^a-z0-9]/g, '');
 }
 
-// "Tiempo completo" -> "TIEMPO_COMPLETO": mismo formato que los enums de la API.
+// "Tiempo completo" -> "TIEMPO_COMPLETO": same format as the API enums.
 function normalizeEnum(s: string) {
   return s
     .toUpperCase()
@@ -128,8 +129,8 @@ function normalizeEnum(s: string) {
 
 type Field = keyof CsvAd;
 
-// Cabeceras aceptadas (en español —como la plantilla— o el nombre del campo
-// de la API), ya normalizadas con normalizeKey.
+// Accepted headers (in Spanish —like the template— or the API field name),
+// already normalized with normalizeKey.
 const HEADER_ALIASES: Record<string, Field> = {
   titulo: 'title',
   title: 'title',
@@ -165,17 +166,17 @@ const HEADER_ALIASES: Record<string, Field> = {
   durationdays: 'durationDays',
 };
 
-// Campo obligatorio -> nombre de columna como aparece en la plantilla,
-// para reportar cabeceras faltantes con el nombre que ve el admin.
-// Solo descripción y teléfono bloquean la importación; el resto de columnas
-// es opcional y se completa con valores por defecto.
+// Required field -> column name as it appears in the template, to report
+// missing headers with the name the admin sees.
+// Only description and phone block the import; the other columns are
+// optional and filled with default values.
 const REQUIRED_HEADERS: Record<string, Field> = {
   descripcion: 'description',
   telefono: 'phone',
 };
 
-// Acepta el valor del enum (SANTA_CRUZ), su etiqueta ("Santa Cruz") o un
-// sinónimo de la fuente (los avisos de prensa usan su propio vocabulario).
+// Accepts the enum value (SANTA_CRUZ), its label ("Santa Cruz") or a
+// synonym from the source (newspaper ads use their own vocabulary).
 function enumMatcher<T extends string>(
   labels: Record<T, string>,
   aliases: Record<string, T> = {},
@@ -191,8 +192,8 @@ function enumMatcher<T extends string>(
   return (raw: string): T | null => map.get(normalizeEnum(raw)) ?? null;
 }
 
-// Rubros de la fuente que ya tienen equivalente propio: no se crea categoría
-// nueva para un sinónimo (CHOFERES es TRANSPORTE, VARIOS es OTRO).
+// Source categories that already have an equivalent of ours: no new category
+// is created for a synonym (CHOFERES is TRANSPORTE, VARIOS is OTRO).
 const CATEGORY_ALIASES: Record<string, Category> = {
   VARIOS: 'OTRO',
   OTROS: 'OTRO',
@@ -220,9 +221,9 @@ const matchDepartment = enumMatcher<Department>(DEPARTMENT_LABEL);
 const matchCategory = enumMatcher<Category>(CATEGORY_LABEL, CATEGORY_ALIASES);
 const matchJobType = enumMatcher<JobType>(JOB_TYPE_LABEL, JOB_TYPE_ALIASES);
 
-// Título derivado de la descripción cuando el archivo no trae la columna:
-// la primera oración (hasta el primer punto, signo o salto de línea), con
-// tope de 100 caracteres. Solo se recorta de la descripción si queda resto.
+// Title derived from the description when the file has no such column:
+// the first sentence (up to the first period, mark or line break), capped
+// at 100 characters. It's only cut from the description if something remains.
 export function extractTitle(description: string): { title: string; rest: string } {
   const cut = description.search(/[.!?\n]/);
   const title = (cut === -1 ? description : description.slice(0, cut))
@@ -233,24 +234,24 @@ export function extractTitle(description: string): { title: string; rest: string
   return { title, rest };
 }
 
-// "Bs 2.500,50" -> 2500.5. Acepta coma o punto decimal (formato es-BO o en-US).
+// "Bs 2.500,50" -> 2500.5. Accepts a decimal comma or point (es-BO or en-US).
 function parseAmount(raw: string): number | null {
   let s = raw.replace(/[^\d.,]/g, '');
-  s = s.replace(/[.,]+$/, ''); // separador colgante: "3.500." -> "3.500"
+  s = s.replace(/[.,]+$/, ''); // trailing separator: "3.500." -> "3.500"
   if (s.includes('.') && s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
   else if (s.includes(',')) s = s.replace(',', '.');
-  // Solo punto y agrupando de a 3: es separador de miles ("3.000" -> 3000).
+  // Only points grouping by 3: it's a thousands separator ("3.000" -> 3000).
   else if (/^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
   const n = Number(s);
   return Number.isFinite(n) && n > 0 ? n : null;
 }
 
-// Salario del aviso: un monto ("3000") o un rango ("3500-4500", "2000 a 3000",
-// "Bs 2.500 – 4.000"). Devuelve el piso y, si hay rango, su techo.
+// Salary in the ad: an amount ("3000") or a range ("3500-4500", "2000 a 3000",
+// "Bs 2.500 – 4.000"). Returns the floor and, if it's a range, its ceiling.
 export function parseSalary(
   raw: string,
 ): { salary: number; salaryMax?: number } | null {
-  // Separador de rango: guion (incluido el largo), barra o "a"/"hasta".
+  // Range separator: dash (including the long one), slash or "a"/"hasta".
   const parts = raw
     .split(/\s*(?:[-–—/]|\ba\b|\bhasta\b)\s*/i)
     .map((p) => parseAmount(p))
@@ -260,9 +261,9 @@ export function parseSalary(
   return max > min ? { salary: min, salaryMax: max } : { salary: min };
 }
 
-// Teléfonos del aviso: suelen venir varios en una celda ("77900185 / 67894829",
-// "7712 3456, 69236841"). El primero es el principal y el resto quedan como
-// adicionales; se descartan los que no llegan a 7 dígitos y los repetidos.
+// Phones in the ad: often several in one cell ("77900185 / 67894829",
+// "7712 3456, 69236841"). The first is the main one and the rest become
+// additional; those under 7 digits and duplicates are dropped.
 export function parsePhones(raw: string): string[] {
   const candidates = raw.split(/[/,;|]|\s+(?:o|y)\s+|\s{2,}/i);
   const valid = candidates
@@ -271,7 +272,7 @@ export function parsePhones(raw: string): string[] {
   return [...new Set(valid)].slice(0, MAX_EXTRA_PHONES + 1);
 }
 
-// Convierte el texto de un CSV en filas validadas listas para importar.
+// Turns a CSV's text into validated rows ready to import.
 export function parseAdsCsv(text: string): ParsedCsv {
   const table = parseCsv(text);
   if (table.length === 0) return { headerError: 'El archivo está vacío.', rows: [] };
@@ -295,21 +296,21 @@ export function parseAdsCsv(text: string): ParsedCsv {
     header.forEach((field, col) => {
       if (!field) return;
       const value = (cells[col] ?? '').trim();
-      // Placeholder típico de archivos extraídos: equivale a celda vacía
-      // (si quedara, se mostraría literalmente en ubicación u horario).
+      // Typical placeholder in extracted files: equivalent to an empty cell
+      // (if kept, it would show literally in location or schedule).
       raw[field] = normalizeKey(value) === 'noespecificado' ? '' : value;
     });
 
     const values: Partial<CsvAd> = {};
     const errors: string[] = [];
 
-    // Solo la descripción y el teléfono bloquean la fila; el resto se
-    // completa con valores por defecto cuando falta o no coincide.
+    // Only description and phone block the row; the rest is filled with
+    // default values when missing or not matching.
     if (raw.description) values.description = raw.description;
     else errors.push('La descripción es obligatoria');
 
-    // Título: el de la columna o, si falta, la primera oración de la
-    // descripción (que se recorta de esta si queda contenido después).
+    // Title: the column's value or, if missing, the first sentence of the
+    // description (cut from it if content remains afterwards).
     if (raw.title) {
       values.title = raw.title.slice(0, 100);
     } else if (values.description) {
@@ -318,9 +319,9 @@ export function parseAdsCsv(text: string): ParsedCsv {
       if (rest) values.description = rest;
     }
 
-    // Un teléfono real tiene al menos 7 dígitos; textos como "No especificado"
-    // cuentan como fila sin teléfono. Si la celda trae varios números, el
-    // primero es el principal y los demás quedan como adicionales.
+    // A real phone has at least 7 digits; texts like "No especificado"
+    // count as a row without a phone. If the cell has several numbers, the
+    // first is the main one and the others become additional.
     const phones = parsePhones(raw.phone ?? '');
     if (phones.length) {
       values.phone = phones[0];
@@ -343,41 +344,41 @@ export function parseAdsCsv(text: string): ParsedCsv {
 
     if (raw.schedule) values.schedule = raw.schedule;
 
-    // Sin salario (o con un valor no numérico) el campo queda vacío. Un rango
-    // en la celda ("3500-4500") llena también el techo; una columna aparte de
-    // salario máximo tiene prioridad sobre el techo deducido del rango.
+    // Without a salary (or with a non-numeric value) the field stays empty. A
+    // range in the cell ("3500-4500") also fills the ceiling; a separate max
+    // salary column takes precedence over the ceiling inferred from the range.
     const salary = raw.salary ? parseSalary(raw.salary) : null;
     if (salary != null) {
       values.salary = salary.salary;
       if (salary.salaryMax != null) values.salaryMax = salary.salaryMax;
     }
     const salaryMax = raw.salaryMax ? parseAmount(raw.salaryMax) : null;
-    // Un techo por debajo del piso no es un rango: se ignora (lo rechazaría la API).
+    // A ceiling below the floor is not a range: ignored (the API would reject it).
     if (salaryMax != null && values.salary != null && salaryMax > values.salary) {
       values.salaryMax = salaryMax;
     }
 
-    // Sin jornada declarada se importa como "a convenir": antes se asumía
-    // TIEMPO_COMPLETO, que era un dato inventado.
+    // Without a declared schedule it's imported as "a convenir": previously
+    // TIEMPO_COMPLETO was assumed, which was made-up data.
     const jobType = raw.jobType ? matchJobType(raw.jobType) : null;
     values.jobType = jobType ?? 'A_CONVENIR';
 
     const days = raw.durationDays ? Number(raw.durationDays) : NaN;
     values.durationDays = DURATION_DAYS.includes(days) ? days : 7;
 
-    // +2: la fila 0 del cuerpo está en la línea 2 del archivo (tras la cabecera).
+    // +2: body row 0 is on line 2 of the file (after the header).
     return { line: i + 2, values, errors };
   });
 
   return { rows };
 }
 
-// Plantilla descargable con las cabeceras esperadas y filas de ejemplo.
+// Downloadable template with the expected headers and sample rows.
 export function buildTemplateCsv(): string {
   return [
     'titulo,descripcion,requisitos,ubicacion,referencia,departamento,categoria,horario,salario,telefono,tipoJornada,duracionDias',
-    // El salario acepta un monto o un rango ("3500-4500"), y la celda de
-    // teléfono admite varios números separados por "/".
+    // Salary accepts an amount or a range ("3500-4500"), and the phone cell
+    // accepts several numbers separated by "/".
     '"Vendedor de tienda","Se busca vendedor con experiencia en atención al cliente","Experiencia mínima de 1 año","Av. Banzer 3er anillo, zona norte","Frente al supermercado",SANTA_CRUZ,VENTAS,"Lun-Vie 8:00 a 16:00",2500,71111111,TIEMPO_COMPLETO,7',
     ',"Ayudante de cocina para restaurante céntrico. Preparación de ingredientes y limpieza.",,"Calle Comercio esq. Ayacucho",,LA_PAZ,GASTRONOMIA,,1800-2400,"72222222 / 3467010",MEDIA_JORNADA,3',
   ].join('\n');

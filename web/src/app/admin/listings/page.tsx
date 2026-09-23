@@ -22,7 +22,7 @@ import {
 import { Icon } from '@/components/admin/Icon';
 import { Pagination } from '@/components/admin/Pagination';
 
-// La primera columna es la de selección para el borrado por lotes.
+// The first column is the selection column for batch deletion.
 const HEADERS = [
   '',
   'Prioridad',
@@ -41,9 +41,9 @@ const HEADERS = [
 
 const CHECKBOX_CLASS = 'h-4 w-4 cursor-pointer accent-primary';
 
-// Campo para fijar a mano la posición del anuncio: el de mayor prioridad
-// encabeza el portal y esta tabla (0 = orden normal por relevancia). Guarda al
-// salir del campo o con Enter; si la API falla, vuelve al valor anterior.
+// Field to pin the listing's position by hand: the highest priority one
+// leads the portal and this table (0 = normal relevance order). Saves on
+// blur or Enter; if the API fails, it reverts to the previous value.
 function PriorityCell({ ad, onSaved }: { ad: Ad; onSaved: () => void }) {
   const saved = ad.priority ?? 0;
   const [value, setValue] = useState(String(saved));
@@ -112,7 +112,7 @@ export default function AdsAdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toDelete, setToDelete] = useState<Ad | null>(null);
-  // Ids marcados para el borrado por lotes (se conservan al cambiar de página).
+  // Ids checked for batch deletion (kept when changing pages).
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmBulk, setConfirmBulk] = useState(false);
   const [confirmAll, setConfirmAll] = useState(false);
@@ -121,7 +121,7 @@ export default function AdsAdminPage() {
   function load() {
     setLoading(true);
     setError(null);
-    // Vista admin: incluye vencidos y dados de baja, paginada.
+    // Admin view: includes expired and deactivated listings, paginated.
     api<Paginated<Ad>>(`/listings/all?page=${page}&limit=${LIMIT}`)
       .then(setData)
       .catch((e) => setError((e as Error).message))

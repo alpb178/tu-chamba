@@ -4,8 +4,8 @@ function build() {
   const alerts = { findMine: jest.fn(), create: jest.fn(), remove: jest.fn() };
   return { c: new AlertsController(alerts as never), alerts };
 }
-describe('AlertsController (delegación)', () => {
-  it('delega listar/crear/quitar', () => {
+describe('AlertsController (delegation)', () => {
+  it('delegates list/create/remove', () => {
     const { c, alerts } = build();
     c.findMine(u); expect(alerts.findMine).toHaveBeenCalledWith('u1');
     c.create({} as never, u); expect(alerts.create).toHaveBeenCalledWith({}, 'u1');

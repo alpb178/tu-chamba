@@ -18,7 +18,7 @@ function VerifyEmail() {
   const done = useRef(false);
 
   useEffect(() => {
-    if (done.current) return; // evita doble ejecución en StrictMode
+    if (done.current) return; // avoids double execution in StrictMode
     done.current = true;
 
     if (!token) {

@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Button, FormField, Input } from '@/components/ui';
 
-// Pide el enlace de restablecimiento. La API siempre responde "enviado"
-// (no revela qué correos existen).
+// Requests the reset link. The API always responds "sent"
+// (it doesn't reveal which emails exist).
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);

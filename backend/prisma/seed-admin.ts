@@ -1,8 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
-// Seed mínimo: crea (o deja igual) SOLO el usuario admin.
-// Uso: DATABASE_URL="<url-de-produccion>" npx ts-node prisma/seed-admin.ts
+// Minimal seed: creates (or leaves unchanged) ONLY the admin user.
+// Usage: DATABASE_URL="<production-url>" npx ts-node prisma/seed-admin.ts
 const prisma = new PrismaClient();
 
 async function main() {

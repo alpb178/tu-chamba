@@ -23,7 +23,7 @@ export class AlertsService {
     const department = dto.department ?? null;
     const category = dto.category ?? null;
 
-    // Evita alertas idénticas duplicadas (el @@unique no aplica con NULLs).
+    // Avoids duplicate identical alerts (the @@unique does not apply with NULLs).
     const exists = await this.prisma.jobAlert.findFirst({
       where: { userId, department, category },
     });

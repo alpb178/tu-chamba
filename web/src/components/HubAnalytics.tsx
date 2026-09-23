@@ -14,24 +14,24 @@ import { describeClick, isPrivatePath } from '@/lib/click-target';
 const PRIVATE_SEGMENTS = ['admin', 'profile', 'my-listings', 'alerts', 'interests'] as const;
 
 /**
- * Manda al hub del grupo la visita y los clics que se van a un sitio hermano.
+ * Sends the group hub the page view and the clicks that go to a sister site.
  *
- * Es independiente de `TrackPageView` y `TrackVisit`, que alimentan el panel de
- * administración de este propio sitio: aquel dato vive en nuestra base, este va
- * al hub, donde se comparan los sitios entre sí. Se cuenta dos veces a
- * propósito, porque son dos preguntas distintas.
+ * It's independent from `TrackPageView` and `TrackVisit`, which feed this
+ * site's own admin panel: that data lives in our database, this one goes to
+ * the hub, where sites are compared against each other. Counting twice is on
+ * purpose, because they answer two different questions.
  *
- * Todo pasa por `/api/hub-track`, que es quien tiene la clave: en el navegador
- * sería pública y cualquiera podría escribir métricas de este proyecto.
+ * Everything goes through `/api/hub-track`, which holds the key: in the browser
+ * it would be public and anyone could write metrics for this project.
  *
- * Los clics se escuchan en el documento y no enlace por enlace, así el cintillo
- * del grupo, las tarjetas de la home o lo que se añada mañana se cuentan sin
- * que nadie se acuerde de ponerles un handler.
+ * Clicks are listened for on the document rather than link by link, so the
+ * group banner, the home cards or whatever gets added tomorrow are counted
+ * without anyone having to remember to attach a handler.
  */
 export function HubAnalytics() {
   const pathname = usePathname();
-  // Última ruta enviada: sin esto la misma página cuenta dos veces, porque
-  // StrictMode ejecuta el efecto por duplicado y un remontaje lo repetiría.
+  // Last route sent: without this the same page counts twice, because
+  // StrictMode runs the effect twice and a remount would repeat it.
   const lastPath = useRef<string | null>(null);
   // The first page view of this load is the landing: only it carries the
   // source. Later client-side navigations keep the same document.referrer.
@@ -69,7 +69,7 @@ export function HubAnalytics() {
       );
     }
 
-    // En captura: el clic cuenta aunque algo más abajo llame a stopPropagation.
+    // Capture phase: the click counts even if something below calls stopPropagation.
     document.addEventListener('click', onClick, true);
     return () => document.removeEventListener('click', onClick, true);
   }, [pathname]);
@@ -100,6 +100,6 @@ function send(event: HubEvent, beacon = false): void {
     body,
     keepalive: true,
   }).catch(() => {
-    /* noop: la analítica nunca rompe la navegación */
+    /* noop: analytics never breaks navigation */
   });
 }

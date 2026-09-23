@@ -1,18 +1,18 @@
 'use client';
 
-// Mapa Leaflet + OpenStreetMap. Este módulo toca `window` al cargar Leaflet,
-// así que impórtalo siempre con next/dynamic y ssr: false.
+// Leaflet + OpenStreetMap map. This module touches `window` when loading
+// Leaflet, so always import it with next/dynamic and ssr: false.
 
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Centro por defecto: Santa Cruz de la Sierra.
+// Default center: Santa Cruz de la Sierra.
 const DEFAULT_CENTER: [number, number] = [-17.7833, -63.1821];
 const DEFAULT_ZOOM = 12;
 const PIN_ZOOM = 15;
 
-// divIcon evita los problemas de bundling de los assets de icono de Leaflet.
+// divIcon avoids the bundling issues with Leaflet's icon assets.
 const pinIcon = L.divIcon({
   className: '',
   html: '<span style="font-size:30px;line-height:30px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))">📍</span>',
@@ -26,13 +26,13 @@ function createMap(el: HTMLElement, center: [number, number], zoom: number) {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap',
   }).addTo(map);
-  // El contenedor puede terminar de medirse después del init (p. ej. al
-  // montarse dentro del modal): recalcula el tamaño en el siguiente tick.
+  // The container may finish measuring after init (e.g. when mounted
+  // inside the modal): recompute the size on the next tick.
   setTimeout(() => map.invalidateSize(), 0);
   return map;
 }
 
-// Nombre legible del lugar (best effort, para precargar el campo de texto).
+// Readable place name (best effort, to prefill the text field).
 async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
   try {
     const res = await fetch(
@@ -54,9 +54,9 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   }
 }
 
-// Lienzo del selector: clic o arrastre del pin, botón "mi ubicación" y
-// sincronización con las props (así el mapa chico refleja lo elegido en el
-// ampliado y viceversa). Lo montan MapPicker y su modal a distinto tamaño.
+// Picker canvas: click or drag the pin, "my location" button and sync with
+// the props (so the small map reflects what was picked in the enlarged one
+// and vice versa). Mounted by MapPicker and its modal at different sizes.
 function PickerMap({
   lat,
   lng,
@@ -74,7 +74,7 @@ function PickerMap({
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
 
-  // Callbacks en refs para no re-crear el mapa cuando cambien.
+  // Callbacks in refs so the map isn't recreated when they change.
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const onPlaceRef = useRef(onPlace);
@@ -122,11 +122,11 @@ function PickerMap({
       mapRef.current = null;
       markerRef.current = null;
     };
-    // Solo inicialización: los cambios posteriores llegan por el efecto de abajo.
+    // Initialization only: later changes arrive via the effect below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Pin movido desde otra instancia (modal ↔ mapa chico): sincroniza.
+  // Pin moved from another instance (modal ↔ small map): sync.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || lat == null || lng == null) return;
@@ -169,9 +169,9 @@ function PickerMap({
   );
 }
 
-// Selector de ubicación con vista ampliable (modal), como en el detalle.
-// Los panes de Leaflet usan z-index altos: el wrapper `relative z-0` los
-// encierra en su propio stacking context para que no tapen el modal.
+// Location picker with an expandable view (modal), as in the detail page.
+// Leaflet panes use high z-indexes: the `relative z-0` wrapper encloses
+// them in their own stacking context so they don't cover the modal.
 export function MapPicker({
   lat,
   lng,
@@ -185,7 +185,7 @@ export function MapPicker({
 }) {
   const [expanded, setExpanded] = useState(false);
 
-  // Cerrar el modal con Escape.
+  // Close the modal with Escape.
   useEffect(() => {
     if (!expanded) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setExpanded(false);
@@ -234,7 +234,7 @@ export function MapPicker({
               onPlace={onPlace}
               className="h-full w-full"
             />
-            {/* autoFocus: el foco entra al diálogo al abrirse. */}
+            {/* autoFocus: focus moves into the dialog when it opens. */}
             <button
               type="button"
               autoFocus
@@ -250,9 +250,9 @@ export function MapPicker({
   );
 }
 
-// Mapa de solo lectura con el pin de la oferta (detalle del anuncio).
-// zoom menor para ubicaciones aproximadas (geocodificadas por dirección);
-// className permite la variante ampliada (modal a pantalla completa).
+// Read-only map with the listing's pin (listing detail).
+// Lower zoom for approximate locations (geocoded from the address);
+// className enables the enlarged variant (full-screen modal).
 export function MapView({
   lat,
   lng,

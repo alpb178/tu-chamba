@@ -48,11 +48,11 @@ import {
   Smartphone,
 } from 'lucide-react';
 
-// SVG empaquetados en el bundle (lucide-react, la misma librería que usa el
-// proyecto hermano Iris Natural) en lugar de la fuente de Material Symbols:
-// la fuente dependía del CDN de Google y en redes móviles fallaba, mostrando
-// el nombre del icono como texto ("location_on"). Se conservan los nombres de
-// Material como API (clave del objeto) para no tocar cada uso.
+// SVGs bundled into the app (lucide-react, the same library the sister
+// project Iris Natural uses) instead of the Material Symbols font: the font
+// depended on Google's CDN and failed on mobile networks, showing the icon
+// name as text ("location_on"). The Material names are kept as the API
+// (object keys) so no call site has to change.
 const ICONS: Record<string, LucideIcon> = {
   badge: IdCard,
   business_center: Briefcase,
@@ -72,8 +72,8 @@ const ICONS: Record<string, LucideIcon> = {
   content_cut: Scissors,
   expand_less: ChevronUp,
   expand_more: ChevronDown,
-  // lucide-react ya no incluye iconos de marca; se usa el "pulgar arriba"
-  // como equivalente reconocible para el enlace de Facebook.
+  // lucide-react no longer ships brand icons; the "thumbs up" is used as a
+  // recognizable stand-in for the Facebook link.
   facebook: ThumbsUp,
   local_shipping: Truck,
   location_on: MapPin,
@@ -99,16 +99,16 @@ const ICONS: Record<string, LucideIcon> = {
   visibility: Eye,
   visibility_off: EyeOff,
   volunteer_activism: HandHeart,
-  // Estados / dispositivos.
+  // States / devices.
   check_circle: CheckCircle2,
   block: Ban,
   smartphone: Smartphone,
 };
 
-// El tamaño se controla con clases de font-size (text-lg, text-3xl...): los
-// iconos de lucide-react miden 24px fijos por defecto y NO responden a las
-// clases text-*, así que se fuerza width/height a 1em para que el SVG escale
-// con el font-size igual que hacía la fuente de iconos.
+// Size is controlled with font-size classes (text-lg, text-3xl...): lucide-react
+// icons are a fixed 24px by default and do NOT respond to text-* classes, so
+// width/height are forced to 1em so the SVG scales with font-size just like
+// the icon font did.
 export function Icon({ name, className = '' }: { name: string; className?: string }) {
   const Cmp = ICONS[name];
   if (!Cmp) return null;

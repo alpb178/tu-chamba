@@ -34,7 +34,7 @@ const HEADERS = [
 
 const LIMIT = 10;
 
-// Moderación: el admin corrige la calificación o el comentario de la reseña.
+// Moderation: the admin corrects the review's rating or comment.
 function EditReviewDialog({
   review,
   onClose,
@@ -123,7 +123,7 @@ function EditReviewDialog({
   );
 }
 
-// Reporte y moderación de reseñas.
+// Review report and moderation.
 export default function ReviewsReportPage() {
   const [data, setData] = useState<Paginated<AdminReview> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -163,7 +163,7 @@ export default function ReviewsReportPage() {
     };
   }
 
-  // Moderación: elimina la reseña (la calificación del dueño se recalcula).
+  // Moderation: deletes the review (the owner's rating is recalculated).
   async function removeReview() {
     if (!toDelete) return;
     await api(`/reviews/${toDelete.id}`, { method: 'DELETE' });

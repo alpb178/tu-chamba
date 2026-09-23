@@ -31,8 +31,8 @@ const getRandomStartPoint = () => {
 };
 
 /**
- * Estrella fugaz ocasional (SVG animado por rAF). Portado de Iris Natural; el
- * degradado usa el azul y el ámbar de marca de tu-chamba.
+ * Occasional shooting star (SVG animated via rAF). Ported from Iris Natural;
+ * the gradient uses tu-chamba's brand blue and amber.
  */
 const ShootingStars: React.FC = () => {
   const [star, setStar] = useState<ShootingStar | null>(null);

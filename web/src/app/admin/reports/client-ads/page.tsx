@@ -41,7 +41,7 @@ const HEADERS = [
 
 const LIMIT = 10;
 
-// Reporte de anuncios publicados por clientes (excluye a los administradores).
+// Report of ads published by clients (excludes admins).
 export default function ClientAdsReportPage() {
   const router = useRouter();
   const [data, setData] = useState<Paginated<Ad> | null>(null);
@@ -106,7 +106,7 @@ export default function ClientAdsReportPage() {
     setReload((n) => n + 1);
   }
 
-  // Borra todos los anuncios de clientes (los de administradores no).
+  // Deletes all client ads (not the admins' ones).
   async function removeAll() {
     setConfirmAll(false);
     await api('/listings/all?clientsOnly=true', { method: 'DELETE' });

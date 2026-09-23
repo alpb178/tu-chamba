@@ -68,7 +68,7 @@ export default function MyAdsPage() {
         </Link>
       </div>
       {items.length === 0 ? (
-        // Estado vacío con camino claro: publicar el primer anuncio.
+        // Empty state with a clear path: publish the first listing.
         <div className="flex flex-col items-center gap-3 rounded-card border border-dashed border-outline-variant bg-surface-container-lowest px-6 py-14 text-center">
           <Icon name="publish" className="text-4xl text-outline" />
           <p className="text-base text-on-surface">
@@ -90,7 +90,7 @@ export default function MyAdsPage() {
               <div key={a.id} className="space-y-2">
                 <AdCard ad={a} showStatus />
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  {/* Actividad: cuántas personas accedieron y se interesaron. */}
+                  {/* Activity: how many people viewed it and showed interest. */}
                   <p className="text-xs text-on-surface-variant">
                     {a._count?.visits ?? 0}{' '}
                     {(a._count?.visits ?? 0) === 1 ? 'acceso' : 'accesos'} ·{' '}

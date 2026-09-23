@@ -8,8 +8,8 @@ function build() {
   };
   return { c: new ReviewsController(reviews as never), reviews };
 }
-describe('ReviewsController (delegación)', () => {
-  it('delega crear/moderar/leer', () => {
+describe('ReviewsController (delegation)', () => {
+  it('delegates create/moderate/read', () => {
     const { c, reviews } = build();
     c.create({} as never, u); expect(reviews.create).toHaveBeenCalledWith({}, 'u1');
     c.findAllAdmin({} as never); expect(reviews.findAllAdmin).toHaveBeenCalled();

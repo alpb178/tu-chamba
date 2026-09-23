@@ -2,16 +2,16 @@ import { describe, it, expect } from 'vitest';
 import { Ad } from './types';
 import { sortAds } from './sort';
 
-// Anuncio mínimo con lo único que mira `sortAds`. El resto del tipo no
-// interviene en el orden, así que se completa con un molde y se castea.
-function anuncio(
+// Minimal ad with only what `sortAds` looks at. The rest of the type plays no
+// part in the order, so it is filled with a stub and cast.
+function makeAd(
   id: string,
-  opciones: { dias?: number; salary?: string | null; featured?: boolean } = {},
+  options: { days?: number; salary?: string | null; featured?: boolean } = {},
 ): Ad {
-  const { dias = 0, salary = null, featured = false } = opciones;
+  const { days = 0, salary = null, featured = false } = options;
   return {
     id,
-    createdAt: new Date(Date.UTC(2026, 0, 1 + dias)).toISOString(),
+    createdAt: new Date(Date.UTC(2026, 0, 1 + days)).toISOString(),
     salary,
     featured,
   } as unknown as Ad;
@@ -19,128 +19,128 @@ function anuncio(
 
 const ids = (list: Ad[]) => list.map((a) => a.id);
 
-describe('sortAds: los destacados van primero', () => {
-  it('un destacado antiguo encabeza el orden por más recientes', () => {
-    // La regresión que esto cubre: el backend devuelve el destacado primero y
-    // el cliente volvía a ordenar la lista entera por fecha, así que el
-    // anuncio priorizado desde el panel se hundía hasta su fecha.
-    const lista = [
-      anuncio('destacado-viejo', { dias: 0, featured: true }),
-      anuncio('nuevo', { dias: 10 }),
-      anuncio('medio', { dias: 5 }),
+describe('sortAds: featured ads go first', () => {
+  it('an old featured ad heads the newest-first order', () => {
+    // The regression this covers: the backend returns the featured ad first
+    // and the client re-sorted the whole list by date, so the ad prioritized
+    // from the panel sank down to its date.
+    const list = [
+      makeAd('featured-old', { days: 0, featured: true }),
+      makeAd('new', { days: 10 }),
+      makeAd('mid', { days: 5 }),
     ];
 
-    expect(ids(sortAds(lista, 'recientes'))).toEqual([
-      'destacado-viejo',
-      'nuevo',
-      'medio',
+    expect(ids(sortAds(list, 'newest'))).toEqual([
+      'featured-old',
+      'new',
+      'mid',
     ]);
   });
 
-  it('mantienen su sitio con cualquier opción de orden', () => {
-    const lista = [
-      anuncio('destacado', { dias: 0, salary: '1000', featured: true }),
-      anuncio('caro', { dias: 1, salary: '9000' }),
-      anuncio('barato', { dias: 2, salary: '2000' }),
+  it('featured ads keep their place with any sort option', () => {
+    const list = [
+      makeAd('featured', { days: 0, salary: '1000', featured: true }),
+      makeAd('pricey', { days: 1, salary: '9000' }),
+      makeAd('cheap', { days: 2, salary: '2000' }),
     ];
 
-    expect(ids(sortAds(lista, 'salario-desc'))[0]).toBe('destacado');
-    expect(ids(sortAds(lista, 'salario-asc'))[0]).toBe('destacado');
-    expect(ids(sortAds(lista, 'antiguos'))[0]).toBe('destacado');
+    expect(ids(sortAds(list, 'salary-desc'))[0]).toBe('featured');
+    expect(ids(sortAds(list, 'salary-asc'))[0]).toBe('featured');
+    expect(ids(sortAds(list, 'oldest'))[0]).toBe('featured');
   });
 
-  it('entre destacados manda el orden de llegada, no la opción elegida', () => {
-    // La prioridad numérica no viaja al portal: la API los devuelve ya
-    // ordenados por prioridad descendente, y esa posición es lo único que la
-    // recuerda. Aquí «prio-alta» llega primero aunque sea el más antiguo y el
-    // peor pagado, y tiene que seguir primero.
-    const lista = [
-      anuncio('prio-alta', { dias: 0, salary: '100', featured: true }),
-      anuncio('prio-baja', { dias: 9, salary: '9000', featured: true }),
-      anuncio('normal', { dias: 5, salary: '5000' }),
+  it('among featured ads arrival order rules, not the chosen option', () => {
+    // The numeric priority isn't sent to the portal: the API returns them
+    // already sorted by descending priority, and that position is the only
+    // thing that remembers it. Here 'prio-high' arrives first even though it
+    // is the oldest and the worst paid, and it has to stay first.
+    const list = [
+      makeAd('prio-high', { days: 0, salary: '100', featured: true }),
+      makeAd('prio-low', { days: 9, salary: '9000', featured: true }),
+      makeAd('normal', { days: 5, salary: '5000' }),
     ];
 
-    expect(ids(sortAds(lista, 'recientes'))).toEqual([
-      'prio-alta',
-      'prio-baja',
+    expect(ids(sortAds(list, 'newest'))).toEqual([
+      'prio-high',
+      'prio-low',
       'normal',
     ]);
-    expect(ids(sortAds(lista, 'salario-desc'))).toEqual([
-      'prio-alta',
-      'prio-baja',
+    expect(ids(sortAds(list, 'salary-desc'))).toEqual([
+      'prio-high',
+      'prio-low',
       'normal',
     ]);
   });
 
-  it('la opción elegida sigue mandando entre los no destacados', () => {
-    const lista = [
-      anuncio('destacado', { dias: 3, featured: true }),
-      anuncio('viejo', { dias: 0, salary: '1000' }),
-      anuncio('nuevo', { dias: 9, salary: '3000' }),
-      anuncio('medio', { dias: 5, salary: '2000' }),
+  it('the chosen option still rules among non-featured ads', () => {
+    const list = [
+      makeAd('featured', { days: 3, featured: true }),
+      makeAd('old', { days: 0, salary: '1000' }),
+      makeAd('new', { days: 9, salary: '3000' }),
+      makeAd('mid', { days: 5, salary: '2000' }),
     ];
 
-    expect(ids(sortAds(lista, 'recientes'))).toEqual([
-      'destacado',
-      'nuevo',
-      'medio',
-      'viejo',
+    expect(ids(sortAds(list, 'newest'))).toEqual([
+      'featured',
+      'new',
+      'mid',
+      'old',
     ]);
-    expect(ids(sortAds(lista, 'antiguos'))).toEqual([
-      'destacado',
-      'viejo',
-      'medio',
-      'nuevo',
+    expect(ids(sortAds(list, 'oldest'))).toEqual([
+      'featured',
+      'old',
+      'mid',
+      'new',
     ]);
-    expect(ids(sortAds(lista, 'salario-desc'))).toEqual([
-      'destacado',
-      'nuevo',
-      'medio',
-      'viejo',
+    expect(ids(sortAds(list, 'salary-desc'))).toEqual([
+      'featured',
+      'new',
+      'mid',
+      'old',
     ]);
   });
 
-  it('sin destacados el orden es el de siempre', () => {
-    const lista = [
-      anuncio('viejo', { dias: 0 }),
-      anuncio('nuevo', { dias: 9 }),
-      anuncio('medio', { dias: 5 }),
+  it('without featured ads the order is the usual one', () => {
+    const list = [
+      makeAd('old', { days: 0 }),
+      makeAd('new', { days: 9 }),
+      makeAd('mid', { days: 5 }),
     ];
 
-    expect(ids(sortAds(lista, 'recientes'))).toEqual([
-      'nuevo',
-      'medio',
-      'viejo',
+    expect(ids(sortAds(list, 'newest'))).toEqual([
+      'new',
+      'mid',
+      'old',
     ]);
   });
 
-  it('no toca la lista que recibe', () => {
-    const lista = [
-      anuncio('a', { dias: 0 }),
-      anuncio('destacado', { dias: 1, featured: true }),
+  it('does not mutate the list it receives', () => {
+    const list = [
+      makeAd('a', { days: 0 }),
+      makeAd('featured', { days: 1, featured: true }),
     ];
 
-    sortAds(lista, 'recientes');
+    sortAds(list, 'newest');
 
-    expect(ids(lista)).toEqual(['a', 'destacado']);
+    expect(ids(list)).toEqual(['a', 'featured']);
   });
 
-  it('los anuncios sin salario van al final en ambos sentidos', () => {
-    const lista = [
-      anuncio('a-convenir', { dias: 0, salary: null }),
-      anuncio('caro', { dias: 1, salary: '9000' }),
-      anuncio('barato', { dias: 2, salary: '1000' }),
+  it('ads without salary go last in both directions', () => {
+    const list = [
+      makeAd('no-salary', { days: 0, salary: null }),
+      makeAd('pricey', { days: 1, salary: '9000' }),
+      makeAd('cheap', { days: 2, salary: '1000' }),
     ];
 
-    expect(ids(sortAds(lista, 'salario-desc'))).toEqual([
-      'caro',
-      'barato',
-      'a-convenir',
+    expect(ids(sortAds(list, 'salary-desc'))).toEqual([
+      'pricey',
+      'cheap',
+      'no-salary',
     ]);
-    expect(ids(sortAds(lista, 'salario-asc'))).toEqual([
-      'barato',
-      'caro',
-      'a-convenir',
+    expect(ids(sortAds(list, 'salary-asc'))).toEqual([
+      'cheap',
+      'pricey',
+      'no-salary',
     ]);
   });
 });

@@ -7,8 +7,8 @@ import { PrismaService } from '../prisma/prisma.service';
 export class HealthController {
   constructor(private readonly prisma: PrismaService) {}
 
-  // GET /api/health — público. Devuelve 200 si el servicio (y la DB) responden.
-  // Lo usa el health check de Render.
+  // GET /api/health — public. Returns 200 if the service (and the DB) respond.
+  // Used by Render's health check.
   @Get()
   async check() {
     let database = 'ok';

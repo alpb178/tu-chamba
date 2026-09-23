@@ -2,33 +2,33 @@ import { describe, expect, it } from 'vitest';
 import { resolveGroupSite } from './hub-analytics';
 
 describe('resolveGroupSite', () => {
-  it('reconoce a un hermano del grupo por su dominio', () => {
+  it('recognizes a group sibling by its domain', () => {
     expect(resolveGroupSite('https://irisnatural.corpsc.com/productos')).toBe('iris-natural');
     expect(resolveGroupSite('https://dandomuela.com')).toBe('dandomuela');
   });
 
-  it('trata "www." como el mismo sitio', () => {
+  it('treats "www." as the same site', () => {
     expect(resolveGroupSite('https://www.corpsc.com/es')).toBe('corpsc');
   });
 
-  it('conserva el slug del hub aunque el cintillo use otro nombre', () => {
-    // El cintillo de algún repo llama "dando-muela" a este sitio; en el hub es
-    // "dandomuela", y es el hub quien manda: si no, la misma métrica quedaría
-    // partida en dos cubos.
+  it('keeps the hub slug even if the ticker uses another name', () => {
+    // Some repo's ticker calls this site "dando-muela"; in the hub it's
+    // "dandomuela", and the hub is the source of truth: otherwise the same
+    // metric would be split into two buckets.
     expect(resolveGroupSite('https://dandomuela.com')).not.toBe('dando-muela');
   });
 
-  it('ignora lo que no va a un sitio del grupo', () => {
-    // Un enlace relativo es navegación interna, no un clic que se va.
+  it('ignores anything that does not go to a group site', () => {
+    // A relative link is internal navigation, not an outbound click.
     expect(resolveGroupSite('/empleos')).toBeNull();
     expect(resolveGroupSite('mailto:hola@corpsc.com')).toBeNull();
     expect(resolveGroupSite('https://google.com')).toBeNull();
-    expect(resolveGroupSite('no es una url')).toBeNull();
+    expect(resolveGroupSite('not a url')).toBeNull();
   });
 
-  it('no cuenta como clic saliente un enlace a este mismo sitio', () => {
+  it('does not count a link to this same site as an outbound click', () => {
     expect(resolveGroupSite('https://tu-chamba.corpsc.com/empleos', 'tu-chamba.corpsc.com')).toBeNull();
-    // Y el mismo enlace visto desde otro sitio del grupo sí cuenta.
+    // And the same link seen from another group site does count.
     expect(resolveGroupSite('https://tu-chamba.corpsc.com/empleos', 'irisnatural.corpsc.com')).toBe('tu-chamba');
   });
 });

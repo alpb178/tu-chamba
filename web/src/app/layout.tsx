@@ -4,10 +4,10 @@ import './globals.css';
 import { AuthProvider } from '@/lib/auth';
 import { HubAnalytics } from '@/components/HubAnalytics';
 
-// Tipografías del sistema de diseño (estilo editorial portado de Iris Natural):
-// Libre Franklin para el cuerpo/UI y Merriweather (serif) para los titulares
-// editoriales. Se exponen como variables CSS para Tailwind y viven en el layout
-// raíz para que las compartan el sitio y el panel de administración.
+// Design system typefaces (editorial style ported from Iris Natural):
+// Libre Franklin for body/UI and Merriweather (serif) for editorial
+// headlines. Exposed as CSS variables for Tailwind and kept in the root
+// layout so the site and the admin panel share them.
 const libreFranklin = Libre_Franklin({
   subsets: ['latin'],
   variable: '--font-libre-franklin',
@@ -20,14 +20,14 @@ const merriweather = Merriweather({
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tu-chamba.corpsc.com';
 
-// Metadata base común (resuelve las URLs relativas de OpenGraph, etc.). El SEO
-// específico del sitio (title/openGraph/verification) vive en (site)/layout.
+// Shared base metadata (resolves relative OpenGraph URLs, etc.). Site-specific
+// SEO (title/openGraph/verification) lives in (site)/layout.
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
 };
 
-// Layout raíz: <html>/<body>, fuentes y sesión. Sin "chrome" para que el sitio
-// —(site)/layout— y el panel —admin/layout— definan el suyo por separado.
+// Root layout: <html>/<body>, fonts and session. No "chrome" so the site
+// —(site)/layout— and the panel —admin/layout— each define their own.
 export default function RootLayout({
   children,
 }: {
@@ -40,7 +40,7 @@ export default function RootLayout({
     >
       <body>
         <AuthProvider>{children}</AuthProvider>
-        {/* No pinta nada: manda la visita y los clics al hub del grupo. */}
+        {/* Renders nothing: sends the visit and clicks to the group hub. */}
         <HubAnalytics />
       </body>
     </html>

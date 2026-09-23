@@ -8,8 +8,8 @@ function build() {
   };
   return { c: new ReportsController(reports as never), reports };
 }
-describe('ReportsController (delegación)', () => {
-  it('delega la cola de reportes', () => {
+describe('ReportsController (delegation)', () => {
+  it('delegates the report queue', () => {
     const { c, reports } = build();
     c.create({} as never, u); expect(reports.create).toHaveBeenCalledWith({}, u);
     c.findAll('PENDIENTE' as never); expect(reports.findAll).toHaveBeenCalledWith('PENDIENTE');

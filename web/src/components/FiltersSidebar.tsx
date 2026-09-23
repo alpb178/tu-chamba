@@ -27,8 +27,8 @@ export const NO_FILTERS: Filters = {
   category: [],
 };
 
-// Sección colapsable (estilo editorial de Iris): título en versalitas con un
-// "+" que gira a "×" al abrir, separadas por una línea inferior. Radio 0.
+// Collapsible section (Iris editorial style): small-caps title with a "+"
+// that rotates into "×" when open, separated by a bottom rule. Radius 0.
 function Section({
   title,
   children,
@@ -57,7 +57,7 @@ function Section({
   );
 }
 
-// Fila de opción con checkbox cuadrado (radio 0) y contador de facetas.
+// Option row with a square checkbox (radius 0) and a facet counter.
 function Option({
   label,
   count,
@@ -107,10 +107,10 @@ function Option({
   );
 }
 
-// Slider de salario con dos manijas (rango) sobre una pista. El arrastre se
-// maneja con Pointer Events propios sobre la pista: el truco de dos <input
-// type="range"> superpuestos depende de pointer-events en el pseudo-elemento
-// del thumb, que Safari no soporta (el filtro "no funcionaba" en Mac/iOS).
+// Salary slider with two handles (range) over a track. Dragging is handled
+// with our own Pointer Events on the track: the trick of two overlapping
+// <input type="range"> relies on pointer-events on the thumb pseudo-element,
+// which Safari doesn't support (the filter "didn't work" on Mac/iOS).
 function SalaryRange({
   min,
   max,
@@ -128,7 +128,7 @@ function SalaryRange({
   const [hi, setHi] = useState(maxValue);
   const trackRef = useRef<HTMLDivElement>(null);
   const dragging = useRef<'lo' | 'hi' | null>(null);
-  // Espejo de los valores para leerlos en pointerup sin closures desfasadas.
+  // Mirror of the values so pointerup reads them without stale closures.
   const values = useRef({ lo: minValue, hi: maxValue });
 
   useEffect(() => {
@@ -161,7 +161,7 @@ function SalaryRange({
 
   function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
     const v = valueAt(e.clientX);
-    // Arrastra la manija más cercana al punto tocado.
+    // Drags the handle closest to the touched point.
     dragging.current =
       Math.abs(v - values.current.lo) <= Math.abs(v - values.current.hi)
         ? 'lo'
@@ -196,8 +196,8 @@ function SalaryRange({
     };
   }
 
-  // Manija: único elemento redondeado (rounded-full), como en Iris. La pista y
-  // el tramo activo van con esquinas rectas (radio 0).
+  // Handle: the only rounded element (rounded-full), as in Iris. The track and
+  // the active segment have square corners (radius 0).
   const thumbClass =
     'absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand bg-surface-container-lowest shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50';
 
@@ -247,9 +247,9 @@ function SalaryRange({
   );
 }
 
-// Contenido de la barra lateral de filtros: jornada, categoría, departamento y
-// salario. Es puro contenido (sin ancho ni posición propios): la columna de
-// ~220px en escritorio y el drawer móvil los gestiona el listado (home-client).
+// Filter sidebar content: work schedule, category, department and salary.
+// It's pure content (no width or position of its own): the ~220px desktop
+// column and the mobile drawer are handled by the listing (home-client).
 export function FiltersSidebar({
   value,
   facets,
@@ -265,7 +265,7 @@ export function FiltersSidebar({
       : [...list, item];
   }
 
-  // Mientras cargan las facetas, la barra muestra su silueta.
+  // While the facets load, the sidebar shows its skeleton.
   if (!facets) {
     return (
       <aside aria-hidden="true" className="text-sm">
@@ -371,7 +371,7 @@ export function FiltersSidebar({
             }
           />
         ) : (
-          // Sin rango no hay nada que filtrar: se informa en vez de ocultar.
+          // Without a range there's nothing to filter: say so instead of hiding it.
           <p className="text-xs text-on-surface-variant">
             {facets.salaryMax > 0
               ? `Todas las ofertas actuales pagan Bs ${facets.salaryMax.toLocaleString('es-BO')}.`

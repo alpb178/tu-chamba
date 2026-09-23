@@ -9,8 +9,8 @@ import { Observable, tap } from 'rxjs';
 import { Request, Response } from 'express';
 import { MetricsService } from './metrics.service';
 
-// Mide la duración y el resultado de cada request para las métricas del
-// panel (solicitudes por minuto, latencia promedio, errores, conectados).
+// Measures the duration and outcome of each request for the panel metrics
+// (requests per minute, average latency, errors, online users).
 @Injectable()
 export class MetricsInterceptor implements NestInterceptor {
   constructor(private metrics: MetricsService) {}
@@ -18,7 +18,7 @@ export class MetricsInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const started = Date.now();
     const http = context.switchToHttp();
-    // El interceptor corre después de los guards: req.user ya está resuelto.
+    // The interceptor runs after the guards: req.user is already resolved.
     const req = http.getRequest<Request & { user?: { id?: string } }>();
 
     return next.handle().pipe(

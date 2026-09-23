@@ -6,7 +6,7 @@ import { REPORT_REASON_LABEL, ReportReason } from '@/lib/types';
 import { Button, FormField } from './ui';
 import { CustomSelect } from './CustomSelect';
 
-// Reporte de spam/abuso. La visibilidad del anuncio la decide el admin.
+// Spam/abuse report. The admin decides the listing's visibility.
 export function ReportAd({ adId }: { adId: string }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<ReportReason>('SPAM');

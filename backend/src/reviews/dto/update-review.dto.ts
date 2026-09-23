@@ -9,7 +9,7 @@ import {
   Min,
 } from 'class-validator';
 
-// Moderación: el admin corrige una reseña (calificación o comentario).
+// Moderation: the admin corrects a review (rating or comment).
 export class UpdateReviewDto {
   @ApiPropertyOptional({ example: 4, minimum: 1, maximum: 5 })
   @IsOptional()

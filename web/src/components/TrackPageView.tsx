@@ -4,15 +4,15 @@ import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { api } from '@/lib/api';
 
-// Registra cada página vista del portal (métrica de visitas al sitio del
-// panel admin). Corre en el cliente en cada cambio de ruta, así no cuenta
-// prefetches ni bots de SSR; si falla, no afecta la navegación.
+// Records every portal page view (the admin panel's site visits metric).
+// Runs on the client on each route change, so it doesn't count prefetches
+// or SSR bots; if it fails, navigation is unaffected.
 export function TrackPageView() {
   const pathname = usePathname();
-  // Última ruta registrada: sin esto la misma página se cuenta dos veces
-  // (StrictMode ejecuta el efecto por duplicado, y cualquier remontaje del
-  // layout lo repetiría igual). Volver a una ruta ya visitada sí cuenta: en el
-  // medio hubo otra, así que la referencia ya cambió.
+  // Last recorded route: without this the same page is counted twice
+  // (StrictMode runs the effect twice, and any layout remount would repeat it
+  // too). Returning to an already visited route does count: another one came
+  // in between, so the reference has already changed.
   const lastPath = useRef<string | null>(null);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ export function TrackPageView() {
       method: 'POST',
       body: JSON.stringify({ path: pathname }),
     }).catch(() => {
-      /* noop: el tracking es best-effort */
+      /* noop: tracking is best-effort */
     });
   }, [pathname]);
 

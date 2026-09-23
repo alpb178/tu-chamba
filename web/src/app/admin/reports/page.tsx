@@ -44,7 +44,7 @@ export default function ReportsAdminPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => load(), [filter]);
 
-  // Actualiza el estado del reporte (atender, descartar o reabrir).
+  // Updates the report status (resolve, dismiss or reopen).
   async function resolve(r: Report, status: ReportStatus) {
     await api(`/reports/${r.id}`, {
       method: 'PATCH',
@@ -53,7 +53,7 @@ export default function ReportsAdminPage() {
     load();
   }
 
-  // Elimina el reporte de la cola (el anuncio reportado no se toca).
+  // Removes the report from the queue (the reported listing is untouched).
   async function removeReport() {
     if (!toDelete) return;
     await api(`/reports/${toDelete.id}`, { method: 'DELETE' });
@@ -78,13 +78,13 @@ export default function ReportsAdminPage() {
     load();
   }
 
-  // Atiende el reporte dando de baja el anuncio reportado (sigue en la BD).
+  // Resolves the report by deactivating the reported listing (it stays in the DB).
   async function unpublishAd(r: Report) {
     await api(`/listings/${r.adId}/unpublish`, { method: 'POST' });
     await resolve(r, 'ATENDIDO');
   }
 
-  // Atiende el reporte eliminando el anuncio definitivamente.
+  // Resolves the report by permanently deleting the listing.
   async function deleteAd(r: Report) {
     if (!confirm('¿Eliminar definitivamente el anuncio reportado?')) return;
     await api(`/listings/${r.adId}`, { method: 'DELETE' });
@@ -167,7 +167,7 @@ export default function ReportsAdminPage() {
                 {new Date(r.createdAt).toLocaleDateString('es-BO')}
               </td>
               <td className="px-4 py-3">
-                {/* Cambio de estado directo: atender, descartar o reabrir. */}
+                {/* Direct status change: resolve, dismiss or reopen. */}
                 <div className="w-36">
                   <CustomSelect
                     value={r.status}

@@ -38,7 +38,7 @@ const HEADERS = [
 
 const LIMIT = 10;
 
-// Bandera emoji a partir del ISO-2 (letras -> símbolos indicadores regionales).
+// Emoji flag from the ISO-2 code (letters -> regional indicator symbols).
 function countryFlag(iso: string): string {
   if (!/^[A-Za-z]{2}$/.test(iso)) return '';
   const A = 0x1f1e6;
@@ -47,8 +47,8 @@ function countryFlag(iso: string): string {
   );
 }
 
-// Navegador y "¿móvil?" se derivan del user-agent (el backend solo guarda el
-// UA crudo).
+// Browser and "mobile?" are derived from the user-agent (the backend only
+// stores the raw UA).
 function browserName(ua: string | null): string {
   if (!ua) return '—';
   if (/Edg\//.test(ua)) return 'Edge';
@@ -62,7 +62,7 @@ function isMobileUA(ua: string | null): boolean {
   return ua ? /Mobile|Android|iPhone|iPad/.test(ua) : false;
 }
 
-// Chips por familia de evento: sesión/registro, altas, cambios y bajas.
+// Chips per event family: session/sign-up, creations, updates and deletions.
 const TYPE_STYLE: Record<TraceType, string> = {
   LOGIN: 'bg-primary-container text-on-primary-container',
   LOGOUT: 'bg-primary-container text-on-primary-container',
@@ -123,7 +123,7 @@ export default function TracesPage() {
       .finally(() => setLoading(false));
   }, [type, result, actor, from, to, page, reload]);
 
-  // La eliminación queda auditada en el backend con una traza nueva.
+  // The deletion is audited in the backend with a new trace.
   async function remove() {
     if (!toDelete) return;
     await api(`/admin/traces/${toDelete.id}`, { method: 'DELETE' });
@@ -149,7 +149,7 @@ export default function TracesPage() {
     setReload((n) => n + 1);
   }
 
-  // Cualquier cambio de filtro vuelve a la primera página.
+  // Any filter change goes back to the first page.
   function filter<T>(setter: (v: T) => void) {
     return (v: T) => {
       setter(v);

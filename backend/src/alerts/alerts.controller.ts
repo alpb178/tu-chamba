@@ -13,7 +13,7 @@ import { CreateAlertDto } from './dto/create-alert.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator';
 
-// Alertas de empleo: cualquier usuario puede suscribirse a nuevas ofertas.
+// Job alerts: any user can subscribe to new listings.
 @ApiTags('alerts')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)

@@ -7,8 +7,8 @@ import { Icon } from './Icon';
 import { Tilt3D } from './fx/Tilt3D';
 import { SlideBurst } from './fx/SlideBurst';
 
-// Tarjeta promocional de una marca: captura del sitio con el nombre en
-// overlay, descripción y CTA "Visitar sitio" (enlace externo seguro).
+// Promotional card for a brand: site screenshot with the name as an overlay,
+// description and a "Visitar sitio" CTA (safe external link).
 function BrandCard({ company }: { company: Company }) {
   const track = () => trackSiteClick(company);
   return (
@@ -57,14 +57,14 @@ function BrandCard({ company }: { company: Company }) {
   );
 }
 
-// Sección "Sitios de interés": carrusel con las demás plataformas del Grupo
-// CorpSC (auto-avance, flechas, puntos indicadores y ráfaga de destellos).
+// "Sitios de interés" section: carousel with the other Grupo CorpSC
+// platforms (auto-advance, arrows, indicator dots and a sparkle burst).
 export function FeaturedBrands() {
   const scroller = useRef<HTMLDivElement>(null);
-  // Se incrementa en cada movimiento del carrusel (flecha o auto-avance) para
-  // relanzar la ráfaga de destellos sobre las tarjetas.
+  // Incremented on every carousel move (arrow or auto-advance) to replay the
+  // sparkle burst over the cards.
   const [burst, setBurst] = useState(0);
-  // Punto activo del indicador: se deriva de la posición de scroll.
+  // Active indicator dot: derived from the scroll position.
   const [active, setActive] = useState(0);
   const count = COMPANIES.length;
 
@@ -75,7 +75,7 @@ export function FeaturedBrands() {
     setBurst((b) => b + 1);
   };
 
-  // Lleva la tarjeta `i` al inicio de la vista (usado por los puntos).
+  // Scrolls card `i` to the start of the view (used by the dots).
   const goTo = (i: number) => {
     const el = scroller.current;
     if (!el) return;
@@ -87,8 +87,8 @@ export function FeaturedBrands() {
     setBurst((b) => b + 1);
   };
 
-  // Mantiene el punto activo sincronizado con el scroll (flechas, auto-avance
-  // o arrastre manual). Mapea el rango de scroll a los índices de tarjeta.
+  // Keeps the active dot in sync with the scroll (arrows, auto-advance or
+  // manual drag). Maps the scroll range to card indexes.
   useEffect(() => {
     const el = scroller.current;
     if (!el) return;
@@ -102,8 +102,8 @@ export function FeaturedBrands() {
     return () => el.removeEventListener('scroll', onScroll);
   }, [count]);
 
-  // Auto-avance: cada 5s pasa a la siguiente "página" y al llegar al final
-  // vuelve al inicio. Se pausa con el puntero encima y respeta
+  // Auto-advance: every 5s moves to the next "page" and wraps back to the
+  // start at the end. Pauses while hovered and respects
   // prefers-reduced-motion.
   useEffect(() => {
     const el = scroller.current;
@@ -175,11 +175,11 @@ export function FeaturedBrands() {
           ))}
         </div>
 
-        {/* Ráfaga de destellos al mover el carrusel (no captura clics). */}
+        {/* Sparkle burst when the carousel moves (doesn't capture clicks). */}
         <SlideBurst trigger={burst} />
       </div>
 
-      {/* Indicador de cantidad (puntos). */}
+      {/* Count indicator (dots). */}
       <div className="mt-6 flex justify-center gap-1.5">
         {COMPANIES.map((company, i) => (
           <button

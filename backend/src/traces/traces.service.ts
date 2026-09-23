@@ -5,8 +5,8 @@ import { QueryTraceDto } from './dto/query-trace.dto';
 import { requestContext } from './request-context';
 import { endOfDay, startOfDay } from '../common/date-range';
 
-// geo-IP offline (geoip-lite) cargado de forma perezosa: si el paquete o sus
-// datos no están disponibles, el país simplemente queda nulo (best-effort).
+// Offline geo-IP (geoip-lite) loaded lazily: if the package or its data are
+// not available, the country is simply left null (best-effort).
 let geoip: { lookup(ip: string): { country?: string } | null } | null | undefined;
 function countryFromIp(ip?: string | null): string | null {
   if (!ip) return null;
@@ -20,8 +20,8 @@ function countryFromIp(ip?: string | null): string | null {
   }
   if (!geoip) return null;
   try {
-    // Normaliza IPv4 mapeada en IPv6 ("::ffff:200.87.100.1") y toma la primera
-    // IP si viniera una lista (X-Forwarded-For).
+    // Normalizes IPv4-mapped IPv6 ("::ffff:200.87.100.1") and takes the first
+    // IP if a list comes in (X-Forwarded-For).
     const clean = ip.replace(/^::ffff:/, '').split(',')[0].trim();
     return geoip.lookup(clean)?.country ?? null;
   } catch {
@@ -29,16 +29,16 @@ function countryFromIp(ip?: string | null): string | null {
   }
 }
 
-// Actor de la traza: alcanza con id y email (se denormaliza el email).
+// Trace actor: id and email are enough (the email is denormalized).
 export interface TraceActor {
   id?: string | null;
   email?: string | null;
 }
 
-// Metadatos opcionales de la traza. IP y user-agent no se pasan aquí:
-// se capturan solos del request en curso (RequestContextMiddleware).
+// Optional trace metadata. IP and user-agent are not passed here: they are
+// captured automatically from the current request (RequestContextMiddleware).
 export interface TraceOptions {
-  // Recurso afectado, en formato "tipo:id" (ej. "ad:<uuid>").
+  // Affected resource, in "type:id" format (e.g. "ad:<uuid>").
   resource?: string;
   result?: TraceResult;
 }
@@ -47,7 +47,7 @@ export interface TraceOptions {
 export class TracesService {
   constructor(private prisma: PrismaService) {}
 
-  // Best-effort: registrar una traza nunca debe romper la operación principal.
+  // Best-effort: recording a trace must never break the main operation.
   async record(
     type: TraceType,
     description: string,
@@ -64,7 +64,7 @@ export class TracesService {
           actorEmail: actor?.email ?? null,
           ip: ctx?.ip ?? null,
           userAgent: ctx?.userAgent ?? null,
-          // País: cabecera de CDN si la hay; si no, geo-IP a partir de la IP.
+          // Country: CDN header if present; otherwise, geo-IP from the IP.
           country: ctx?.country ?? countryFromIp(ctx?.ip),
           source: ctx?.source ?? null,
           resource: opts?.resource ?? null,
@@ -73,11 +73,11 @@ export class TracesService {
         },
       });
     } catch {
-      /* noop: la traza es best-effort */
+      /* noop: the trace is best-effort */
     }
   }
 
-  // Listado paginado para el panel admin (más recientes primero).
+  // Paginated list for the admin panel (most recent first).
   async findAll(query: QueryTraceDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
@@ -85,14 +85,14 @@ export class TracesService {
     const where: Prisma.TraceWhereInput = {};
     if (query.type) where.type = query.type;
     if (query.result) where.result = query.result;
-    // Búsqueda por actor: email del usuario que ejecutó la acción.
+    // Search by actor: email of the user who performed the action.
     if (query.actor) {
       where.actorEmail = { contains: query.actor, mode: 'insensitive' };
     }
     if (query.from || query.to) {
       where.createdAt = {};
       if (query.from) where.createdAt.gte = startOfDay(query.from);
-      // Hasta el final del día indicado (en hora de Bolivia).
+      // Up to the end of the given day (Bolivia time).
       if (query.to) where.createdAt.lte = endOfDay(query.to);
     }
 
@@ -109,8 +109,8 @@ export class TracesService {
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  // Borra una traza desde el panel. La eliminación queda auditada con una
-  // traza nueva: el registro de auditoría nunca se vacía en silencio.
+  // Deletes a trace from the panel. The deletion is audited with a new
+  // trace: the audit log is never emptied silently.
   async remove(id: string, actor: TraceActor) {
     const trace = await this.prisma.trace.findUnique({ where: { id } });
     if (!trace) throw new NotFoundException('Traza no encontrada');
@@ -124,8 +124,8 @@ export class TracesService {
     return { deleted: true };
   }
 
-  // Borrado total del historial de trazas. La traza resumen se crea
-  // después del borrado, así el historial nunca queda vacío en silencio.
+  // Deletes the whole trace history. The summary trace is created after the
+  // deletion, so the history is never left silently empty.
   async removeAll(actor: TraceActor) {
     const { count } = await this.prisma.trace.deleteMany({});
     await this.record(
@@ -136,7 +136,7 @@ export class TracesService {
     return { deleted: count };
   }
 
-  // Borrado por lotes de trazas, auditado con una traza resumen única.
+  // Batch delete of traces, audited with a single summary trace.
   async removeMany(ids: string[], actor: TraceActor) {
     const { count } = await this.prisma.trace.deleteMany({
       where: { id: { in: ids } },

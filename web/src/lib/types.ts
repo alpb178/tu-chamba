@@ -40,7 +40,7 @@ export const DEPARTMENT_LABEL: Record<Department, string> = {
   PANDO: 'Pando',
 };
 
-// Slugs para las URLs SEO por departamento (/jobs/[slug]).
+// Slugs for the per-department SEO URLs (/jobs/[slug]).
 export const DEPARTMENT_SLUG: Record<Department, string> = {
   LA_PAZ: 'la-paz',
   SANTA_CRUZ: 'santa-cruz',
@@ -94,13 +94,13 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   OTRO: 'Otro',
 };
 
-// DADO_DE_BAJA se persiste; VENCIDO se calcula con expiresAt (ver adEffectiveStatus).
+// DADO_DE_BAJA is persisted; VENCIDO is computed from expiresAt (see adEffectiveStatus).
 export type AdStatus = 'ACTIVO' | 'DADO_DE_BAJA';
 export type EffectiveStatus = 'ACTIVO' | 'VENCIDO' | 'DADO_DE_BAJA';
 
 export const DURATION_DAYS = [3, 7, 15, 30];
 
-// Tope de teléfonos adicionales por anuncio (igual que en la API).
+// Max extra phones per ad (same as in the API).
 export const MAX_EXTRA_PHONES = 4;
 
 export type ReportReason = 'SPAM' | 'FRAUDE' | 'CONTENIDO_INAPROPIADO' | 'OTRO';
@@ -118,9 +118,9 @@ export interface User {
   emailVerified: boolean;
   name: string;
   phone: string | null;
-  // Único distintivo entre usuarios: acceso al panel de administración.
+  // The only distinction between users: access to the admin panel.
   isAdmin: boolean;
-  // false en cuentas creadas con Google (sin contraseña local).
+  // false for accounts created with Google (no local password).
   hasPassword?: boolean;
   createdAt: string;
   updatedAt: string;
@@ -132,34 +132,34 @@ export interface Ad {
   description: string;
   requirements?: string | null;
   location?: string | null;
-  // Referencia en texto libre ("frente al mercado Los Pozos"): solo se muestra,
-  // no se filtra. Como el teléfono, requiere sesión para verla.
+  // Free-text landmark ("frente al mercado Los Pozos"): only displayed, not
+  // filtered on. Like the phone, it requires a session to see it.
   locationReference?: string | null;
   department?: Department | null;
   category?: Category | null;
   latitude?: number | null;
   longitude?: number | null;
   schedule?: string | null;
-  // Nulo = salario a convenir (p. ej. anuncios importados por CSV sin salario).
-  // Con salaryMax el par es un rango; salary es siempre el extremo inferior.
+  // Null = salary "a convenir" (e.g. ads imported via CSV without a salary).
+  // With salaryMax the pair is a range; salary is always the lower bound.
   salary?: string | number | null;
   salaryMax?: string | number | null;
   phone: string;
-  // Números de contacto adicionales (los avisos suelen publicar dos o tres).
+  // Extra contact numbers (listings often publish two or three).
   extraPhones?: string[];
   jobType: JobType;
   status: AdStatus;
-  // Destacado por el panel: la tarjeta lo marca. El número de prioridad que
-  // decide el orden no sale del panel.
+  // Featured from the panel: the card marks it. The priority number that
+  // decides the order never leaves the panel.
   featured?: boolean;
   durationDays: number;
   expiresAt: string;
   createdById: string;
-  // emailVerified alimenta el badge "Verificado" (señal de confianza).
+  // emailVerified feeds the "Verificado" badge (trust signal).
   createdBy?: { id: string; name: string; email: string; emailVerified?: boolean };
-  // Calificación del publicante; el backend la adjunta en los listados.
+  // The poster's rating; the backend attaches it in listings.
   ownerRating?: { average: number | null; count: number };
-  // Accesos e interesados; el backend los adjunta en detalle y /listings/mine.
+  // Views and interested users; the backend attaches them in detail and /listings/mine.
   _count?: { visits: number; interests: number };
   createdAt: string;
   updatedAt: string;
@@ -171,14 +171,14 @@ export interface Review {
   comment: string;
   authorId: string;
   ownerId: string;
-  // Nulo si el anuncio reseñado ya fue eliminado (la reseña se conserva).
+  // Null if the reviewed ad was already deleted (the review is kept).
   adId: string | null;
   author?: { id: string; name: string };
   createdAt: string;
   updatedAt: string;
 }
 
-// Interés propio en un anuncio ajeno (se registra al contactar).
+// The user's own interest in someone else's ad (recorded on contact).
 export interface Interest {
   id: string;
   adId: string;
@@ -188,7 +188,7 @@ export interface Interest {
 
 export interface ReviewsResponse extends Paginated<Review> {
   average: number | null;
-  // Con sesión y adId en la consulta: si el usuario ya calificó ese anuncio.
+  // With a session and adId in the query: whether the user already rated that ad.
   alreadyReviewed?: boolean;
 }
 
@@ -227,7 +227,7 @@ export interface Paginated<T> {
   totalPages: number;
 }
 
-// Conteos por opción para la barra de filtros (endpoint /listings/facets).
+// Per-option counts for the filter bar (endpoint /listings/facets).
 export interface Facets {
   total: number;
   jobType: Partial<Record<JobType, number>>;
@@ -237,7 +237,7 @@ export interface Facets {
   salaryMax: number;
 }
 
-// Estado efectivo de un anuncio: un ACTIVO con expiresAt en el pasado está VENCIDO.
+// An ad's effective status: an ACTIVO ad with expiresAt in the past is VENCIDO.
 export function adEffectiveStatus(a: Pick<Ad, 'status' | 'expiresAt'>): EffectiveStatus {
   if (a.status === 'DADO_DE_BAJA') return 'DADO_DE_BAJA';
   return new Date(a.expiresAt).getTime() > Date.now() ? 'ACTIVO' : 'VENCIDO';
@@ -249,14 +249,14 @@ export const STATUS_LABEL: Record<EffectiveStatus, string> = {
   DADO_DE_BAJA: 'Dado de baja',
 };
 
-// Destino tras iniciar sesión o registrarse (?next=): solo rutas internas,
-// para no servir de redirección abierta.
+// Destination after signing in or registering (?next=): internal routes only,
+// so it can't be used as an open redirect.
 export function safeNext(next: string | null): string {
   return next && next.startsWith('/') && !next.startsWith('//') ? next : '/';
 }
 
-// Sueldo del anuncio como texto: monto fijo, rango ("Bs 3.500 a 4.500") o
-// "A convenir" cuando no hay salario. Única fuente para tarjetas y detalle.
+// The ad's salary as text: fixed amount, range ("Bs 3.500 a 4.500") or
+// "A convenir" when there is no salary. Single source for cards and detail.
 export function salaryLabel(
   ad: Pick<Ad, 'salary' | 'salaryMax'>,
   fallback = 'A convenir',
@@ -267,14 +267,14 @@ export function salaryLabel(
   if (min == null || !Number.isFinite(min)) return fallback;
   const bs = (n: number) => n.toLocaleString('es-BO');
   const max = amount(ad.salaryMax);
-  // Un techo igual al piso no es un rango, es el mismo monto.
+  // A ceiling equal to the floor is not a range, it's the same amount.
   return max != null && Number.isFinite(max) && max > min
     ? `Bs ${bs(min)} a ${bs(max)}`
     : `Bs ${bs(min)}`;
 }
 
-// Todos los números de contacto del anuncio, sin repetidos y sin vacíos: el
-// principal primero. Vacío si el anuncio llegó sin contacto (visitante anónimo).
+// All of the ad's contact numbers, without duplicates or blanks: the main one
+// first. Empty if the ad came without contact info (anonymous visitor).
 export function adPhones(ad: Pick<Ad, 'phone' | 'extraPhones'>): string[] {
   const all = [ad.phone, ...(ad.extraPhones ?? [])]
     .map((p) => (p ?? '').trim())
@@ -282,9 +282,9 @@ export function adPhones(ad: Pick<Ad, 'phone' | 'extraPhones'>): string[] {
   return [...new Set(all)];
 }
 
-// Enlace de WhatsApp: wa.me exige el número con código de país. Los números
-// nuevos llegan en E.164 (+591…); a los antiguos, de 8 dígitos locales, se
-// les antepone el 591 de Bolivia.
+// WhatsApp link: wa.me requires the number with country code. New numbers
+// arrive in E.164 (+591…); old ones, with 8 local digits, get Bolivia's 591
+// prepended.
 export function waLink(phone: string, message?: string) {
   const digits = phone.replace(/\D/g, '');
   const number =

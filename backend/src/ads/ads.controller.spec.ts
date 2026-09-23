@@ -12,8 +12,8 @@ function build() {
   return { c: new AdsController(ads as never), ads };
 }
 
-describe('AdsController (delegación)', () => {
-  it('delega las lecturas', () => {
+describe('AdsController (delegation)', () => {
+  it('delegates reads', () => {
     const { c, ads } = build();
     c.findAll({} as never); expect(ads.findAll).toHaveBeenCalled();
     c.facets(); expect(ads.facets).toHaveBeenCalled();
@@ -22,7 +22,7 @@ describe('AdsController (delegación)', () => {
     c.findOne('a1', u); expect(ads.findOnePublic).toHaveBeenCalledWith('a1', u);
     c.getContact('a1'); expect(ads.getContact).toHaveBeenCalledWith('a1');
   });
-  it('delega las escrituras y pasa el actor', () => {
+  it('delegates writes and passes the actor', () => {
     const { c, ads } = build();
     c.create({} as never, u); expect(ads.create).toHaveBeenCalledWith({}, u);
     c.bulkCreate({ items: [1] } as never, u); expect(ads.bulkCreate).toHaveBeenCalledWith([1], u);
@@ -32,7 +32,7 @@ describe('AdsController (delegación)', () => {
     c.republish('a1', u); expect(ads.republish).toHaveBeenCalledWith('a1', u);
     c.remove('a1', u); expect(ads.remove).toHaveBeenCalledWith('a1', u);
   });
-  it('removeAll respeta clientsOnly=true', () => {
+  it('removeAll honors clientsOnly=true', () => {
     const { c, ads } = build();
     c.removeAll(u, 'true'); expect(ads.removeAll).toHaveBeenCalledWith(u, true);
     c.removeAll(u, undefined); expect(ads.removeAll).toHaveBeenCalledWith(u, false);

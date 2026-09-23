@@ -16,8 +16,8 @@ function Stars({ value }: { value: number }) {
   );
 }
 
-// Reseñas del publicante dueño del anuncio. Cualquier usuario autenticado
-// puede calificar un anuncio ajeno (1-5 + comentario); una por anuncio.
+// Reviews of the poster who owns the ad. Any authenticated user can rate
+// someone else's ad (1-5 + comment); one per ad.
 export function Reviews({
   adId,
   ownerId,
@@ -34,10 +34,10 @@ export function Reviews({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  // El formulario pesa visualmente: colapsado hasta que quieran calificar.
+  // The form is visually heavy: collapsed until the user wants to rate.
   const [formOpen, setFormOpen] = useState(false);
 
-  // Se recarga al cambiar el usuario: alreadyReviewed depende del token.
+  // Reloads when the user changes: alreadyReviewed depends on the token.
   const load = useCallback(() => {
     api<ReviewsResponse>(`/reviews?ownerId=${ownerId}&adId=${adId}`)
       .then(setData)
@@ -46,8 +46,8 @@ export function Reviews({
 
   useEffect(load, [load]);
 
-  // Ya calificó este anuncio: lo dice el backend (la reseña propia puede no
-  // venir en la primera página de la lista del publicante).
+  // Already rated this ad: the backend says so (the user's own review may not
+  // be on the first page of the poster's list).
   const alreadyReviewed = Boolean(data?.alreadyReviewed);
 
   async function onSubmit(e: React.FormEvent) {
@@ -68,8 +68,8 @@ export function Reviews({
     }
   }
 
-  // Una reseña por anuncio y nunca sobre el anuncio propio. Espera la
-  // carga para no mostrar el botón y retirarlo después.
+  // One review per ad and never on your own ad. Waits for loading so the
+  // button isn't shown and then removed.
   const isOwner = user?.id === ownerId;
   const canReview = Boolean(user) && !isOwner && data != null && !alreadyReviewed;
 
@@ -94,7 +94,7 @@ export function Reviews({
         </p>
       )}
 
-      {/* Mientras cargan las reseñas, siluetas en vez de una lista vacía. */}
+      {/* While reviews load, skeletons instead of an empty list. */}
       {!data && (
         <ul className="space-y-2" aria-hidden="true">
           <ReviewSkeleton />

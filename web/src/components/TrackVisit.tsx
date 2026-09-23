@@ -3,12 +3,12 @@
 import { useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 
-// Registra la visita al detalle del anuncio (métrica del panel admin).
-// Corre en el cliente para no contar prefetches ni bots de SSR; si falla,
-// no afecta la navegación.
+// Records the visit to the ad detail page (admin panel metric).
+// Runs on the client so prefetches and SSR bots aren't counted; if it fails,
+// navigation is unaffected.
 export function TrackVisit({ adId }: { adId: string }) {
-  // Mismo motivo que en TrackPageView: un anuncio no se cuenta dos veces por
-  // una sola apertura de su detalle.
+  // Same reason as in TrackPageView: an ad isn't counted twice for a single
+  // opening of its detail page.
   const lastAdId = useRef<string | null>(null);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export function TrackVisit({ adId }: { adId: string }) {
       method: 'POST',
       body: JSON.stringify({ adId }),
     }).catch(() => {
-      /* noop: el tracking es best-effort */
+      /* noop: tracking is best-effort */
     });
   }, [adId]);
 

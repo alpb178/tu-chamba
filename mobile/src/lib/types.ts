@@ -23,34 +23,34 @@ export interface User {
   emailVerified: boolean;
   name: string;
   phone: string | null;
-  // Único distintivo entre usuarios: acceso al panel de administración.
+  // The only distinction between users: access to the admin panel.
   isAdmin: boolean;
 }
 
 export interface Ad {
   id: string;
   description: string;
-  // Nulo = salario a convenir (p. ej. anuncios importados por CSV sin salario).
-  // Con salaryMax el par es un rango; salary es siempre el extremo inferior.
+  // Null = negotiable salary (e.g. CSV-imported listings without a salary).
+  // With salaryMax the pair is a range; salary is always the lower bound.
   salary?: string | number | null;
   salaryMax?: string | number | null;
   phone: string;
-  // Números de contacto adicionales (los avisos suelen publicar dos o tres).
+  // Additional contact numbers (listings often publish two or three).
   extraPhones?: string[];
-  // Referencia en texto libre ("frente al mercado Los Pozos").
+  // Free-text reference ("frente al mercado Los Pozos").
   locationReference?: string | null;
   jobType: JobType;
-  // Destacado por el panel: la tarjeta lo marca.
+  // Featured from the panel: the card highlights it.
   featured?: boolean;
   createdById: string;
   createdBy?: { id: string; name: string; email: string };
-  // Calificación del publicante; el backend la adjunta en los listados.
+  // The poster's rating; the backend attaches it in listings.
   ownerRating?: { average: number | null; count: number };
   createdAt: string;
 }
 
-// Sueldo del anuncio como texto: monto fijo, rango ("Bs 3.500 a 4.500") o
-// "A convenir" (mismo criterio que el portal web).
+// Listing salary as text: fixed amount, range ("Bs 3.500 a 4.500") or
+// "A convenir" (same rule as the web portal).
 export function salaryLabel(
   ad: Pick<Ad, 'salary' | 'salaryMax'>,
   fallback = 'A convenir',
@@ -65,7 +65,7 @@ export function salaryLabel(
     : `Bs ${bs(min)}`;
 }
 
-// Todos los números de contacto, sin repetidos ni vacíos: el principal primero.
+// All contact numbers, without duplicates or blanks: the main one first.
 export function adPhones(ad: Pick<Ad, 'phone' | 'extraPhones'>): string[] {
   const all = [ad.phone, ...(ad.extraPhones ?? [])]
     .map((p) => (p ?? '').trim())

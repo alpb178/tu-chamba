@@ -70,7 +70,7 @@ export default function TopAdsPage() {
     load();
   }
 
-  // Mismo borrado total que la página de anuncios: TODOS los del sitio.
+  // Same full delete as the ads page: ALL of the site's ads.
   async function removeAll() {
     setConfirmAll(false);
     await api('/listings/all', { method: 'DELETE' });
