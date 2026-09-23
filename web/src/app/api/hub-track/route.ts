@@ -39,19 +39,40 @@ const SESSION_MINUTES = 30;
 const BOT = /bot|crawl|spider|slurp|bingpreview|headless|lighthouse|monitor|pingdom|curl|wget/i;
 
 interface IncomingEvent {
-  type: 'page_view' | 'site_click';
+  type: 'page_view' | 'site_click' | 'click';
   path: string;
+  section?: string;
+  label?: string;
+  referrer?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
   target?: string;
   linkType?: 'web' | 'android' | 'ios';
+}
+
+function isText(value: unknown, max: number): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= max;
 }
 
 function isValid(event: unknown): event is IncomingEvent {
   if (typeof event !== 'object' || event === null) return false;
   const e = event as Record<string, unknown>;
 
-  if (e.type !== 'page_view' && e.type !== 'site_click') return false;
+  if (e.type !== 'page_view' && e.type !== 'site_click' && e.type !== 'click') return false;
   if (typeof e.path !== 'string' || e.path.length === 0 || e.path.length > 512) return false;
   if (e.type === 'site_click' && typeof e.target !== 'string') return false;
+  // Same limits as the hub: a click must say where it happened.
+  if (e.type === 'click' && (!isText(e.section, 64) || !isText(e.label, 120))) return false;
+  if (e.section !== undefined && !isText(e.section, 64)) return false;
+  if (e.label !== undefined && !isText(e.label, 120)) return false;
+  // Only the domain: a full URL could carry the visitor's search or an id.
+  if (e.referrer !== undefined && !(typeof e.referrer === 'string' && /^[a-z0-9.-]{1,255}$/.test(e.referrer))) {
+    return false;
+  }
+  for (const utm of [e.utmSource, e.utmMedium, e.utmCampaign]) {
+    if (utm !== undefined && !isText(utm, 100)) return false;
+  }
   if (e.linkType !== undefined && !['web', 'android', 'ios'].includes(e.linkType as string)) {
     return false;
   }
@@ -105,6 +126,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!hubUrl || !apiKey) return noContent;
 
   const at = new Date().toISOString();
+  // Vercel resolves the country from the IP at its edge; the IP itself never
+  // leaves this server.
+  const countryHeader = request.headers.get('x-vercel-ip-country')?.toUpperCase();
+  const country = countryHeader && /^[A-Z]{2}$/.test(countryHeader) ? countryHeader : undefined;
 
   try {
     await fetch(`${hubUrl}/ingest/events`, {
@@ -116,6 +141,18 @@ export async function POST(request: Request): Promise<NextResponse> {
           type: event.type,
           sessionId,
           path: event.path,
+          ...(country ? { country } : {}),
+          ...(event.type === 'page_view'
+            ? {
+                referrer: event.referrer,
+                utmSource: event.utmSource,
+                utmMedium: event.utmMedium,
+                utmCampaign: event.utmCampaign,
+              }
+            : {}),
+          ...(event.type !== 'page_view' && event.section && event.label
+            ? { section: event.section, label: event.label }
+            : {}),
           ...(event.type === 'site_click'
             ? { target: event.target, linkType: event.linkType ?? 'web' }
             : {}),
