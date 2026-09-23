@@ -51,7 +51,10 @@ export class GoogleIndexingService {
           Authorization: `Bearer ${await this.accessToken()}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: `${base}/listings/${adId}`, type }),
+        // Public URLs carry the locale (/es, /en). Only the Spanish (default)
+        // version is notified to save quota; Google finds the English one
+        // through the page's hreflang alternates and the sitemap.
+        body: JSON.stringify({ url: `${base}/es/listings/${adId}`, type }),
       });
       if (!res.ok) {
         this.logger.warn(
