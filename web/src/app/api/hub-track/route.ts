@@ -39,19 +39,29 @@ const SESSION_MINUTES = 30;
 const BOT = /bot|crawl|spider|slurp|bingpreview|headless|lighthouse|monitor|pingdom|curl|wget/i;
 
 interface IncomingEvent {
-  type: 'page_view' | 'site_click';
+  type: 'page_view' | 'site_click' | 'click';
   path: string;
+  section?: string;
+  label?: string;
   target?: string;
   linkType?: 'web' | 'android' | 'ios';
+}
+
+function isText(value: unknown, max: number): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= max;
 }
 
 function isValid(event: unknown): event is IncomingEvent {
   if (typeof event !== 'object' || event === null) return false;
   const e = event as Record<string, unknown>;
 
-  if (e.type !== 'page_view' && e.type !== 'site_click') return false;
+  if (e.type !== 'page_view' && e.type !== 'site_click' && e.type !== 'click') return false;
   if (typeof e.path !== 'string' || e.path.length === 0 || e.path.length > 512) return false;
   if (e.type === 'site_click' && typeof e.target !== 'string') return false;
+  // Same limits as the hub: a click must say where it happened.
+  if (e.type === 'click' && (!isText(e.section, 64) || !isText(e.label, 120))) return false;
+  if (e.section !== undefined && !isText(e.section, 64)) return false;
+  if (e.label !== undefined && !isText(e.label, 120)) return false;
   if (e.linkType !== undefined && !['web', 'android', 'ios'].includes(e.linkType as string)) {
     return false;
   }
@@ -116,6 +126,9 @@ export async function POST(request: Request): Promise<NextResponse> {
           type: event.type,
           sessionId,
           path: event.path,
+          ...(event.type !== 'page_view' && event.section && event.label
+            ? { section: event.section, label: event.label }
+            : {}),
           ...(event.type === 'site_click'
             ? { target: event.target, linkType: event.linkType ?? 'web' }
             : {}),

@@ -3,6 +3,14 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { resolveGroupSite } from '@/lib/hub-analytics';
+import { describeClick, isPrivatePath } from '@/lib/click-target';
+
+/**
+ * Areas whose screen text must not reach the hub: what is shown there can be a
+ * customer's name or email. Clicks there are still counted, with a generic
+ * label. See lib/click-target.ts.
+ */
+const PRIVATE_SEGMENTS = ['admin', 'profile', 'my-listings', 'alerts', 'interests'] as const;
 
 /**
  * Manda al hub del grupo la visita y los clics que se van a un sitio hermano.
@@ -34,16 +42,23 @@ export function HubAnalytics() {
 
   useEffect(() => {
     function onClick(event: MouseEvent) {
-      const anchor = (event.target as Element | null)?.closest?.('a[href]');
-      if (!(anchor instanceof HTMLAnchorElement)) return;
+      const path = pathname ?? '/';
+      const click = describeClick(event.target, isPrivatePath(path, PRIVATE_SEGMENTS));
+      if (!click) return;
 
-      const target = resolveGroupSite(anchor.href, window.location.host);
-      if (!target) return;
+      const { section, label } = click;
+      const anchor = click.element.closest('a[href]');
+      const target =
+        anchor instanceof HTMLAnchorElement
+          ? resolveGroupSite(anchor.href, window.location.host)
+          : null;
 
       send(
-        { type: 'site_click', path: pathname ?? '/', target, linkType: 'web' },
-        // La página puede estar descargándose un milisegundo después: un fetch
-        // normal se cancelaría, sendBeacon lo entrega el navegador igual.
+        target
+          ? { type: 'site_click', path, section, label, target, linkType: 'web' }
+          : { type: 'click', path, section, label },
+        // The page may be unloading a millisecond later: a normal fetch would
+        // be cancelled, sendBeacon is handed to the browser and survives.
         true,
       );
     }
@@ -57,8 +72,10 @@ export function HubAnalytics() {
 }
 
 interface HubEvent {
-  type: 'page_view' | 'site_click';
+  type: 'page_view' | 'site_click' | 'click';
   path: string;
+  section?: string;
+  label?: string;
   target?: string;
   linkType?: 'web';
 }
