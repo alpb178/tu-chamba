@@ -5,7 +5,7 @@ import { hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import '../globals.css';
 import { RootDocument } from '@/components/RootDocument';
-import { routing } from '@/i18n/routing';
+import { LANGUAGE_TAG, routing } from '@/i18n/routing';
 import { SITE } from '@/lib/seo';
 
 // Common metadata base (resolves relative OpenGraph URLs, etc.). The site's
@@ -30,5 +30,5 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
-  return <RootDocument lang={locale}>{children}</RootDocument>;
+  return <RootDocument lang={LANGUAGE_TAG[locale]}>{children}</RootDocument>;
 }

@@ -1,0 +1,20 @@
+{
+  "verification": {
+    "message": "Confirme seu e-mail <b>{email}</b> para ativar sua conta e poder publicar.",
+    "sent": "Reenviamos o link. Confira seu e-mail.",
+    "sending": "Enviando...",
+    "resend": "Reenviar link"
+  },
+  "bell": {
+    "title": "Notificações",
+    "ariaLabel": "Notificações{unread, plural, =0 {} other { (# não lidas)}}",
+    "markAllRead": "Marcar todas como lidas",
+    "empty": "Você não tem notificações.",
+    "viewDetails": "Ver detalhes"
+  },
+  "timeAgo": {
+    "now": "agora",
+    "minutes": "há {count} min",
+    "hours": "há {count} h"
+  }
+}

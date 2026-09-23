@@ -1,0 +1,26 @@
+{
+  "section": {
+    "label": "Sites de interesse",
+    "previous": "Anterior",
+    "next": "Próximo",
+    "goTo": "Ir para {name}",
+    "visit": "Visitar site",
+    "visitLabel": "Visitar o site de {name} (abre em uma nova aba)"
+  },
+  "corpsc": {
+    "description": "Quer criar seu site, aplicativo ou plataforma? Fazemos sob medida para você.",
+    "tagline": "Transformamos suas ideias em produtos digitais"
+  },
+  "dando-muela": {
+    "description": "App para se conectar com pessoas. Baixe e comece a conversar.",
+    "tagline": "Conheça gente e converse"
+  },
+  "iris-natural": {
+    "description": "Loja de produtos naturais.",
+    "tagline": "Produtos naturais"
+  },
+  "invoices": {
+    "description": "Portal para gerar e gerenciar suas faturas de forma rápida e simples.",
+    "tagline": "Fatura em PDF em minutos"
+  }
+}

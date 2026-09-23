@@ -1,8 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { DEPARTMENT_SLUG } from '@/lib/types';
 import { fetchAllAds } from '@/lib/server-api';
-import { locales } from '@/i18n/routing';
-import { SITE, localePath } from '@/lib/seo';
+import { defaultLocale, locales } from '@/i18n/routing';
+import { SITE, localeLanguages, localePath } from '@/lib/seo';
 
 type Entry = MetadataRoute.Sitemap[number];
 
@@ -10,7 +10,8 @@ type Entry = MetadataRoute.Sitemap[number];
 // alternate (hreflang), as Google recommends for localized sitemaps.
 function localized(path: string, extra: Omit<Entry, 'url'>): MetadataRoute.Sitemap {
   const languages = Object.fromEntries(
-    locales.map((l) => [l, `${SITE}${localePath(l, path)}`]),
+    Object.entries({ ...localeLanguages(path), 'x-default': localePath(defaultLocale, path) })
+      .map(([lang, p]) => [lang, `${SITE}${p}`]),
   );
   return locales.map((locale) => ({
     url: `${SITE}${localePath(locale, path)}`,

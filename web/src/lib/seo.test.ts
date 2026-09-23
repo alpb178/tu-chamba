@@ -66,6 +66,7 @@ describe('locale URLs', () => {
       languages: {
         es: '/es/jobs/la-paz',
         en: '/en/jobs/la-paz',
+        'pt-BR': '/pt/jobs/la-paz',
         'x-default': '/es/jobs/la-paz',
       },
     });
@@ -77,6 +78,14 @@ describe('locale URLs', () => {
     expect(ld.url).toMatch(/\/en\/listings\/a1$/);
     expect(ld.description as string).toContain('Requirements: Experience');
     expect((jobPostingJsonLd(ad) as Record<string, unknown>).url).toMatch(/\/es\/listings\/a1$/);
+    const pt = jobPostingJsonLd(ad, 'pt') as Record<string, unknown>;
+    expect(pt.url).toMatch(/\/pt\/listings\/a1$/);
+    expect(pt.description as string).toContain('Requisitos: Experience');
+  });
+
+  it('webSiteJsonLd declares the BCP 47 language of the locale', () => {
+    expect((webSiteJsonLd('pt') as Record<string, unknown>).inLanguage).toBe('pt-BR');
+    expect((webSiteJsonLd('pt') as Record<string, unknown>).url).toMatch(/\/pt$/);
   });
 });
 

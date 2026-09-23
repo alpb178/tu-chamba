@@ -1,0 +1,8 @@
+{
+  "published": "Publicado em: {date}",
+  "views": "{formatted} {count, plural, one {visita} other {visitas}}",
+  "viewsTitle": "{count} {count, plural, one {visita} other {visitas}} a este anúncio",
+  "verified": "Verificado",
+  "reviews": "({count} {count, plural, one {avaliação} other {avaliações}})",
+  "viewDetails": "Ver detalhes"
+}

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { getLabels } from '@/i18n/labels-server';
-import type { Locale } from '@/i18n/routing';
+import { OG_LOCALE, type Locale } from '@/i18n/routing';
 import { fetchAd } from '@/lib/server-api';
 import {
   DEPARTMENT_LABEL,
@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       description,
       type: 'article',
       images: ['/banner.jpeg'],
-      locale: locale === 'en' ? 'en_US' : 'es_BO',
+      locale: OG_LOCALE[locale as Locale],
     },
   };
 }
