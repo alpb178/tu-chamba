@@ -9,7 +9,7 @@ import { Button } from './ui';
 import { NotificationsBell } from './NotificationsBell';
 import { CORPSC } from '@/lib/companies';
 import { Icon } from './Icon';
-import { LanguageSwitcher } from './LanguageSwitcher';
+import { LanguageMenu } from './LanguageMenu';
 
 // Avatar initials (max. 2, taken from the user's name).
 function initials(name: string) {
@@ -210,7 +210,7 @@ export function Navbar() {
         {/* Desktop navigation: CTA + bell + account menu */}
         <nav className="hidden items-center md:flex">
           <div className="flex items-center gap-4 border-l border-outline-variant pl-6">
-            <LanguageSwitcher className="text-on-surface-variant" />
+            <LanguageMenu />
             <Link href={publishHref}>
               <Button variant="accent" className="px-5 py-2.5">
                 {t('publish')}
@@ -410,7 +410,7 @@ export function Navbar() {
               {CORPSC.name} ↗
             </a>
 
-            <LanguageSwitcher className="px-3 py-2 text-on-surface-variant" />
+            <LanguageMenu align="start" className="mx-3 my-2 self-start" onSelect={() => setMobileMenuOpen(false)} />
 
             {user ? (
               <button

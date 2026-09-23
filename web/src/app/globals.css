@@ -49,6 +49,42 @@
   --c-brand-light: 219 225 255;
 }
 
+/* Brand colours of the shared language menu (components/LanguageSwitcher).
+   The menu itself is always a white card; only the button follows the
+   background it sits on. */
+.lang-menu {
+  --lang-fg: rgb(var(--c-on-surface-variant));
+  --lang-bg: rgb(var(--c-surface-container-lowest));
+  --lang-border: rgb(var(--c-outline-variant));
+  --lang-menu-bg: rgb(var(--c-surface-container-lowest));
+  --lang-menu-fg: rgb(var(--c-on-surface));
+  --lang-menu-border: rgb(var(--c-outline-variant));
+  --lang-accent: rgb(var(--c-brand));
+  --lang-hover: rgb(var(--c-brand-light) / 0.55);
+}
+.lang-menu > button {
+  transition: border-color 150ms ease, color 150ms ease;
+}
+.lang-menu > button:hover,
+.lang-menu > button[aria-expanded='true'] {
+  --lang-fg: rgb(var(--c-brand));
+  --lang-border: rgb(var(--c-brand) / 0.4);
+}
+.lang-menu > button:focus-visible {
+  outline: 2px solid rgb(var(--c-secondary-container));
+  outline-offset: 2px;
+}
+/* Footer: dark inverse surface. */
+.lang-menu--inverse {
+  --lang-fg: rgb(var(--c-inverse-on-surface) / 0.85);
+  --lang-bg: transparent;
+  --lang-border: rgb(var(--c-inverse-on-surface) / 0.3);
+}
+.lang-menu--inverse > button:hover,
+.lang-menu--inverse > button[aria-expanded='true'] {
+  --lang-fg: rgb(var(--c-inverse-on-surface));
+  --lang-border: rgb(var(--c-inverse-on-surface) / 0.6);
+}
 
 @layer base {
   body {

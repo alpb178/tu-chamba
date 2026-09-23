@@ -5,7 +5,7 @@ import { IconBrandFacebook } from '@tabler/icons-react';
 import { CORPSC } from '@/lib/companies';
 import { DEPARTMENT_LABEL, DEPARTMENT_SLUG, Department } from '@/lib/types';
 import { Icon } from './Icon';
-import { LanguageSwitcher } from './LanguageSwitcher';
+import { LanguageMenu } from './LanguageMenu';
 
 const SUPPORT_EMAIL = 'alesx2soporte@gmail.com';
 
@@ -141,7 +141,7 @@ export function Footer() {
           <p className="text-xs text-inverse-on-surface/60">
             {t('copyright', { year: String(new Date().getFullYear()) })}
           </p>
-          <LanguageSwitcher className="text-inverse-on-surface/80" />
+          <LanguageMenu placement="top" tone="inverse" />
           <div className="flex gap-3">
             <SocialLink href={CORPSC.url} label={t('social.site')} icon="public" />
             <SocialLink
