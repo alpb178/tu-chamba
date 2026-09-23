@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Icon } from './Icon';
 
 export interface SelectOption {
@@ -8,7 +9,7 @@ export interface SelectOption {
   label: string;
 }
 
-// Comparación sin tildes ni mayúsculas para el buscador de opciones.
+// Accent- and case-insensitive comparison for the option search.
 function normalize(text: string) {
   return text
     .toLowerCase()
@@ -16,15 +17,15 @@ function normalize(text: string) {
     .replace(/\p{Diacritic}/gu, '');
 }
 
-// Select del sistema de diseño: trigger estilo input + listbox flotante.
-// Accesible con teclado (flechas, Enter, Escape, Home/End) y aria-*.
-// Con listas largas (>7 opciones) incluye un buscador para filtrarlas.
-// `required` se valida vía un input oculto (validación nativa del form).
+// Design-system select: input-style trigger + floating listbox.
+// Keyboard accessible (arrows, Enter, Escape, Home/End) and aria-*.
+// Long lists (>7 options) include a search box to filter them.
+// `required` is validated via a hidden input (native form validation).
 export function CustomSelect({
   value,
   onChange,
   options,
-  placeholder = 'Selecciona…',
+  placeholder,
   icon,
   required = false,
   name,
@@ -35,15 +36,16 @@ export function CustomSelect({
   onChange: (value: string) => void;
   options: SelectOption[];
   placeholder?: string;
-  // Material Symbol opcional al inicio del trigger (p. ej. location_on).
+  // Optional Material Symbol at the start of the trigger (e.g. location_on).
   icon?: string;
   required?: boolean;
   name?: string;
-  // Estilos extra del trigger (padding/rounding para variantes como el hero).
+  // Extra trigger styles (padding/rounding for variants like the hero).
   className?: string;
-  // Buscador dentro del desplegable; por defecto, solo en listas largas.
+  // Search box inside the dropdown; by default only for long lists.
   searchable?: boolean;
 }) {
+  const t = useTranslations('home.select');
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const [query, setQuery] = useState('');
@@ -59,7 +61,7 @@ export function CustomSelect({
     ? options.filter((o) => normalize(o.label).includes(normalize(query)))
     : options;
 
-  // Cierra al hacer clic fuera.
+  // Closes on outside click.
   useEffect(() => {
     if (!open) return;
     function onDown(e: MouseEvent) {
@@ -69,7 +71,7 @@ export function CustomSelect({
     return () => document.removeEventListener('mousedown', onDown);
   }, [open]);
 
-  // El buscador toma el foco al abrir; la opción activa queda visible.
+  // The search box takes focus on open; the active option stays visible.
   useEffect(() => {
     if (open && withSearch) searchRef.current?.focus();
   }, [open, withSearch]);
@@ -166,7 +168,7 @@ export function CustomSelect({
           <Icon name={icon} className="text-outline" />
         )}
         <span className={`flex-1 truncate ${selected ? '' : 'text-outline'}`}>
-          {selected ? selected.label : placeholder}
+          {selected ? selected.label : (placeholder ?? t('placeholder'))}
         </span>
         <Icon
           name="expand_more"
@@ -176,7 +178,7 @@ export function CustomSelect({
         />
       </button>
 
-      {/* Validación nativa del formulario (required) sin select nativo. */}
+      {/* Native form validation (required) without a native select. */}
       {required && (
         <input
           tabIndex={-1}
@@ -202,8 +204,8 @@ export function CustomSelect({
                   setActive(0);
                 }}
                 onKeyDown={onNavKey}
-                placeholder="Buscar…"
-                aria-label="Buscar opción"
+                placeholder={t('search')}
+                aria-label={t('searchLabel')}
                 aria-controls={listboxId}
                 aria-activedescendant={
                   active >= 0 ? `${listboxId}-${active}` : undefined
@@ -221,7 +223,7 @@ export function CustomSelect({
           >
             {filtered.length === 0 && (
               <li className="px-3 py-2 text-sm text-outline">
-                Sin coincidencias.
+                {t('noMatches')}
               </li>
             )}
             {filtered.map((o, i) => (
@@ -232,7 +234,7 @@ export function CustomSelect({
                 aria-selected={o.value === value}
                 onMouseEnter={() => setActive(i)}
                 onMouseDown={(e) => {
-                  // mousedown evita perder el foco antes del click.
+                  // mousedown avoids losing focus before the click.
                   e.preventDefault();
                   select(i);
                 }}

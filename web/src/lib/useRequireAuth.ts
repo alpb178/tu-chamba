@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { useAuth } from './auth';
 
-// Guard de sesión compartido por las páginas privadas: sin sesión
-// redirige a /login conservando la ruta (?next=) para volver tras
-// entrar. Devuelve user=null mientras carga o redirige.
+// Session guard shared by private pages: without a session it
+// redirects to /login keeping the path (?next=) to return after
+// signing in. Returns user=null while loading or redirecting.
 export function useRequireAuth() {
   const { user, loading } = useAuth();
   const router = useRouter();

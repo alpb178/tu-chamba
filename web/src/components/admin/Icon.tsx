@@ -36,10 +36,10 @@ import {
   Monitor,
 } from 'lucide-react';
 
-// SVG empaquetados (lucide-react, la misma librería que usa el proyecto
-// hermano Iris Natural) en lugar de la fuente de Material Symbols: sin
-// dependencia del CDN de Google Fonts. Se conservan los nombres de Material
-// como API (mismo criterio que en el portal web).
+// Bundled SVGs (lucide-react, the same library used by the sibling project
+// Iris Natural) instead of the Material Symbols font: no dependency on the
+// Google Fonts CDN. Material names are kept as the API (same approach as in
+// the web portal).
 const ICONS: Record<string, LucideIcon> = {
   admin_panel_settings: ShieldUser,
   ads_click: MousePointerClick,
@@ -70,7 +70,7 @@ const ICONS: Record<string, LucideIcon> = {
   visibility: Eye,
   visibility_off: EyeOff,
   work: Briefcase,
-  // Estados / dispositivos.
+  // Statuses / devices.
   check_circle: CheckCircle2,
   schedule: Clock,
   block: Ban,
@@ -78,9 +78,9 @@ const ICONS: Record<string, LucideIcon> = {
   computer: Monitor,
 };
 
-// El tamaño se controla con clases de font-size (text-lg...): los iconos de
-// lucide-react miden 24px fijos por defecto y no responden a text-*, así que
-// se fuerza width/height a 1em para que el SVG escale con el font-size.
+// Size is controlled with font-size classes (text-lg...): lucide-react icons
+// are a fixed 24px by default and don't respond to text-*, so width/height
+// are forced to 1em so the SVG scales with the font-size.
 export function Icon({ name, className = '' }: { name: string; className?: string }) {
   const Cmp = ICONS[name];
   if (!Cmp) return null;

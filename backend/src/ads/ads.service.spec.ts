@@ -51,7 +51,7 @@ const existingAd = {
 };
 
 describe('AdsService.create', () => {
-  it('cualquier usuario verificado puede publicar', async () => {
+  it('any verified user can publish', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue({ emailVerified: true });
     prisma.ad.create.mockResolvedValue(existingAd);
@@ -61,7 +61,7 @@ describe('AdsService.create', () => {
     expect(prisma.ad.create.mock.calls[0][0].data.createdById).toBe('u1');
   });
 
-  it('bloquea publicar con correo sin verificar (no admin)', async () => {
+  it('blocks publishing with an unverified email (non-admin)', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue({ emailVerified: false });
 
@@ -70,7 +70,7 @@ describe('AdsService.create', () => {
     );
   });
 
-  it('el admin publica sin comprobación de verificación', async () => {
+  it('the admin publishes without a verification check', async () => {
     const { service, prisma } = buildService();
     prisma.ad.create.mockResolvedValue(existingAd);
 
@@ -79,8 +79,8 @@ describe('AdsService.create', () => {
   });
 });
 
-describe('propiedad del recurso (editar/eliminar)', () => {
-  it('el dueño puede editar su anuncio', async () => {
+describe('resource ownership (edit/delete)', () => {
+  it('the owner can edit their listing', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue(existingAd);
     prisma.ad.update.mockResolvedValue(existingAd);
@@ -89,7 +89,7 @@ describe('propiedad del recurso (editar/eliminar)', () => {
     expect(prisma.ad.update).toHaveBeenCalled();
   });
 
-  it('otro usuario no puede editar un anuncio ajeno', async () => {
+  it('another user cannot edit a listing they do not own', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue(existingAd);
 
@@ -98,7 +98,7 @@ describe('propiedad del recurso (editar/eliminar)', () => {
     ).rejects.toBeInstanceOf(ForbiddenException);
   });
 
-  it('el dueño puede eliminar su anuncio; otro usuario no', async () => {
+  it('the owner can delete their listing; another user cannot', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue(existingAd);
     prisma.ad.delete.mockResolvedValue(existingAd);
@@ -113,7 +113,7 @@ describe('propiedad del recurso (editar/eliminar)', () => {
     expect(prisma.ad.delete).not.toHaveBeenCalled();
   });
 
-  it('el admin puede modificar anuncios ajenos', async () => {
+  it('the admin can modify listings owned by others', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue(existingAd);
     prisma.ad.update.mockResolvedValue(existingAd);
@@ -124,9 +124,9 @@ describe('propiedad del recurso (editar/eliminar)', () => {
 });
 
 describe('AdsService.bulkRemove', () => {
-  it('borra solo los ids existentes y notifica la desindexación de cada uno', async () => {
+  it('deletes only existing ids and notifies de-indexing for each one', async () => {
     const { service, prisma, indexing } = buildService();
-    // De los tres pedidos, uno ya no existe.
+    // Of the three requested, one no longer exists.
     prisma.ad.findMany.mockResolvedValue([{ id: 'a1' }, { id: 'a2' }]);
     prisma.ad.deleteMany.mockResolvedValue({ count: 2 });
 
@@ -141,14 +141,14 @@ describe('AdsService.bulkRemove', () => {
 });
 
 describe('AdsService.removeAll', () => {
-  it('borra todos los anuncios y notifica la desindexación de cada uno', async () => {
+  it('deletes all listings and notifies de-indexing for each one', async () => {
     const { service, prisma, indexing } = buildService();
     prisma.ad.findMany.mockResolvedValue([{ id: 'a1' }, { id: 'a2' }, { id: 'a3' }]);
     prisma.ad.deleteMany.mockResolvedValue({ count: 3 });
 
     const result = await service.removeAll(admin);
 
-    // Sin clientsOnly el filtro es vacío (borra todos).
+    // Without clientsOnly the filter is empty (deletes everything).
     expect(prisma.ad.findMany).toHaveBeenCalledWith({
       where: {},
       select: { id: true },
@@ -158,7 +158,7 @@ describe('AdsService.removeAll', () => {
     expect(result).toEqual({ deleted: 3 });
   });
 
-  it('con clientsOnly borra solo los anuncios de clientes (no admins)', async () => {
+  it('with clientsOnly deletes only client listings (not admins)', async () => {
     const { service, prisma, indexing } = buildService();
     prisma.ad.findMany.mockResolvedValue([{ id: 'a1' }, { id: 'a2' }]);
     prisma.ad.deleteMany.mockResolvedValue({ count: 2 });
@@ -174,13 +174,13 @@ describe('AdsService.removeAll', () => {
 });
 
 describe('AdsService.findOne / findOnePublic / getContact', () => {
-  it('findOne lanza 404 si no existe', async () => {
+  it('findOne throws 404 if it does not exist', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue(null);
     await expect(service.findOne('x')).rejects.toBeInstanceOf(NotFoundException);
   });
 
-  it('findOnePublic oculta teléfonos y ubicación al visitante anónimo', async () => {
+  it('findOnePublic hides phones and location from anonymous visitors', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue({
       id: 'a1',
@@ -195,17 +195,17 @@ describe('AdsService.findOne / findOnePublic / getContact', () => {
     });
     const res = (await service.findOnePublic('a1', null)) as Record<string, unknown>;
     expect(res).not.toHaveProperty('phone');
-    // Los números adicionales y la referencia son datos de contacto: tampoco
-    // se exponen sin sesión.
+    // Additional numbers and the reference are contact data: they aren't
+    // exposed without a session either.
     expect(res).not.toHaveProperty('extraPhones');
     expect(res).not.toHaveProperty('location');
     expect(res).not.toHaveProperty('locationReference');
     expect(res).not.toHaveProperty('latitude');
-    // El departamento (zona general) sí se conserva.
+    // The department (general area) is kept.
     expect(res.department).toBe('LA_PAZ');
   });
 
-  it('findOnePublic devuelve todo al usuario con sesión', async () => {
+  it('findOnePublic returns everything to a logged-in user', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue({
       id: 'a1',
@@ -218,7 +218,7 @@ describe('AdsService.findOne / findOnePublic / getContact', () => {
     expect(res.location).toBe('Centro');
   });
 
-  it('getContact devuelve solo los datos de contacto y ubicación', async () => {
+  it('getContact returns only contact and location data', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue({
       phone: '70000000',
@@ -240,7 +240,7 @@ describe('AdsService.findOne / findOnePublic / getContact', () => {
 });
 
 describe('AdsService.create (anti-spam)', () => {
-  it('rechaza publicar si el correo no está verificado (no admin)', async () => {
+  it('rejects publishing if the email is not verified (non-admin)', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue({ emailVerified: false });
     await expect(service.create(dto, owner)).rejects.toBeInstanceOf(
@@ -249,7 +249,7 @@ describe('AdsService.create (anti-spam)', () => {
     expect(prisma.ad.create).not.toHaveBeenCalled();
   });
 
-  it('publica cuando el correo está verificado y deja traza + indexación', async () => {
+  it('publishes when the email is verified and records a trace + indexing', async () => {
     const { service, prisma, indexing } = buildService();
     prisma.user.findUnique.mockResolvedValue({ emailVerified: true });
     prisma.ad.create.mockResolvedValue({
@@ -262,7 +262,7 @@ describe('AdsService.create (anti-spam)', () => {
     expect(indexing.notifyUpdated).toHaveBeenCalledWith('a1');
   });
 
-  it('el admin publica sin verificación de correo', async () => {
+  it('the admin publishes without email verification', async () => {
     const { service, prisma } = buildService();
     prisma.ad.create.mockResolvedValue({
       id: 'a1',
@@ -275,7 +275,7 @@ describe('AdsService.create (anti-spam)', () => {
 });
 
 describe('AdsService.bulkCreate', () => {
-  it('crea en lote con duración por defecto 7 y una traza resumen', async () => {
+  it('bulk creates with default duration 7 and a summary trace', async () => {
     const { service, prisma, traces } = buildService();
     prisma.ad.createMany.mockResolvedValue({ count: 2 });
     const res = await service.bulkCreate([dto, dto], admin);
@@ -289,23 +289,23 @@ describe('AdsService.bulkCreate', () => {
     );
   });
 
-  // createMany arma un solo INSERT con la unión de columnas del lote: si una
-  // fila deja extraPhones en undefined, Postgres recibe NULL explícito y la
-  // columna es NOT NULL (falla todo el lote, no solo esa fila).
-  it('los anuncios sin teléfonos adicionales van con lista vacía, no undefined', async () => {
+  // createMany builds a single INSERT with the union of the batch's columns: if
+  // a row leaves extraPhones undefined, Postgres receives an explicit NULL and
+  // the column is NOT NULL (the whole batch fails, not just that row).
+  it('listings without additional phones get an empty list, not undefined', async () => {
     const { service, prisma } = buildService();
     prisma.ad.createMany.mockResolvedValue({ count: 2 });
-    // dto está tipado como never en este archivo (payload mínimo de prueba).
-    const conExtras = { ...(dto as object), extraPhones: ['71111111'] };
-    await service.bulkCreate([dto, conExtras] as never, admin);
+    // dto is typed as never in this file (minimal test payload).
+    const withExtras = { ...(dto as object), extraPhones: ['71111111'] };
+    await service.bulkCreate([dto, withExtras] as never, admin);
     const data = prisma.ad.createMany.mock.calls[0][0].data;
     expect(data[0].extraPhones).toEqual([]);
     expect(data[1].extraPhones).toEqual(['71111111']);
   });
 });
 
-describe('AdsService.republish / permisos', () => {
-  it('republish reactiva con nueva vigencia', async () => {
+describe('AdsService.republish / permissions', () => {
+  it('republish reactivates with a new validity period', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue({
       id: 'a1',
@@ -320,7 +320,7 @@ describe('AdsService.republish / permisos', () => {
     expect(data.expiresAt).toBeInstanceOf(Date);
   });
 
-  it('un usuario ajeno no puede republicar (Forbidden)', async () => {
+  it('another user cannot republish (Forbidden)', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue({
       id: 'a1',
@@ -335,7 +335,7 @@ describe('AdsService.republish / permisos', () => {
 });
 
 describe('AdsService.findMine', () => {
-  it('lista los anuncios propios ordenados por fecha desc', async () => {
+  it('lists own listings sorted by date desc', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany.mockResolvedValue([{ id: 'a1' }]);
     await service.findMine('u1');
@@ -345,8 +345,8 @@ describe('AdsService.findMine', () => {
   });
 });
 
-// Fila tal como la devuelve la consulta de ranking del listado público (solo
-// los campos que usa el orden por relevancia). `extra` llena datos opcionales.
+// Row as returned by the public listing's ranking query (only the fields used
+// by the relevance order). `extra` fills in optional data.
 function rankRow(
   id: string,
   salary: number | null,
@@ -371,11 +371,11 @@ function rankRow(
   };
 }
 
-describe('AdsService.paginate (vía findAll) — construcción del where', () => {
-  it('findAll pagina anuncios vigentes con filtros de enums, salario y búsqueda', async () => {
+describe('AdsService.paginate (via findAll) — building the where', () => {
+  it('findAll paginates active listings with enum, salary and search filters', async () => {
     const { service, prisma } = buildService();
-    // 1ª consulta: campos de ranking de todos los vigentes que pasan el
-    // filtro; 2ª: la página ya ordenada, hidratada por id.
+    // 1st query: ranking fields of all active listings passing the filter;
+    // 2nd: the already-sorted page, hydrated by id.
     prisma.ad.findMany
       .mockResolvedValueOnce([rankRow('a1', 1000, 3)])
       .mockResolvedValueOnce([{ id: 'a1', createdById: 'u1' }]);
@@ -400,8 +400,9 @@ describe('AdsService.paginate (vía findAll) — construcción del where', () =>
     expect(where.jobType).toEqual({ in: ['DIARIA'] });
     expect(where.department).toEqual({ in: ['LA_PAZ'] });
     expect(where.category).toEqual({ in: ['VENTAS'] });
-    // Solapamiento con el rango pedido: el piso del anuncio no pasa el techo
-    // pedido y su techo (salaryMax o el propio salary) alcanza el piso pedido.
+    // Overlap with the requested range: the listing's floor doesn't exceed the
+    // requested ceiling and its ceiling (salaryMax or salary itself) reaches
+    // the requested floor.
     expect(where.salary).toEqual({ lte: 3000 });
     expect(where.AND).toEqual([
       {
@@ -414,17 +415,17 @@ describe('AdsService.paginate (vía findAll) — construcción del where', () =>
     // title/description/requirements/location/locationReference
     expect(where.OR).toHaveLength(5);
     expect(where.location).toEqual({ contains: 'centro', mode: 'insensitive' });
-    // La página se hidrata por los ids ya ordenados (sin skip/take).
+    // The page is hydrated by the already-sorted ids (no skip/take).
     expect(prisma.ad.findMany.mock.calls[1][0].where).toEqual({
       id: { in: ['a1'] },
     });
-    // Adjunta la calificación del publicante.
+    // Attaches the poster's rating.
     expect(res.items[0]).toMatchObject({ ownerRating: { average: 4.5, count: 2 } });
     expect(res.total).toBe(1);
     expect(res.totalPages).toBe(1);
   });
 
-  it('sin reseñas, ownerRating queda en 0', async () => {
+  it('without reviews, ownerRating stays at 0', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany
       .mockResolvedValueOnce([rankRow('a1', null, 0)])
@@ -434,7 +435,7 @@ describe('AdsService.paginate (vía findAll) — construcción del where', () =>
     expect(res.items[0]).toMatchObject({ ownerRating: { average: null, count: 0 } });
   });
 
-  it('sin resultados no hidrata la página', async () => {
+  it('with no results it does not hydrate the page', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany.mockResolvedValueOnce([]);
     const res = await service.findAll({} as never);
@@ -443,8 +444,8 @@ describe('AdsService.paginate (vía findAll) — construcción del where', () =>
   });
 });
 
-describe('AdsService.findAll — filtro de sueldo con rangos', () => {
-  it('solo el piso pedido: el techo del anuncio puede ser su rango', async () => {
+describe('AdsService.findAll — salary filter with ranges', () => {
+  it('only the requested floor: the listing ceiling may be its range', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany.mockResolvedValueOnce([]);
     await service.findAll({ salaryMin: 4000 } as never);
@@ -460,7 +461,7 @@ describe('AdsService.findAll — filtro de sueldo con rangos', () => {
     ]);
   });
 
-  it('solo el techo pedido: se compara contra el piso del anuncio', async () => {
+  it('only the requested ceiling: compared against the listing floor', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany.mockResolvedValueOnce([]);
     await service.findAll({ salaryMax: 2000 } as never);
@@ -471,7 +472,7 @@ describe('AdsService.findAll — filtro de sueldo con rangos', () => {
 });
 
 describe('AdsService.facets', () => {
-  it('el techo del deslizador considera los rangos salariales', async () => {
+  it('the slider ceiling takes salary ranges into account', async () => {
     const { service, prisma } = buildService();
     prisma.ad.groupBy.mockResolvedValue([]);
     prisma.ad.count.mockResolvedValue(1);
@@ -485,22 +486,22 @@ describe('AdsService.facets', () => {
   });
 });
 
-describe('AdsService.findAll — orden por relevancia', () => {
-  // salario definido → más accesos → más datos completos → más reciente.
+describe('AdsService.findAll — relevance order', () => {
+  // defined salary → more visits → more complete data → most recent.
   const rows = [
-    rankRow('sin-salario-popular', null, 99, {
+    rankRow('no-salary-popular', null, 99, {
       location: 'Centro',
       category: 'VENTAS',
     }),
-    rankRow('salario-pocos-accesos', 900, 1),
-    rankRow('salario-completo', 700, 5, {
+    rankRow('salary-few-visits', 900, 1),
+    rankRow('salary-complete', 700, 5, {
       location: 'Miraflores',
       schedule: '8 a 16',
     }),
-    rankRow('salario-incompleto', 800, 5),
+    rankRow('salary-incomplete', 800, 5),
   ];
 
-  it('ordena por salario definido, accesos y completitud', async () => {
+  it('sorts by defined salary, visits and completeness', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany
       .mockResolvedValueOnce(rows)
@@ -508,48 +509,48 @@ describe('AdsService.findAll — orden por relevancia', () => {
     await service.findAll({} as never);
 
     expect(prisma.ad.findMany.mock.calls[1][0].where.id.in).toEqual([
-      'salario-completo', // empata en accesos con el incompleto y gana por datos
-      'salario-incompleto',
-      'salario-pocos-accesos',
-      'sin-salario-popular', // sin salario va al final aunque tenga más accesos
+      'salary-complete', // ties on visits with the incomplete one and wins on data
+      'salary-incomplete',
+      'salary-few-visits',
+      'no-salary-popular', // no salary goes last even with more visits
     ]);
   });
 
-  it('el orden de la página se respeta aunque la BD devuelva otro', async () => {
+  it('the page order is kept even if the DB returns another one', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany.mockResolvedValueOnce(rows).mockResolvedValueOnce([
-      { id: 'salario-incompleto', createdById: 'u1' },
-      { id: 'salario-completo', createdById: 'u1' },
+      { id: 'salary-incomplete', createdById: 'u1' },
+      { id: 'salary-complete', createdById: 'u1' },
     ]);
     const res = await service.findAll({ limit: 2 } as never);
     expect(res.items.map((i: { id: string }) => i.id)).toEqual([
-      'salario-completo',
-      'salario-incompleto',
+      'salary-complete',
+      'salary-incomplete',
     ]);
     expect(res.total).toBe(4);
     expect(res.totalPages).toBe(2);
   });
 
-  it('la prioridad manual manda sobre salario, accesos y completitud', async () => {
+  it('manual priority overrides salary, visits and completeness', async () => {
     const { service, prisma } = buildService();
-    const priorizado = rankRow('sin-salario-priorizado', null, 0, { priority: 5 });
+    const prioritized = rankRow('no-salary-prioritized', null, 0, { priority: 5 });
     prisma.ad.findMany
-      .mockResolvedValueOnce([...rows, priorizado])
+      .mockResolvedValueOnce([...rows, prioritized])
       .mockResolvedValueOnce([]);
     await service.findAll({} as never);
 
     const ids = prisma.ad.findMany.mock.calls[1][0].where.id.in;
-    expect(ids[0]).toBe('sin-salario-priorizado');
-    // El resto conserva el orden por relevancia.
+    expect(ids[0]).toBe('no-salary-prioritized');
+    // The rest keeps the relevance order.
     expect(ids.slice(1)).toEqual([
-      'salario-completo',
-      'salario-incompleto',
-      'salario-pocos-accesos',
-      'sin-salario-popular',
+      'salary-complete',
+      'salary-incomplete',
+      'salary-few-visits',
+      'no-salary-popular',
     ]);
   });
 
-  it('entre priorizados gana el de mayor prioridad', async () => {
+  it('among prioritized listings the highest priority wins', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany
       .mockResolvedValueOnce([
@@ -567,20 +568,20 @@ describe('AdsService.findAll — orden por relevancia', () => {
     ]);
   });
 
-  it('la segunda página sigue el mismo ranking', async () => {
+  it('the second page follows the same ranking', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany
       .mockResolvedValueOnce(rows)
-      .mockResolvedValueOnce([{ id: 'salario-pocos-accesos', createdById: 'u1' }]);
+      .mockResolvedValueOnce([{ id: 'salary-few-visits', createdById: 'u1' }]);
     await service.findAll({ page: 3, limit: 1 } as never);
     expect(prisma.ad.findMany.mock.calls[1][0].where.id.in).toEqual([
-      'salario-pocos-accesos',
+      'salary-few-visits',
     ]);
   });
 });
 
-describe('AdsService.findAllAdmin — filtros del reporte', () => {
-  it('clientsOnly + owner + rango de fechas + estado VENCIDO', async () => {
+describe('AdsService.findAllAdmin — report filters', () => {
+  it('clientsOnly + owner + date range + VENCIDO status', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany.mockResolvedValue([]);
     prisma.ad.count.mockResolvedValue(0);
@@ -596,15 +597,15 @@ describe('AdsService.findAllAdmin — filtros del reporte', () => {
     const where = prisma.ad.findMany.mock.calls[0][0].where;
     expect(where.createdBy.isAdmin).toBe(false);
     expect(where.createdBy.OR).toHaveLength(2);
-    // Días de Bolivia (UTC-4): el filtro abarca del 1 al 10 en hora local.
+    // Bolivia days (UTC-4): the filter spans the 1st to the 10th in local time.
     expect(where.createdAt.gte).toEqual(new Date('2026-07-01T04:00:00.000Z'));
     expect(where.createdAt.lte).toEqual(new Date('2026-07-11T03:59:59.999Z'));
-    // VENCIDO = activo con vigencia pasada.
+    // VENCIDO = active with a past expiry.
     expect(where.status).toBe('ACTIVO');
     expect(where.expiresAt.lte).toBeInstanceOf(Date);
   });
 
-  it('estado DADO_DE_BAJA se traduce al status persistido', async () => {
+  it('DADO_DE_BAJA status maps to the persisted status', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany.mockResolvedValue([]);
     prisma.ad.count.mockResolvedValue(0);
@@ -612,7 +613,7 @@ describe('AdsService.findAllAdmin — filtros del reporte', () => {
     expect(prisma.ad.findMany.mock.calls[0][0].where.status).toBe('DADO_DE_BAJA');
   });
 
-  it('lista los priorizados primero y luego los más recientes', async () => {
+  it('lists prioritized ones first and then the most recent', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany.mockResolvedValue([]);
     prisma.ad.count.mockResolvedValue(0);
@@ -624,19 +625,19 @@ describe('AdsService.findAllAdmin — filtros del reporte', () => {
   });
 });
 
-describe('AdsService — la prioridad es solo del panel', () => {
-  it('el listado público no expone la prioridad', async () => {
+describe('AdsService — priority belongs to the panel only', () => {
+  it('the public listing does not expose the priority', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany
       .mockResolvedValueOnce([rankRow('a1', 500, 1, { priority: 4 })])
       .mockResolvedValueOnce([{ id: 'a1', createdById: 'u1', priority: 4 }]);
     const res = await service.findAll({} as never);
     expect(res.items[0]).not.toHaveProperty('priority');
-    // El portal solo sabe que va destacado, no en qué posición.
+    // The portal only knows it's featured, not at which position.
     expect(res.items[0]).toHaveProperty('featured', true);
   });
 
-  it('sin prioridad el anuncio no va destacado', async () => {
+  it('without priority the listing is not featured', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany
       .mockResolvedValueOnce([rankRow('a1', 500, 1)])
@@ -645,7 +646,7 @@ describe('AdsService — la prioridad es solo del panel', () => {
     expect(res.items[0]).toHaveProperty('featured', false);
   });
 
-  it('el detalle público y los anuncios propios tampoco', async () => {
+  it('neither do the public detail and own listings', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue({ ...existingAd, priority: 4 });
     const detail = await service.findOnePublic('a1', owner);
@@ -656,7 +657,7 @@ describe('AdsService — la prioridad es solo del panel', () => {
     expect(mine[0]).not.toHaveProperty('priority');
   });
 
-  it('el visitante anónimo ve el destacado pero no la prioridad', async () => {
+  it('the anonymous visitor sees featured but not the priority', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue({ ...existingAd, priority: 4 });
     const detail = await service.findOnePublic('a1', null);
@@ -664,14 +665,14 @@ describe('AdsService — la prioridad es solo del panel', () => {
     expect(detail).toHaveProperty('featured', true);
   });
 
-  it('el detalle sí la incluye para el admin (la edita en el formulario)', async () => {
+  it('the detail does include it for the admin (edited in the form)', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue({ ...existingAd, priority: 4 });
     const detail = await service.findOnePublic('a1', admin);
     expect(detail).toHaveProperty('priority', 4);
   });
 
-  it('el listado del panel sí la incluye (la tabla la edita)', async () => {
+  it('the panel listing does include it (the table edits it)', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findMany.mockResolvedValue([{ ...existingAd, priority: 4, createdById: 'u1' }]);
     prisma.ad.count.mockResolvedValue(1);
@@ -679,7 +680,7 @@ describe('AdsService — la prioridad es solo del panel', () => {
     expect(res.items[0]).toHaveProperty('priority', 4);
   });
 
-  it('descarta la prioridad que manda un cliente al publicar', async () => {
+  it('drops the priority a client sends when publishing', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue({ emailVerified: true });
     prisma.ad.create.mockResolvedValue({ ...existingAd, createdBy: existingAd.createdBy });
@@ -687,14 +688,14 @@ describe('AdsService — la prioridad es solo del panel', () => {
     expect(prisma.ad.create.mock.calls[0][0].data.priority).toBeUndefined();
   });
 
-  it('el admin sí puede fijarla al publicar', async () => {
+  it('the admin can set it when publishing', async () => {
     const { service, prisma } = buildService();
     prisma.ad.create.mockResolvedValue({ ...existingAd, createdBy: existingAd.createdBy });
     await service.create({ ...(dto as object), priority: 9 } as never, admin);
     expect(prisma.ad.create.mock.calls[0][0].data.priority).toBe(9);
   });
 
-  it('descarta la prioridad que manda el dueño al editar su anuncio', async () => {
+  it('drops the priority the owner sends when editing their listing', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue(existingAd);
     prisma.ad.update.mockResolvedValue(existingAd);
@@ -702,7 +703,7 @@ describe('AdsService — la prioridad es solo del panel', () => {
     expect(prisma.ad.update.mock.calls[0][0].data.priority).toBeUndefined();
   });
 
-  it('el admin cambia la prioridad de cualquier anuncio', async () => {
+  it('the admin changes the priority of any listing', async () => {
     const { service, prisma } = buildService();
     prisma.ad.findUnique.mockResolvedValue(existingAd);
     prisma.ad.update.mockResolvedValue(existingAd);
@@ -712,7 +713,7 @@ describe('AdsService — la prioridad es solo del panel', () => {
 });
 
 describe('AdsService.facets', () => {
-  it('arma los conteos por opción y el rango salarial', async () => {
+  it('builds per-option counts and the salary range', async () => {
     const { service, prisma } = buildService();
     prisma.ad.groupBy
       .mockResolvedValueOnce([{ jobType: 'DIARIA', _count: 3 }])
@@ -725,7 +726,7 @@ describe('AdsService.facets', () => {
     const res = await service.facets();
     expect(res.total).toBe(9);
     expect(res.jobType).toEqual({ DIARIA: 3 });
-    expect(res.department).toEqual({ LA_PAZ: 2 }); // el null se ignora
+    expect(res.department).toEqual({ LA_PAZ: 2 }); // null is ignored
     expect(res.category).toEqual({ VENTAS: 5 });
     expect(res.salaryMin).toBe(500);
     expect(res.salaryMax).toBe(8000);

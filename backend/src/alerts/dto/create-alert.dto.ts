@@ -2,7 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 import { Category, Department } from '@prisma/client';
 
-// Una alerta sin departamento ni categoría equivale a "todas las ofertas".
+// An alert with no department and no category means "all listings".
 export class CreateAlertDto {
   @ApiPropertyOptional({ enum: Department, description: 'null = cualquier departamento' })
   @IsOptional()

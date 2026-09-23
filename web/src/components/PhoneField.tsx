@@ -2,18 +2,26 @@
 
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import en from 'react-phone-number-input/locale/en.json';
+import es from 'react-phone-number-input/locale/es.json';
+import pt from 'react-phone-number-input/locale/pt-BR.json';
+import { useLocale } from 'next-intl';
+import type { Locale } from '@/i18n/routing';
 
-// Los teléfonos guardados antes del input internacional no llevan código
-// de país: se asumen bolivianos para que el campo los muestre bien.
+// Country names of the selector in the page's language.
+const COUNTRY_LABELS: Record<Locale, typeof en> = { es, en, pt };
+
+// Phones saved before the international input have no country code:
+// they're assumed Bolivian so the field displays them correctly.
 function toE164(value: string) {
   if (!value) return undefined;
   if (value.startsWith('+')) return value;
   return `+591${value.replace(/\D/g, '')}`;
 }
 
-// Campo de teléfono internacional (react-phone-number-input): selector de
-// país con bandera (Bolivia por defecto) y formato E.164 (+591…), que
-// evita números mal escritos. Estilos en globals.css (.PhoneInput*).
+// International phone field (react-phone-number-input): country selector
+// with flag (Bolivia by default) and E.164 format (+591…), which prevents
+// mistyped numbers. Styles in globals.css (.PhoneInput*).
 export function PhoneField({
   value,
   onChange,
@@ -25,9 +33,11 @@ export function PhoneField({
   required?: boolean;
   id?: string;
 }) {
+  const locale = useLocale() as Locale;
   return (
     <PhoneInput
       id={id}
+      labels={COUNTRY_LABELS[locale]}
       international
       defaultCountry="BO"
       value={toE164(value)}

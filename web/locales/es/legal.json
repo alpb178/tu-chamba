@@ -1,0 +1,74 @@
+{
+  "updated": "Última actualización: {date}",
+  "privacy": {
+    "metaTitle": "Política de privacidad — Tu Chamba",
+    "metaDescription": "Cómo Tu Chamba recopila, usa y protege tus datos personales al usar el portal de empleos.",
+    "title": "Política de privacidad",
+    "date": "11 de julio de 2026",
+    "whoWeAre": {
+      "title": "Quiénes somos",
+      "body": "Tu Chamba es un portal de empleos de Bolivia operado por el Grupo CorpSC. Para cualquier consulta sobre esta política o sobre tus datos, escríbenos a <mail>{email}</mail>."
+    },
+    "dataCollected": {
+      "title": "Qué datos recopilamos",
+      "account": "<b>Datos de tu cuenta:</b> nombre, correo electrónico y teléfono (opcional). La contraseña se guarda cifrada; si entras con Google, no guardamos contraseña.",
+      "listings": "<b>Anuncios que publicas:</b> descripción, salario, ubicación y el teléfono de contacto que decidas incluir.",
+      "activity": "<b>Actividad en el portal:</b> visitas a los anuncios (de forma agregada), los anuncios en los que muestras interés al contactar, tus reseñas y notificaciones."
+    },
+    "purposes": {
+      "title": "Para qué los usamos",
+      "item1": "Operar el portal: publicar anuncios, buscar y contactar.",
+      "item2": "Mostrar el teléfono y la ubicación de un anuncio únicamente a usuarios con sesión iniciada.",
+      "item3": "Avisarte de actividad relevante (interesados en tus anuncios, reseñas recibidas, vencimientos, alertas de empleo que configures).",
+      "item4": "Moderar contenido reportado y prevenir el spam."
+    },
+    "sharing": {
+      "title": "Con quién compartimos datos",
+      "p1": "No vendemos tus datos ni los compartimos con terceros con fines publicitarios. El teléfono y la ubicación de un anuncio se muestran a los usuarios registrados, porque ese es el propósito del portal: que puedan contactarte. El contacto por WhatsApp o llamada ocurre fuera de Tu Chamba, directamente entre las personas.",
+      "p2": "Si inicias sesión con Google, Google nos confirma tu correo conforme a su propia política de privacidad."
+    },
+    "retention": {
+      "title": "Cuánto tiempo los conservamos",
+      "body": "Mientras tu cuenta exista. Si eliminas tu cuenta, se eliminan también tus anuncios, intereses, alertas y notificaciones. Las reseñas que escribiste se eliminan junto con tu cuenta."
+    },
+    "rights": {
+      "title": "Tus derechos",
+      "body": "Puedes ver y corregir tus datos desde <b>Mi perfil</b>, eliminar tus anuncios desde <b>Mis anuncios</b> y quitar anuncios de tu lista de interés. Para eliminar tu cuenta o ejercer cualquier otro derecho sobre tus datos, escríbenos a <mail>{email}</mail>."
+    },
+    "changes": {
+      "title": "Cambios a esta política",
+      "body": "Si cambiamos esta política, actualizaremos la fecha de esta página. Los cambios importantes se anunciarán en el portal."
+    }
+  },
+  "cookies": {
+    "metaTitle": "Política de cookies — Tu Chamba",
+    "metaDescription": "Qué cookies y almacenamiento local usa Tu Chamba y con qué propósito.",
+    "title": "Política de cookies",
+    "date": "11 de julio de 2026",
+    "essentials": {
+      "title": "Lo esencial",
+      "body": "Tu Chamba no usa cookies de publicidad ni de seguimiento de terceros. Solo utilizamos el almacenamiento estrictamente necesario para que el portal funcione."
+    },
+    "stored": {
+      "title": "Qué guardamos en tu navegador",
+      "colItem": "Elemento",
+      "colType": "Tipo",
+      "colPurpose": "Para qué sirve",
+      "tokenType": "Almacenamiento local (técnico)",
+      "tokenPurpose": "Mantiene tu sesión iniciada. Se elimina al cerrar sesión.",
+      "googleItem": "Cookies de Google",
+      "googleType": "Tercero (solo si lo usas)",
+      "googlePurpose": "Si eliges \"Continuar con Google\", Google puede usar sus propias cookies para autenticarte, según su política."
+    },
+    "notDone": {
+      "title": "Lo que NO hacemos",
+      "item1": "No usamos cookies de publicidad ni remarketing.",
+      "item2": "No compartimos tu navegación con redes publicitarias.",
+      "item3": "Las visitas a los anuncios se cuentan de forma agregada en nuestro servidor, sin identificarte con cookies."
+    },
+    "control": {
+      "title": "Cómo controlarlo",
+      "body": "Puedes borrar el almacenamiento local desde la configuración de tu navegador (al hacerlo se cerrará tu sesión). Para cualquier duda, escríbenos a <mail>{email}</mail>."
+    }
+  }
+}

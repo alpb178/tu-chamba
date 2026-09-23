@@ -27,9 +27,9 @@ export class ReviewsService {
     private traces: TracesService,
   ) {}
 
-  // Una única reseña por (usuario, anuncio): no se puede volver a calificar
-  // ni editar la existente. El dueño calificado se deriva del anuncio, y
-  // nadie puede calificar su propio anuncio.
+  // A single review per (user, listing): you cannot rate again or edit the
+  // existing one. The rated owner is derived from the listing, and nobody
+  // can rate their own listing.
   async create(dto: CreateReviewDto, authorId: string) {
     const ad = await this.prisma.ad.findUnique({
       where: { id: dto.adId },
@@ -59,7 +59,7 @@ export class ReviewsService {
       );
       return review;
     } catch (e) {
-      // Violación del único (authorId, adId): ya calificó este anuncio.
+      // Unique (authorId, adId) violation: already rated this listing.
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&
         e.code === 'P2002'
@@ -70,9 +70,9 @@ export class ReviewsService {
     }
   }
 
-  // Reseñas recibidas por un publicante, con promedio y total (para el
-  // detalle del anuncio). Con sesión y adId, incluye si el usuario ya
-  // calificó ese anuncio (su reseña puede no estar en la página pedida).
+  // Reviews received by a poster, with average and total (for the listing
+  // detail). With a session and adId, it includes whether the user already
+  // rated that listing (their review may not be on the requested page).
   async findByOwner(
     ownerId: string,
     page = 1,
@@ -114,8 +114,8 @@ export class ReviewsService {
     };
   }
 
-  // Reporte del panel admin: todas las reseñas con autor, calificado y el
-  // anuncio asociado (null si el anuncio ya fue eliminado).
+  // Admin panel report: all reviews with author, rated user and the
+  // associated listing (null if the listing was already deleted).
   async findAllAdmin(query: QueryAdminReviewDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
@@ -154,9 +154,9 @@ export class ReviewsService {
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  // Moderación: el admin corrige la calificación o el comentario. El
-  // promedio del dueño no se persiste (se agrega al leer), así que no
-  // hay nada más que recalcular.
+  // Moderation: the admin corrects the rating or the comment. The owner's
+  // average is not persisted (it is aggregated on read), so there is
+  // nothing else to recompute.
   async update(id: string, dto: UpdateReviewDto, actor: AuthUser) {
     const review = await this.prisma.review.findUnique({ where: { id } });
     if (!review) throw new NotFoundException('Reseña no encontrada');
@@ -177,7 +177,7 @@ export class ReviewsService {
     return updated;
   }
 
-  // Eliminar: el autor de la reseña o un admin (moderación).
+  // Delete: the review author or an admin (moderation).
   async remove(id: string, user: AuthUser) {
     const review = await this.prisma.review.findUnique({ where: { id } });
     if (!review) throw new NotFoundException('Reseña no encontrada');
@@ -194,7 +194,7 @@ export class ReviewsService {
     return { deleted: true };
   }
 
-  // Borrado total de las reseñas de la plataforma (moderación).
+  // Delete all reviews on the platform (moderation).
   async removeAll(actor: AuthUser) {
     const { count } = await this.prisma.review.deleteMany({});
     await this.traces.record(
@@ -205,7 +205,7 @@ export class ReviewsService {
     return { deleted: count };
   }
 
-  // Borrado por lotes desde el panel (moderación), con traza resumen única.
+  // Batch delete from the panel (moderation), with a single summary trace.
   async removeMany(ids: string[], actor: AuthUser) {
     const { count } = await this.prisma.review.deleteMany({
       where: { id: { in: ids } },

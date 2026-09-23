@@ -2,13 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Paleta ORIGINAL de tu-chamba (azul primario + ámbar + verde) sobre una base
-   NEUTRA BLANCA: se conservan los tonos de marca y solo la familia de
-   superficies/fondos/bordes pasa de lavanda tenue a blanco + grises neutros.
-   Tripletas RGB para aplicar opacidad con Tailwind. Sitio siempre claro. */
+/* tu-chamba's ORIGINAL palette (primary blue + amber + green) on a NEUTRAL
+   WHITE base: the brand tones are kept and only the surface/background/border
+   family moves from faint lavender to white + neutral greys.
+   RGB triplets so Tailwind can apply opacity. The site is always light. */
 :root {
   color-scheme: light;
-  /* — Tonos de marca (originales de tu-chamba) — */
+  /* — Brand tones (tu-chamba originals) — */
   --c-primary: 0 74 198;
   --c-on-primary: 255 255 255;
   --c-primary-container: 37 99 235;
@@ -25,7 +25,7 @@
   --c-on-error: 255 255 255;
   --c-error-container: 255 218 214;
   --c-on-error-container: 147 0 10;
-  /* — Base neutra blanca (antes lavanda) — */
+  /* — Neutral white base (formerly lavender) — */
   --c-background: 255 255 255;
   --c-on-background: 19 27 46;
   --c-surface: 255 255 255;
@@ -43,22 +43,58 @@
   --c-inverse-primary: 180 197 255;
   --c-outline: 163 163 163;
   --c-outline-variant: 229 229 229;
-  /* Alias de marca -> azul de tu-chamba. */
+  /* Brand alias -> tu-chamba blue. */
   --c-brand: 0 74 198;
   --c-brand-strong: 0 62 168;
   --c-brand-light: 219 225 255;
 }
 
+/* Brand colours of the shared language menu (components/LanguageSwitcher).
+   The menu itself is always a white card; only the button follows the
+   background it sits on. */
+.lang-menu {
+  --lang-fg: rgb(var(--c-on-surface-variant));
+  --lang-bg: rgb(var(--c-surface-container-lowest));
+  --lang-border: rgb(var(--c-outline-variant));
+  --lang-menu-bg: rgb(var(--c-surface-container-lowest));
+  --lang-menu-fg: rgb(var(--c-on-surface));
+  --lang-menu-border: rgb(var(--c-outline-variant));
+  --lang-accent: rgb(var(--c-brand));
+  --lang-hover: rgb(var(--c-brand-light) / 0.55);
+}
+.lang-menu > button {
+  transition: border-color 150ms ease, color 150ms ease;
+}
+.lang-menu > button:hover,
+.lang-menu > button[aria-expanded='true'] {
+  --lang-fg: rgb(var(--c-brand));
+  --lang-border: rgb(var(--c-brand) / 0.4);
+}
+.lang-menu > button:focus-visible {
+  outline: 2px solid rgb(var(--c-secondary-container));
+  outline-offset: 2px;
+}
+/* Footer: dark inverse surface. */
+.lang-menu--inverse {
+  --lang-fg: rgb(var(--c-inverse-on-surface) / 0.85);
+  --lang-bg: transparent;
+  --lang-border: rgb(var(--c-inverse-on-surface) / 0.3);
+}
+.lang-menu--inverse > button:hover,
+.lang-menu--inverse > button[aria-expanded='true'] {
+  --lang-fg: rgb(var(--c-inverse-on-surface));
+  --lang-border: rgb(var(--c-inverse-on-surface) / 0.6);
+}
 
 @layer base {
   body {
-    /* overflow-x-clip: el hero a sangre completa usa w-screen. */
+    /* overflow-x-clip: the full-bleed hero uses w-screen. */
     @apply overflow-x-clip bg-background font-sans text-on-surface antialiased;
   }
 
-  /* Tipografía editorial (lenguaje Iris Natural): titulares principales en
-     serif Merriweather con tracking negativo; los títulos funcionales (h3-h6)
-     en Libre Franklin, algo más apretados. */
+  /* Editorial typography (Iris Natural language): main headlines in
+     Merriweather serif with negative tracking; functional headings (h3-h6)
+     in Libre Franklin, slightly tighter. */
   h1,
   h2 {
     @apply font-display;
@@ -88,14 +124,14 @@
   }
 }
 
-/* Foco visible sólo para teclado (sin anillo al hacer clic con el mouse). */
+/* Visible focus for keyboard only (no ring when clicking with the mouse). */
 :focus-visible {
   outline: 2px solid rgb(var(--c-primary));
   outline-offset: 2px;
 }
 
-/* Campo de teléfono internacional (react-phone-number-input) con la
-   apariencia de los inputs del sistema de diseño. */
+/* International phone field (react-phone-number-input) styled like the
+   design system's inputs. */
 .PhoneInput {
   @apply flex w-full items-center gap-2 rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 transition-colors;
 }
@@ -103,7 +139,7 @@
   @apply border-primary ring-1 ring-primary;
 }
 .PhoneInputInput {
-  /* 16px: legibilidad y evita el auto-zoom de iOS al enfocar. */
+  /* 16px: readability, and avoids iOS auto-zoom on focus. */
   @apply w-full border-none bg-transparent text-base text-on-surface outline-none placeholder:text-outline;
 }
 .PhoneInputInput:focus {

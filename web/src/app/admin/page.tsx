@@ -6,7 +6,7 @@ import { AdminStats } from '@/lib/admin/types';
 import { ChartCardSkeleton, StatCard, StatCardSkeleton } from '@/components/admin/ui';
 import { ChartCard, DailyColumns, DailyLine, HourlyColumns } from '@/components/admin/charts';
 
-// Tonos de la rama azul de la marca (uno por entidad, validados en claro).
+// Shades of the brand's blue range (one per entity, validated on light).
 const ADS_COLOR = '#004ac6';
 const SITE_VISITS_COLOR = '#2563eb';
 const AD_VISITS_COLOR = '#60a5fa';
@@ -28,7 +28,7 @@ export default function DashboardPage() {
 
       {error && <p className="text-sm text-error">{error}</p>}
 
-      {/* Mientras cargan las stats, siluetas con la misma grilla. */}
+      {/* While the stats load, skeletons with the same grid. */}
       {!stats && !error && (
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -49,7 +49,7 @@ export default function DashboardPage() {
 
       {stats && (
         <>
-          {/* Cada KPI lleva a la sección a la que pertenece. */}
+          {/* Each KPI links to the section it belongs to. */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               label="Usuarios registrados"
@@ -73,7 +73,7 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* Cada gráfica también lleva a la sección de su serie. */}
+          {/* Each chart also links to its series' section. */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ChartCard
               title="Visitas al sitio por día (últimos 14 días)"
@@ -147,9 +147,9 @@ export default function DashboardPage() {
               <p className="mt-1 text-sm text-on-surface-variant">
                 Visitas al detalle de anuncios desde el portal (histórico).
               </p>
-              {/* Sin este desglose el total parece contradecir a "Top
-                  anuncios": las visitas de un anuncio borrado siguen contando
-                  aquí, pero allá no hay anuncio al que atribuirlas. */}
+              {/* Without this breakdown the total seems to contradict "Top
+                  anuncios": visits to a deleted listing still count here,
+                  but there is no listing there to attribute them to. */}
               <p className="mt-1 text-sm text-on-surface-variant">
                 {stats.visits.liveAds.toLocaleString('es-BO')} son de anuncios
                 que siguen publicados; el resto, de anuncios ya eliminados.

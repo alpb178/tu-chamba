@@ -1,0 +1,25 @@
+{
+  "language": {
+    "label": "Language"
+  },
+  "logoAlt": "Tu Chamba",
+  "publish": "Post a job",
+  "accountOf": "{name}'s account",
+  "accountMenu": "Account and menu",
+  "openMenu": "Open menu",
+  "sections": {
+    "account": "My account",
+    "admin": "Administration",
+    "links": "Links"
+  },
+  "myListings": "My listings",
+  "interests": "Saved listings",
+  "alerts": "Job alerts",
+  "profile": "My profile",
+  "adminPanel": "Admin panel",
+  "logout": "Log out",
+  "login": "Log in",
+  "newHere": "New here?",
+  "registerHere": "Sign up",
+  "register": "Sign up"
+}

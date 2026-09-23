@@ -1,0 +1,27 @@
+{
+  "logoAlt": "Tu Chamba",
+  "tagline": "A plataforma líder na Bolívia para encontrar e publicar vagas de emprego de forma rápida e segura.",
+  "company": {
+    "title": "Empresa",
+    "about": "Sobre nós",
+    "contact": "Contato"
+  },
+  "legal": {
+    "title": "Legal",
+    "privacy": "Política de privacidade",
+    "cookies": "Política de cookies",
+    "terms": "Termos de serviço",
+    "termsSubject": "Termos de serviço"
+  },
+  "employers": {
+    "title": "Empresas",
+    "publish": "Publicar vaga de emprego"
+  },
+  "departments": "Vagas por departamento",
+  "copyright": "© {year} TuChamba. Todos os direitos reservados.",
+  "social": {
+    "site": "Site da CorpSC",
+    "email": "Fale conosco por e-mail",
+    "facebook": "Siga-nos no Facebook"
+  }
+}

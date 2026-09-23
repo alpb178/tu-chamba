@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
@@ -9,7 +10,7 @@ const SCRIPT_ID = 'google-gsi-client';
 
 declare global {
   interface Window {
-    // Google Identity Services (script cargado en runtime).
+    // Google Identity Services (script loaded at runtime).
     google?: {
       accounts: {
         id: {
@@ -21,19 +22,20 @@ declare global {
   }
 }
 
-// Botón "Continuar con Google". Si la cuenta no existe se crea al momento
-// (sin más datos: el teléfono se completa después desde el perfil).
-// El Client ID vive solo en el API (GET /auth/google-client): se consulta
-// en runtime, sin variable de entorno en el frontend.
-// `next`: ruta a la que volver tras entrar (p. ej. el anuncio compartido).
+// "Continuar con Google" button. If the account doesn't exist it is created on
+// the spot (no extra data: the phone is filled in later from the profile).
+// The Client ID lives only in the API (GET /auth/google-client): it is fetched
+// at runtime, with no environment variable in the frontend.
+// `next`: route to return to after signing in (e.g. the shared ad).
 export function GoogleSignIn({ next = '/' }: { next?: string }) {
+  const t = useTranslations('auth.google');
   const { loginWithGoogle } = useAuth();
   const router = useRouter();
   const buttonRef = useRef<HTMLDivElement>(null);
   const [clientId, setClientId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Referencia estable para el callback de GIS (se inicializa una sola vez).
+  // Stable reference for the GIS callback (initialized only once).
   const onCredentialRef = useRef<(token: string) => void>(() => {});
   onCredentialRef.current = async (token: string) => {
     setError(null);
@@ -45,7 +47,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
     }
   };
 
-  // El Client ID se pide al API: una sola configuración para todo.
+  // The Client ID is requested from the API: a single config for everything.
   useEffect(() => {
     api<{ clientId: string | null }>('/auth/google-client')
       .then((r) => setClientId(r.clientId))
@@ -66,7 +68,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
         theme: 'outline',
         size: 'large',
         text: 'continue_with',
-        // Máximo que permite GIS: cubre el botón propio que tiene debajo.
+        // Maximum GIS allows: covers our own button underneath.
         width: 400,
       });
       return true;
@@ -90,21 +92,19 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
     <div className="space-y-3">
       <div className="flex items-center gap-3">
         <div className="h-px flex-1 bg-surface-container-high" />
-        <span className="text-xs text-outline">o</span>
+        <span className="text-xs text-outline">{t('or')}</span>
         <div className="h-px flex-1 bg-surface-container-high" />
       </div>
 
-      {/* Botón propio, siempre visible. Con el OAuth configurado, el botón
-          real de Google se superpone invisible y captura el clic; sin
-          configurar, se explica en vez de esconder la opción. */}
+      {/* Our own button, always visible. With OAuth configured, the real
+          Google button is overlaid invisibly and captures the click; when
+          not configured, we explain why instead of hiding the option. */}
       <div className="relative">
         <button
           type="button"
           onClick={() =>
             !clientId &&
-            setError(
-              'El inicio con Google aún no está disponible. Usa tu correo y contraseña.',
-            )
+            setError(t('unavailable'))
           }
           className="flex h-11 w-full items-center justify-center gap-3 border border-outline-variant bg-surface-container-lowest text-sm font-medium text-on-surface transition-all hover:border-primary active:scale-[0.99]"
         >
@@ -126,7 +126,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
               d="M12 4.77c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.29 6.62l4 3.1C6.23 6.88 8.88 4.77 12 4.77z"
             />
           </svg>
-          Continuar con Google
+          {t('continue')}
         </button>
         {clientId && (
           <div

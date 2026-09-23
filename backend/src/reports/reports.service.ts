@@ -56,7 +56,7 @@ export class ReportsService {
       );
       return report;
     } catch (e) {
-      // Violación del único (adId, reporterId): ya lo reportó antes.
+      // Unique (adId, reporterId) violation: already reported before.
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&
         e.code === 'P2002'
@@ -67,7 +67,7 @@ export class ReportsService {
     }
   }
 
-  // Cola de reportes para el panel admin.
+  // Report queue for the admin panel.
   findAll(status?: ReportStatus) {
     return this.prisma.report.findMany({
       where: status ? { status } : undefined,
@@ -76,8 +76,8 @@ export class ReportsService {
     });
   }
 
-  // El admin marca el reporte como atendido o descartado. La baja del
-  // anuncio, si corresponde, se hace por el endpoint de baja de anuncios.
+  // The admin marks the report as resolved or dismissed. Taking the listing
+  // down, if needed, goes through the listing takedown endpoint.
   async resolve(id: string, status: ReportStatus, actor: AuthUser) {
     const report = await this.prisma.report.findUnique({ where: { id } });
     if (!report) throw new NotFoundException('Reporte no encontrado');
@@ -95,7 +95,7 @@ export class ReportsService {
     return updated;
   }
 
-  // Elimina el reporte de la cola (el anuncio reportado no se toca).
+  // Removes the report from the queue (the reported listing is untouched).
   async remove(id: string, actor: AuthUser) {
     const report = await this.prisma.report.findUnique({ where: { id } });
     if (!report) throw new NotFoundException('Reporte no encontrado');
@@ -109,7 +109,7 @@ export class ReportsService {
     return { deleted: true };
   }
 
-  // Borrado total de la cola de reportes (los anuncios no se tocan).
+  // Wipes the whole report queue (listings are untouched).
   async removeAll(actor: AuthUser) {
     const { count } = await this.prisma.report.deleteMany({});
     await this.traces.record(
@@ -120,7 +120,7 @@ export class ReportsService {
     return { deleted: count };
   }
 
-  // Borrado por lotes de reportes seleccionados, con traza resumen única.
+  // Batch deletion of selected reports, with a single summary trace.
   async removeMany(ids: string[], actor: AuthUser) {
     const { count } = await this.prisma.report.deleteMany({
       where: { id: { in: ids } },

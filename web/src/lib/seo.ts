@@ -1,10 +1,38 @@
+import type { Metadata } from 'next';
 import { Ad, DEPARTMENT_LABEL, JobType } from './types';
+import { LANGUAGE_TAG, defaultLocale, locales, type Locale } from '@/i18n/routing';
 
 export const SITE =
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tu-chamba.corpsc.com';
 
-// Título del anuncio. El campo es obligatorio desde la migración de julio
-// 2026; la derivación desde la descripción queda como red de seguridad.
+// Path of a public page in the given locale: "/listings/1" -> "/en/listings/1".
+export function localePath(locale: Locale, path: string): string {
+  return `/${locale}${path === '/' ? '' : path}`;
+}
+
+// hreflang -> path of the page in every locale (keys are BCP 47 tags: es, en,
+// pt-BR).
+export function localeLanguages(path: string): Record<string, string> {
+  return Object.fromEntries(locales.map((l) => [LANGUAGE_TAG[l], localePath(l, path)]));
+}
+
+// Canonical URL of the page in its own locale plus hreflang alternates for
+// every locale (x-default points to Spanish, the default locale).
+export function localeAlternates(
+  locale: Locale,
+  path: string,
+): NonNullable<Metadata['alternates']> {
+  return {
+    canonical: localePath(locale, path),
+    languages: {
+      ...localeLanguages(path),
+      'x-default': localePath(defaultLocale, path),
+    },
+  };
+}
+
+// Listing title. The field is required since the July 2026 migration;
+// deriving it from the description remains as a safety net.
 export function adTitle(ad: Pick<Ad, 'title' | 'description'>): string {
   if (ad.title) return ad.title;
   const head = ad.description.split('|')[0].trim();
@@ -14,7 +42,7 @@ export function adTitle(ad: Pick<Ad, 'title' | 'description'>): string {
     : ad.description;
 }
 
-// Mapeo al vocabulario de schema.org/JobPosting.
+// Mapping to the schema.org/JobPosting vocabulary.
 const EMPLOYMENT_TYPE: Record<JobType, string> = {
   TIEMPO_COMPLETO: 'FULL_TIME',
   MEDIA_JORNADA: 'PART_TIME',
@@ -22,20 +50,27 @@ const EMPLOYMENT_TYPE: Record<JobType, string> = {
   POR_CONTRATO: 'CONTRACTOR',
   PASANTIA: 'INTERN',
   FREELANCE: 'CONTRACTOR',
-  // Sin jornada declarada (avisos importados): OTHER es el valor genérico
-  // del vocabulario de schema.org.
+  // No declared work schedule (imported listings): OTHER is the generic
+  // value in the schema.org vocabulary.
   A_CONVENIR: 'OTHER',
 };
 
-// JSON-LD JobPosting para los rich results de Google for Jobs.
-// Solo debe emitirse para anuncios vigentes (Google penaliza el markup
-// en ofertas vencidas; validThrough cubre la expiración natural).
-export function jobPostingJsonLd(ad: Ad) {
+const REQUIREMENTS_LABEL: Record<Locale, string> = {
+  es: 'Requisitos',
+  en: 'Requirements',
+  pt: 'Requisitos',
+};
+
+// JSON-LD JobPosting for Google for Jobs rich results.
+// Must only be emitted for live listings (Google penalizes the markup on
+// expired listings; validThrough covers natural expiration).
+export function jobPostingJsonLd(ad: Ad, locale: Locale = defaultLocale) {
+  const requirementsLabel = REQUIREMENTS_LABEL[locale];
   return {
     '@context': 'https://schema.org',
     '@type': 'JobPosting',
     title: adTitle(ad),
-    description: [ad.description, ad.requirements && `Requisitos: ${ad.requirements}`]
+    description: [ad.description, ad.requirements && `${requirementsLabel}: ${ad.requirements}`]
       .filter(Boolean)
       .join('\n\n'),
     datePosted: ad.createdAt,
@@ -55,8 +90,8 @@ export function jobPostingJsonLd(ad: Ad) {
         addressCountry: 'BO',
       },
     },
-    // Un rango se declara con minValue/maxValue; un monto fijo, con value
-    // (ambas formas válidas para QuantitativeValue de Google for Jobs).
+    // A range is declared with minValue/maxValue; a fixed amount, with value
+    // (both valid forms for Google for Jobs QuantitativeValue).
     ...(ad.salary != null
       ? {
           baseSalary: {
@@ -80,21 +115,23 @@ export function jobPostingJsonLd(ad: Ad) {
       name: 'Tu Chamba',
       value: ad.id,
     },
-    url: `${SITE}/listings/${ad.id}`,
+    url: `${SITE}${localePath(locale, `/listings/${ad.id}`)}`,
     directApply: true,
   };
 }
 
-// WebSite con SearchAction: habilita la caja de búsqueda del sitio en Google.
-export function webSiteJsonLd() {
+// WebSite with SearchAction: enables the sitelinks search box in Google.
+export function webSiteJsonLd(locale: Locale = defaultLocale) {
+  const home = `${SITE}${localePath(locale, '/')}`;
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Tu Chamba',
-    url: SITE,
+    url: home,
+    inLanguage: LANGUAGE_TAG[locale],
     potentialAction: {
       '@type': 'SearchAction',
-      target: `${SITE}/?q={search_term_string}`,
+      target: `${home}?q={search_term_string}`,
       'query-input': 'required name=search_term_string',
     },
   };
@@ -110,8 +147,8 @@ export function organizationJsonLd() {
   };
 }
 
-// Serialización segura para <script type="application/ld+json">:
-// escapa "<" para que un texto malicioso no pueda cerrar la etiqueta.
+// Safe serialization for <script type="application/ld+json">:
+// escapes "<" so malicious text cannot close the tag.
 export function jsonLd(data: object): string {
   return JSON.stringify(data).replace(/</g, '\\u003c');
 }

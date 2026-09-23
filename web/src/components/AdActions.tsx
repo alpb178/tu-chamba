@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link, useRouter } from '@/i18n/navigation';
 import dynamic from 'next/dynamic';
 import { api } from '@/lib/api';
 import {
@@ -17,15 +17,15 @@ import { Button } from './ui';
 import { Icon } from './Icon';
 import { ReportAd } from './ReportAd';
 
-// Leaflet usa window: solo en cliente.
+// Leaflet uses window: client-only.
 const MapView = dynamic(() => import('./MapPicker').then((m) => m.MapView), {
   ssr: false,
   loading: () => <div className="h-56 bg-surface-container" />,
 });
 
-// Mapa del anuncio con botón para ampliarlo (modal) y enlace a Google Maps.
-// Los panes de Leaflet usan z-index altos: el wrapper `relative z-0` los
-// encierra en su propio stacking context para que no tapen el modal.
+// Listing map with a button to enlarge it (modal) and a link to Google Maps.
+// Leaflet panes use high z-indexes: the `relative z-0` wrapper confines them
+// to their own stacking context so they don't cover the modal.
 function LocationMap({
   lat,
   lng,
@@ -35,10 +35,11 @@ function LocationMap({
   lng: number;
   approximate?: boolean;
 }) {
+  const t = useTranslations('listing.actions');
   const [expanded, setExpanded] = useState(false);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
-  // Cerrar el modal con Escape.
+  // Close the modal with Escape.
   useEffect(() => {
     if (!expanded) return;
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setExpanded(false);
@@ -55,13 +56,13 @@ function LocationMap({
           onClick={() => setExpanded(true)}
           className="absolute right-2 top-2 z-[1001] flex items-center gap-1 border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-aceternity hover:text-brand"
         >
-          <Icon name="open_in_full" className="text-sm" /> Ampliar
+          <Icon name="open_in_full" className="text-sm" /> {t('expand')}
         </button>
       </div>
       <div className="flex items-center justify-between gap-2">
         {approximate ? (
           <p className="text-xs text-outline">
-            Ubicación aproximada según la dirección del anuncio.
+            {t('approximateLocation')}
           </p>
         ) : (
           <span />
@@ -72,7 +73,7 @@ function LocationMap({
           rel="noopener noreferrer"
           className="flex shrink-0 items-center gap-0.5 text-xs text-brand underline hover:text-brand-dark"
         >
-          Abrir en Google Maps <Icon name="open_in_new" className="text-sm" />
+          {t('openInGoogleMaps')} <Icon name="open_in_new" className="text-sm" />
         </a>
       </div>
 
@@ -82,7 +83,7 @@ function LocationMap({
           onClick={() => setExpanded(false)}
           role="dialog"
           aria-modal="true"
-          aria-label="Mapa ampliado"
+          aria-label={t('expandedMap')}
         >
           <div
             className="relative z-0 h-[80vh] w-full max-w-4xl overflow-hidden bg-surface-container-lowest"
@@ -94,15 +95,15 @@ function LocationMap({
               zoom={approximate ? 14 : 16}
               className="h-full"
             />
-            {/* autoFocus: el foco entra al diálogo al abrirse (Escape y el
-                click en el fondo lo cierran). */}
+            {/* autoFocus: focus moves into the dialog when it opens (Escape
+                and a click on the backdrop close it). */}
             <button
               type="button"
               autoFocus
               onClick={() => setExpanded(false)}
               className="absolute right-3 top-3 z-[1001] flex items-center gap-1 border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow-aceternity hover:text-brand"
             >
-              <Icon name="close" className="text-base" /> Cerrar
+              <Icon name="close" className="text-base" /> {t('close')}
             </button>
           </div>
         </div>
@@ -111,7 +112,7 @@ function LocationMap({
   );
 }
 
-// Botón circular de acción secundaria (compartir): icono + tooltip nativo.
+// Circular secondary action button (share): icon + native tooltip.
 function IconButton({
   label,
   onClick,
@@ -164,8 +165,8 @@ function ShareIcon() {
   );
 }
 
-// Glifo oficial de WhatsApp (relleno): el CTA debe reconocerse como
-// WhatsApp de un vistazo, no como un botón genérico.
+// Official WhatsApp glyph (filled): the CTA must read as WhatsApp at a
+// glance, not as a generic button.
 function WhatsAppIcon({ className = 'h-4.5 w-4.5' }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
@@ -182,17 +183,17 @@ function CallIcon({ className = 'h-4 w-4' }: { className?: string }) {
   );
 }
 
-// CTA verde de WhatsApp (color de marca) y botón secundario "Llamar".
-// Ambos son <a>: con sesión apuntan a wa.me/tel:, sin sesión llevan a
-// iniciar sesión y vuelven al anuncio (next=). El teléfono en sí nunca
-// se muestra sin sesión.
+// Green WhatsApp CTA (brand color) and secondary "Llamar" button.
+// Both are <a>: with a session they point to wa.me/tel:, without one they go
+// to login and come back to the listing (next=). The phone itself is never
+// shown without a session.
 const WA_BUTTON_CLASS =
   'flex w-full items-center justify-center gap-2 bg-[#25d366] px-4 py-2 text-sm font-bold text-white shadow-aceternity transition-all hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#25d366] focus-visible:ring-offset-2 active:scale-95';
 const CALL_BUTTON_CLASS =
   'flex w-full items-center justify-center gap-2 border border-outline-variant bg-surface-container-lowest px-4 py-2 text-sm font-medium text-on-surface-variant transition-all hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-95';
 
-// Coordenadas aproximadas de una dirección (Nominatim, best effort).
-// Para anuncios sin pin: así el detalle siempre muestra el lugar en el mapa.
+// Approximate coordinates of an address (Nominatim, best effort).
+// For listings without a pin: the detail always shows the place on the map.
 async function geocode(
   query: string,
 ): Promise<{ lat: number; lng: number } | null> {
@@ -209,17 +210,19 @@ async function geocode(
   }
 }
 
-// Parte interactiva del detalle: mapa, contacto (teléfono solo con sesión),
-// acciones del dueño y reporte. El contenido textual lo renderiza el server.
+// Interactive part of the detail: map, contact (phone only with a session),
+// owner actions and reporting. The text content is rendered by the server.
 export function AdActions({ ad }: { ad: Ad }) {
+  const t = useTranslations('listing.actions');
   const { user, loading } = useAuth();
   const router = useRouter();
-  // Números de contacto del aviso: el primero es el principal (el de los CTA)
-  // y los demás se listan aparte. Solo viajan con sesión (vía /contact).
+  // The listing's contact numbers: the first is the main one (used by the
+  // CTAs) and the rest are listed separately. Only sent with a session (via
+  // /contact).
   const [phones, setPhones] = useState<string[]>(adPhones(ad));
   const phone = phones[0] ?? null;
   const extraPhones = phones.slice(1);
-  // Ubicación del anuncio y su referencia: solo con sesión (vía /contact).
+  // The listing's location and reference: only with a session (via /contact).
   const [location, setLocation] = useState<string | null>(ad.location ?? null);
   const [reference, setReference] = useState<string | null>(
     ad.locationReference ?? null,
@@ -233,8 +236,8 @@ export function AdActions({ ad }: { ad: Ad }) {
     null,
   );
 
-  // Sin pin exacto: geocodifica la dirección del anuncio para ubicarlo
-  // (solo con sesión, que es cuando conocemos la dirección).
+  // No exact pin: geocode the listing's address to place it
+  // (only with a session, which is when we know the address).
   useEffect(() => {
     if (!user || exact || !location) return;
     const department = ad.department ? DEPARTMENT_LABEL[ad.department] : '';
@@ -248,12 +251,12 @@ export function AdActions({ ad }: { ad: Ad }) {
   const canEdit = Boolean(user?.isAdmin) || isOwner;
   const adRef = ad.id.slice(0, 8);
   const adPath = `/listings/${ad.id}`;
-  // Sin sesión, los CTA de contacto llevan al login y vuelven al anuncio.
+  // Without a session, the contact CTAs go to login and back to the listing.
   const loginNext = `/login?next=${encodeURIComponent(adPath)}`;
-  const waMessage = `Hola, vi tu anuncio en Tu Chamba (Ref. ${adRef}) y me interesa.`;
+  const waMessage = t('waMessage', { ref: adRef });
 
-  // Enlace compartido (?shared=1): sin sesión se exige crear cuenta y,
-  // al terminar el registro, se vuelve a este anuncio (next=).
+  // Shared link (?shared=1): without a session, sign-up is required and,
+  // once registration finishes, the user returns to this listing (next=).
   useEffect(() => {
     if (loading || user) return;
     if (new URLSearchParams(window.location.search).has('shared')) {
@@ -261,11 +264,11 @@ export function AdActions({ ad }: { ad: Ad }) {
     }
   }, [loading, user, adPath, router]);
 
-  // Coordenadas a mostrar/compartir: el pin exacto o la geocodificada.
+  // Coordinates to show/share: the exact pin or the geocoded one.
   const coords = exact ?? approx;
 
-  // Abrir el detalle ya registra el interés (silencioso): alimenta
-  // "anuncios de tu interés" y el conteo de interesados del dueño.
+  // Opening the detail already records interest (silently): it feeds
+  // "anuncios de tu interés" and the owner's interested-people count.
   useEffect(() => {
     if (loading || !user || user.id === ad.createdById) return;
     api('/interests', {
@@ -274,8 +277,8 @@ export function AdActions({ ad }: { ad: Ad }) {
     }).catch(() => {});
   }, [loading, user, ad.id, ad.createdById]);
 
-  // Contactar (Chatear/Llamar) marca el interés como contacto: avisa al
-  // dueño la primera vez (best effort).
+  // Contacting (Chatear/Llamar) marks the interest as a contact: notifies the
+  // owner the first time (best effort).
   function registerInterest() {
     api('/interests', {
       method: 'POST',
@@ -283,7 +286,7 @@ export function AdActions({ ad }: { ad: Ad }) {
     }).catch(() => {});
   }
 
-  // wa.me sin número: WhatsApp deja elegir el contacto al que enviar.
+  // wa.me without a number: WhatsApp lets the user pick the contact to send to.
   function shareByWhatsApp(text: string) {
     window.open(
       `https://wa.me/?text=${encodeURIComponent(text)}`,
@@ -292,7 +295,7 @@ export function AdActions({ ad }: { ad: Ad }) {
     );
   }
 
-  // Teléfonos y ubicación no viajan en el detalle público: se piden con sesión.
+  // Phones and location aren't in the public detail: fetched with a session.
   useEffect(() => {
     if (user && (!phone || !location)) {
       api<{
@@ -317,7 +320,7 @@ export function AdActions({ ad }: { ad: Ad }) {
   }, [user, ad.id]);
 
   async function unpublish() {
-    if (!confirm('¿Dar de baja este anuncio? Dejará de mostrarse en el portal.'))
+    if (!confirm(t('unpublishConfirm')))
       return;
     await api(`/listings/${ad.id}/unpublish`, { method: 'POST' });
     router.push('/my-listings');
@@ -331,16 +334,16 @@ export function AdActions({ ad }: { ad: Ad }) {
 
   return (
     <div className="space-y-4">
-      {/* Ubicación exacta y mapa: solo con sesión. */}
+      {/* Exact location and map: only with a session. */}
       {user && location && (
         <p className="flex items-center gap-1 text-sm text-on-surface-variant">
-          <Icon name="location_on" className="text-base" /> Ubicación: {location}
+          <Icon name="location_on" className="text-base" /> {t('location', { location })}
         </p>
       )}
-      {/* Referencia en texto libre del publicante ("frente al mercado"). */}
+      {/* Publisher's free-text reference ("frente al mercado"). */}
       {user && reference && (
         <p className="flex items-center gap-1 text-sm text-on-surface-variant">
-          <Icon name="explore" className="text-base" /> Referencia: {reference}
+          <Icon name="explore" className="text-base" /> {t('reference', { reference })}
         </p>
       )}
       {user &&
@@ -352,15 +355,18 @@ export function AdActions({ ad }: { ad: Ad }) {
           )
         ))}
 
-      {/* Compartir por WhatsApp: iconos discretos, no compiten con el CTA. */}
+      {/* Share via WhatsApp: subtle icons that don't compete with the CTA. */}
       <div className="flex items-center justify-end gap-2">
-        <span className="text-xs text-outline">Compartir:</span>
+        <span className="text-xs text-outline">{t('share')}</span>
         {coords && (
           <IconButton
-            label="Compartir ubicación por WhatsApp"
+            label={t('shareLocation')}
             onClick={() =>
               shareByWhatsApp(
-                `Ubicación del anuncio Ref. ${adRef} en Tu Chamba: https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`,
+                t('shareLocationText', {
+                  ref: adRef,
+                  url: `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`,
+                }),
               )
             }
           >
@@ -368,10 +374,13 @@ export function AdActions({ ad }: { ad: Ad }) {
           </IconButton>
         )}
         <IconButton
-          label="Compartir anuncio por WhatsApp"
+          label={t('shareListing')}
           onClick={() =>
             shareByWhatsApp(
-              `Mira este anuncio en Tu Chamba (Ref. ${adRef}): ${window.location.origin}${adPath}?shared=1`,
+              t('shareListingText', {
+                ref: adRef,
+                url: `${window.location.origin}${adPath}?shared=1`,
+              }),
             )
           }
         >
@@ -379,12 +388,12 @@ export function AdActions({ ad }: { ad: Ad }) {
         </IconButton>
       </div>
 
-      {/* Contacto: con sesión los botones abren WhatsApp/llamada y se ve el
-          teléfono; sin sesión los MISMOS botones llevan a iniciar sesión y
-          vuelven al anuncio (el teléfono queda oculto hasta entonces). */}
+      {/* Contact: with a session the buttons open WhatsApp/a call and the
+          phone is shown; without one the SAME buttons go to login and come
+          back to the listing (the phone stays hidden until then). */}
       {(phone || (!loading && !user)) && (
         <>
-          {/* Escritorio: contacto en el flujo del detalle. */}
+          {/* Desktop: contact inline in the detail flow. */}
           <div className="hidden space-y-1.5 sm:block">
             <div className="flex gap-2">
               {phone ? (
@@ -408,23 +417,23 @@ export function AdActions({ ad }: { ad: Ad }) {
                   className={`${CALL_BUTTON_CLASS} flex-1`}
                   onClick={registerInterest}
                 >
-                  <CallIcon /> Llamar
+                  <CallIcon /> {t('call')}
                 </a>
               ) : (
                 <Link href={loginNext} className={`${CALL_BUTTON_CLASS} flex-1`}>
-                  <CallIcon /> Llamar
+                  <CallIcon /> {t('call')}
                 </Link>
               )}
             </div>
             <p className="text-center text-xs text-on-surface-variant">
               {phone
-                ? `Teléfono: ${phone}`
-                : 'Inicia sesión para contactar: el teléfono se muestra al ingresar.'}
+                ? t('phone', { phone })
+                : t('loginToContact')}
             </p>
-            {/* Números adicionales del aviso: cada uno llama o abre WhatsApp. */}
+            {/* The listing's extra numbers: each one calls or opens WhatsApp. */}
             {extraPhones.length > 0 && (
               <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-on-surface-variant">
-                <span>Otros números:</span>
+                <span>{t('otherNumbers')}</span>
                 {extraPhones.map((p) => (
                   <span key={p} className="inline-flex items-center gap-1">
                     <a
@@ -438,7 +447,7 @@ export function AdActions({ ad }: { ad: Ad }) {
                       href={waLink(p, waMessage)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`Escribir por WhatsApp al ${p}`}
+                      aria-label={t('whatsappTo', { phone: p })}
                       className="text-[#25d366] hover:brightness-110"
                       onClick={registerInterest}
                     >
@@ -450,8 +459,8 @@ export function AdActions({ ad }: { ad: Ad }) {
             )}
           </div>
 
-          {/* Móvil: barra fija al pie para que el contacto siempre esté a
-              mano aunque la descripción sea larga (safe-area por el notch). */}
+          {/* Mobile: fixed bottom bar so contact is always at hand even
+              when the description is long (safe-area for the notch). */}
           <div className="fixed inset-x-0 bottom-0 z-40 flex gap-2 border-t border-outline-variant bg-surface-container-lowest p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-2px_8px_rgba(0,0,0,0.08)] sm:hidden">
             {phone ? (
               <a
@@ -474,11 +483,11 @@ export function AdActions({ ad }: { ad: Ad }) {
                 className={`${CALL_BUTTON_CLASS} flex-1`}
                 onClick={registerInterest}
               >
-                <CallIcon /> Llamar
+                <CallIcon /> {t('call')}
               </a>
             ) : (
               <Link href={loginNext} className={`${CALL_BUTTON_CLASS} flex-1`}>
-                <CallIcon /> Llamar
+                <CallIcon /> {t('call')}
               </Link>
             )}
           </div>
@@ -491,15 +500,15 @@ export function AdActions({ ad }: { ad: Ad }) {
             variant="outline"
             onClick={() => router.push(`/listings/new?id=${ad.id}`)}
           >
-            Editar
+            {t('edit')}
           </Button>
           {status === 'ACTIVO' ? (
             <Button variant="danger" onClick={unpublish}>
-              Dar de baja
+              {t('unpublish')}
             </Button>
           ) : (
             <Button onClick={republish}>
-              Republicar ({ad.durationDays} días)
+              {t('republish', { days: ad.durationDays })}
             </Button>
           )}
         </div>

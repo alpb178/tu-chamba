@@ -23,10 +23,10 @@ const TEXTAREA_CLASS =
 
 function AdForm() {
   const router = useRouter();
-  // Con ?id= el formulario pasa a modo edición (mismo patrón que el portal).
+  // With ?id= the form switches to edit mode (same pattern as the portal).
   const editId = useSearchParams().get('id');
-  // Solo título, descripción y teléfono son obligatorios para el admin; los
-  // selects arrancan con los mismos valores por defecto que la importación CSV.
+  // Only title, description and phone are required for the admin; the
+  // selects start with the same defaults as the CSV import.
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -39,12 +39,12 @@ function AdForm() {
     salary: '',
     salaryMax: '',
     phone: '',
-    // Números adicionales en una sola celda, como en la importación CSV
-    // ("77900185 / 67894829"): se reparten al guardar.
+    // Additional numbers in a single cell, as in the CSV import
+    // ("77900185 / 67894829"): they are split on save.
     extraPhones: '',
     jobType: 'TIEMPO_COMPLETO' as JobType,
     durationDays: 3,
-    // Prioridad manual: 0 deja el anuncio en el orden normal del portal.
+    // Manual priority: 0 keeps the listing in the portal's normal order.
     priority: '',
   });
   const [loaded, setLoaded] = useState(!editId);
@@ -92,8 +92,8 @@ function AdForm() {
         department: form.department,
         category: form.category,
         schedule: form.schedule.trim() || undefined,
-        // Sin salario el anuncio queda "a convenir"; con techo mayor al piso,
-        // se publica como rango.
+        // Without a salary the listing is "a convenir"; with a ceiling above the
+        // floor, it is published as a range.
         salary: form.salary.trim() ? Number(form.salary) : undefined,
         salaryMax:
           form.salary.trim() &&
@@ -105,8 +105,8 @@ function AdForm() {
         extraPhones: extraPhones.length ? extraPhones : undefined,
         jobType: form.jobType,
         durationDays: form.durationDays,
-        // Vacío = 0 (orden normal). Se manda siempre para poder quitarle la
-        // prioridad a un anuncio que ya la tenía.
+        // Empty = 0 (normal order). Always sent so the priority can be removed
+        // from a listing that already had one.
         priority: form.priority.trim() ? Number(form.priority) : 0,
       };
       await api(editId ? `/listings/${editId}` : '/listings', {
@@ -319,7 +319,7 @@ function AdForm() {
   );
 }
 
-// useSearchParams exige un límite de Suspense al prerenderizar la página.
+// useSearchParams requires a Suspense boundary when prerendering the page.
 export default function NewAdPage() {
   return (
     <Suspense>

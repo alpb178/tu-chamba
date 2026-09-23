@@ -1,15 +1,21 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import type { Messages } from '@/i18n/messages';
 import { Company, COMPANIES } from '@/lib/companies';
 import { trackSiteClick } from '@/lib/track-site-click';
 import { Icon } from './Icon';
 import { Tilt3D } from './fx/Tilt3D';
 import { SlideBurst } from './fx/SlideBurst';
 
-// Tarjeta promocional de una marca: captura del sitio con el nombre en
-// overlay, descripción y CTA "Visitar sitio" (enlace externo seguro).
+// Promotional card for a brand: site screenshot with the name as an overlay,
+// description and a "Visitar sitio" CTA (safe external link).
+// Slugs with localized copy in the `companies` namespace.
+type CompanySlug = Exclude<keyof Messages['companies'], 'section'>;
+
 function BrandCard({ company }: { company: Company }) {
+  const t = useTranslations('companies');
   const track = () => trackSiteClick(company);
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-card border border-outline-variant bg-surface-container-lowest shadow-aceternity transition-shadow hover:shadow-derek">
@@ -39,7 +45,7 @@ function BrandCard({ company }: { company: Company }) {
 
       <div className="flex flex-1 flex-col p-6">
         <p className="mb-6 flex-1 text-sm leading-relaxed text-on-surface-variant">
-          {company.description}
+          {t(`${company.slug as CompanySlug}.description`)}
         </p>
         <a
           href={company.url}
@@ -47,9 +53,9 @@ function BrandCard({ company }: { company: Company }) {
           rel="noopener noreferrer"
           onClick={track}
           className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-tertiary px-4 py-2.5 text-sm font-bold text-on-tertiary transition-all hover:-translate-y-0.5 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          aria-label={`Visitar el sitio de ${company.name} (se abre en una pestaña nueva)`}
+          aria-label={t('section.visitLabel', { name: company.name })}
         >
-          Visitar sitio
+          {t('section.visit')}
           <Icon name="open_in_new" className="text-sm" />
         </a>
       </div>
@@ -57,14 +63,15 @@ function BrandCard({ company }: { company: Company }) {
   );
 }
 
-// Sección "Sitios de interés": carrusel con las demás plataformas del Grupo
-// CorpSC (auto-avance, flechas, puntos indicadores y ráfaga de destellos).
+// "Sitios de interés" section: carousel with the other Grupo CorpSC
+// platforms (auto-advance, arrows, indicator dots and a sparkle burst).
 export function FeaturedBrands() {
+  const t = useTranslations('companies.section');
   const scroller = useRef<HTMLDivElement>(null);
-  // Se incrementa en cada movimiento del carrusel (flecha o auto-avance) para
-  // relanzar la ráfaga de destellos sobre las tarjetas.
+  // Incremented on every carousel move (arrow or auto-advance) to replay the
+  // sparkle burst over the cards.
   const [burst, setBurst] = useState(0);
-  // Punto activo del indicador: se deriva de la posición de scroll.
+  // Active indicator dot: derived from the scroll position.
   const [active, setActive] = useState(0);
   const count = COMPANIES.length;
 
@@ -75,7 +82,7 @@ export function FeaturedBrands() {
     setBurst((b) => b + 1);
   };
 
-  // Lleva la tarjeta `i` al inicio de la vista (usado por los puntos).
+  // Scrolls card `i` to the start of the view (used by the dots).
   const goTo = (i: number) => {
     const el = scroller.current;
     if (!el) return;
@@ -87,8 +94,8 @@ export function FeaturedBrands() {
     setBurst((b) => b + 1);
   };
 
-  // Mantiene el punto activo sincronizado con el scroll (flechas, auto-avance
-  // o arrastre manual). Mapea el rango de scroll a los índices de tarjeta.
+  // Keeps the active dot in sync with the scroll (arrows, auto-advance or
+  // manual drag). Maps the scroll range to card indexes.
   useEffect(() => {
     const el = scroller.current;
     if (!el) return;
@@ -102,8 +109,8 @@ export function FeaturedBrands() {
     return () => el.removeEventListener('scroll', onScroll);
   }, [count]);
 
-  // Auto-avance: cada 5s pasa a la siguiente "página" y al llegar al final
-  // vuelve al inicio. Se pausa con el puntero encima y respeta
+  // Auto-advance: every 5s moves to the next "page" and wraps back to the
+  // start at the end. Pauses while hovered and respects
   // prefers-reduced-motion.
   useEffect(() => {
     const el = scroller.current;
@@ -136,13 +143,13 @@ export function FeaturedBrands() {
   }, []);
 
   return (
-    <section aria-label="Sitios de interés" className="mt-20">
+    <section aria-label={t('label')} className="mt-20">
       <div className="mb-6 flex items-end justify-end gap-4">
         <div className="hidden shrink-0 items-center gap-2 sm:flex">
           <button
             type="button"
             onClick={() => scroll(-1)}
-            aria-label="Anterior"
+            aria-label={t('previous')}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface shadow-sm transition-colors hover:bg-surface-container-high focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Icon name="chevron_left" className="text-2xl" />
@@ -150,7 +157,7 @@ export function FeaturedBrands() {
           <button
             type="button"
             onClick={() => scroll(1)}
-            aria-label="Siguiente"
+            aria-label={t('next')}
             className="flex h-10 w-10 items-center justify-center rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface shadow-sm transition-colors hover:bg-surface-container-high focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             <Icon name="chevron_right" className="text-2xl" />
@@ -175,18 +182,18 @@ export function FeaturedBrands() {
           ))}
         </div>
 
-        {/* Ráfaga de destellos al mover el carrusel (no captura clics). */}
+        {/* Sparkle burst when the carousel moves (doesn't capture clicks). */}
         <SlideBurst trigger={burst} />
       </div>
 
-      {/* Indicador de cantidad (puntos). */}
+      {/* Count indicator (dots). */}
       <div className="mt-6 flex justify-center gap-1.5">
         {COMPANIES.map((company, i) => (
           <button
             key={company.slug}
             type="button"
             onClick={() => goTo(i)}
-            aria-label={`Ir a ${company.name}`}
+            aria-label={t('goTo', { name: company.name })}
             aria-current={i === active}
             className={`h-1.5 rounded-full transition-all ${
               i === active

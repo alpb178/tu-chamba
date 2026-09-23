@@ -9,9 +9,9 @@ import {
 import { cn } from '@/lib/cn';
 
 /**
- * Envoltorio con inclinación 3D al mover el cursor (perspectiva + rotateX/Y),
- * suavizada con springs. En táctil no aplica (no hay hover) y no estorba.
- * Portado del design system de Iris Natural.
+ * Wrapper with a 3D tilt that follows the cursor (perspective + rotateX/Y),
+ * smoothed with springs. On touch it doesn't apply (no hover) and stays out
+ * of the way. Ported from the Iris Natural design system.
  */
 export function Tilt3D({
   children,
@@ -21,9 +21,9 @@ export function Tilt3D({
 }: {
   children: React.ReactNode;
   className?: string;
-  /** Inclinación máxima en grados. */
+  /** Maximum tilt in degrees. */
   max?: number;
-  /** Escala al hover. */
+  /** Scale on hover. */
   scale?: number;
 }) {
   const px = useMotionValue(0);

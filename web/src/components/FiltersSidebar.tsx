@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Category,
   CATEGORY_LABEL,
@@ -10,6 +11,7 @@ import {
   JobType,
   JOB_TYPE_LABEL,
 } from '@/lib/types';
+import { useLabels } from '@/i18n/use-labels';
 import { cn } from '@/lib/cn';
 import { Skeleton } from './Skeleton';
 
@@ -27,8 +29,8 @@ export const NO_FILTERS: Filters = {
   category: [],
 };
 
-// Sección colapsable (estilo editorial de Iris): título en versalitas con un
-// "+" que gira a "×" al abrir, separadas por una línea inferior. Radio 0.
+// Collapsible section (Iris editorial style): small-caps title with a "+"
+// that rotates into "×" when open, separated by a bottom rule. Radius 0.
 function Section({
   title,
   children,
@@ -57,7 +59,7 @@ function Section({
   );
 }
 
-// Fila de opción con checkbox cuadrado (radio 0) y contador de facetas.
+// Option row with a square checkbox (radius 0) and a facet counter.
 function Option({
   label,
   count,
@@ -107,10 +109,10 @@ function Option({
   );
 }
 
-// Slider de salario con dos manijas (rango) sobre una pista. El arrastre se
-// maneja con Pointer Events propios sobre la pista: el truco de dos <input
-// type="range"> superpuestos depende de pointer-events en el pseudo-elemento
-// del thumb, que Safari no soporta (el filtro "no funcionaba" en Mac/iOS).
+// Salary slider with two handles (range) over a track. Dragging is handled
+// with our own Pointer Events on the track: the trick of two overlapping
+// <input type="range"> relies on pointer-events on the thumb pseudo-element,
+// which Safari doesn't support (the filter "didn't work" on Mac/iOS).
 function SalaryRange({
   min,
   max,
@@ -124,11 +126,13 @@ function SalaryRange({
   maxValue: number;
   onCommit: (lo: number, hi: number) => void;
 }) {
+  const t = useTranslations('filters');
+  const labels = useLabels();
   const [lo, setLo] = useState(minValue);
   const [hi, setHi] = useState(maxValue);
   const trackRef = useRef<HTMLDivElement>(null);
   const dragging = useRef<'lo' | 'hi' | null>(null);
-  // Espejo de los valores para leerlos en pointerup sin closures desfasadas.
+  // Mirror of the values so pointerup reads them without stale closures.
   const values = useRef({ lo: minValue, hi: maxValue });
 
   useEffect(() => {
@@ -161,7 +165,7 @@ function SalaryRange({
 
   function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
     const v = valueAt(e.clientX);
-    // Arrastra la manija más cercana al punto tocado.
+    // Drags the handle closest to the touched point.
     dragging.current =
       Math.abs(v - values.current.lo) <= Math.abs(v - values.current.hi)
         ? 'lo'
@@ -196,16 +200,16 @@ function SalaryRange({
     };
   }
 
-  // Manija: único elemento redondeado (rounded-full), como en Iris. La pista y
-  // el tramo activo van con esquinas rectas (radio 0).
+  // Handle: the only rounded element (rounded-full), as in Iris. The track and
+  // the active segment have square corners (radius 0).
   const thumbClass =
     'absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand bg-surface-container-lowest shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/50';
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between text-sm text-on-surface">
-        <span>Bs {lo.toLocaleString('es-BO')}</span>
-        <span>Bs {hi.toLocaleString('es-BO')}</span>
+        <span>{t('amount', { amount: labels.number(lo) })}</span>
+        <span>{t('amount', { amount: labels.number(hi) })}</span>
       </div>
       <div
         ref={trackRef}
@@ -223,7 +227,7 @@ function SalaryRange({
         <div
           role="slider"
           tabIndex={0}
-          aria-label="Salario mínimo"
+          aria-label={t('salaryMin')}
           aria-valuemin={min}
           aria-valuemax={hi}
           aria-valuenow={lo}
@@ -234,7 +238,7 @@ function SalaryRange({
         <div
           role="slider"
           tabIndex={0}
-          aria-label="Salario máximo"
+          aria-label={t('salaryMax')}
           aria-valuemin={lo}
           aria-valuemax={max}
           aria-valuenow={hi}
@@ -247,9 +251,9 @@ function SalaryRange({
   );
 }
 
-// Contenido de la barra lateral de filtros: jornada, categoría, departamento y
-// salario. Es puro contenido (sin ancho ni posición propios): la columna de
-// ~220px en escritorio y el drawer móvil los gestiona el listado (home-client).
+// Filter sidebar content: work schedule, category, department and salary.
+// It's pure content (no width or position of its own): the ~220px desktop
+// column and the mobile drawer are handled by the listing (home-client).
 export function FiltersSidebar({
   value,
   facets,
@@ -259,13 +263,15 @@ export function FiltersSidebar({
   facets: Facets | null;
   onChange: (f: Filters) => void;
 }) {
+  const t = useTranslations('filters');
+  const labels = useLabels();
   function toggle<T>(list: T[], item: T): T[] {
     return list.includes(item)
       ? list.filter((x) => x !== item)
       : [...list, item];
   }
 
-  // Mientras cargan las facetas, la barra muestra su silueta.
+  // While the facets load, the sidebar shows its skeleton.
   if (!facets) {
     return (
       <aside aria-hidden="true" className="text-sm">
@@ -291,10 +297,10 @@ export function FiltersSidebar({
   const departments = Object.keys(DEPARTMENT_LABEL) as Department[];
 
   return (
-    <aside aria-label="Filtros" className="text-sm">
+    <aside aria-label={t('title')} className="text-sm">
       <div className="flex items-center justify-between pb-1">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-on-surface">
-          Filtros
+          {t('title')}
         </p>
         {hasFilters ? (
           <button
@@ -302,33 +308,33 @@ export function FiltersSidebar({
             onClick={() => onChange(NO_FILTERS)}
             className="text-xs font-semibold uppercase tracking-[0.12em] text-on-surface-variant underline-offset-4 hover:text-on-surface hover:underline"
           >
-            Limpiar
+            {t('clear')}
           </button>
         ) : null}
       </div>
 
-      <Section title="Tipo de jornada">
+      <Section title={t('jobType')}>
         <ul className="space-y-2">
-          {(Object.keys(JOB_TYPE_LABEL) as JobType[]).map((t) => (
+          {(Object.keys(JOB_TYPE_LABEL) as JobType[]).map((j) => (
             <Option
-              key={t}
-              label={JOB_TYPE_LABEL[t]}
-              count={facets?.jobType[t] ?? 0}
-              checked={value.jobType.includes(t)}
+              key={j}
+              label={labels.jobType(j)}
+              count={facets?.jobType[j] ?? 0}
+              checked={value.jobType.includes(j)}
               onToggle={() =>
-                onChange({ ...value, jobType: toggle(value.jobType, t) })
+                onChange({ ...value, jobType: toggle(value.jobType, j) })
               }
             />
           ))}
         </ul>
       </Section>
 
-      <Section title="Categoría">
+      <Section title={t('category')}>
         <ul className="space-y-2">
           {categories.map((c) => (
             <Option
               key={c}
-              label={CATEGORY_LABEL[c]}
+              label={labels.category(c)}
               count={facets?.category[c] ?? 0}
               checked={value.category.includes(c)}
               onToggle={() =>
@@ -339,12 +345,12 @@ export function FiltersSidebar({
         </ul>
       </Section>
 
-      <Section title="Departamento">
+      <Section title={t('department')}>
         <ul className="space-y-2">
           {departments.map((d) => (
             <Option
               key={d}
-              label={DEPARTMENT_LABEL[d]}
+              label={labels.department(d)}
               count={facets?.department[d] ?? 0}
               checked={value.department.includes(d)}
               onToggle={() =>
@@ -355,7 +361,7 @@ export function FiltersSidebar({
         </ul>
       </Section>
 
-      <Section title="Salario (Bs)">
+      <Section title={t('salary')}>
         {facets.salaryMax > facets.salaryMin ? (
           <SalaryRange
             min={facets.salaryMin}
@@ -371,11 +377,11 @@ export function FiltersSidebar({
             }
           />
         ) : (
-          // Sin rango no hay nada que filtrar: se informa en vez de ocultar.
+          // Without a range there's nothing to filter: say so instead of hiding it.
           <p className="text-xs text-on-surface-variant">
             {facets.salaryMax > 0
-              ? `Todas las ofertas actuales pagan Bs ${facets.salaryMax.toLocaleString('es-BO')}.`
-              : 'Sin ofertas con salario publicado.'}
+              ? t('allSameSalary', { amount: labels.number(facets.salaryMax) })
+              : t('noSalary')}
           </p>
         )}
       </Section>

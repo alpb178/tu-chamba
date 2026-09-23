@@ -4,12 +4,12 @@ import { PrismaService } from '../prisma/prisma.service';
 import { QueryErrorDto } from './dto/query-error.dto';
 import { endOfDay, startOfDay } from '../common/date-range';
 
-// Registro persistente de errores del sistema (API, cron, correo...).
+// Persistent log of system errors (API, cron, email...).
 @Injectable()
 export class ErrorsService {
   constructor(private prisma: PrismaService) {}
 
-  // Best-effort: registrar un error nunca debe generar otro fallo en cadena.
+  // Best-effort: logging an error must never trigger a cascading failure.
   async record(
     service: string,
     message: string,
@@ -65,13 +65,13 @@ export class ErrorsService {
     });
   }
 
-  // Borra una entrada puntual del registro de errores.
+  // Deletes a single entry from the error log.
   async remove(id: string) {
     await this.prisma.errorLog.delete({ where: { id } });
     return { deleted: true };
   }
 
-  // Borrado por lotes de entradas seleccionadas.
+  // Batch delete of selected entries.
   async removeMany(ids: string[]) {
     const { count } = await this.prisma.errorLog.deleteMany({
       where: { id: { in: ids } },
@@ -79,7 +79,7 @@ export class ErrorsService {
     return { deleted: count };
   }
 
-  // Vacía el registro de errores completo.
+  // Clears the entire error log.
   async removeAll() {
     const { count } = await this.prisma.errorLog.deleteMany({});
     return { deleted: count };

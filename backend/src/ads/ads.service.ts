@@ -27,20 +27,20 @@ import { GoogleIndexingService } from '../indexing/google-indexing.service';
 import { endOfDay, startOfDay } from '../common/date-range';
 
 const includeAuthor = {
-  // emailVerified alimenta el badge "Verificado" del portal (señal de
-  // confianza pública; no expone ningún dato de contacto).
+  // emailVerified feeds the portal's "Verificado" badge (a public trust
+  // signal; it exposes no contact data).
   createdBy: {
     select: { id: true, name: true, email: true, emailVerified: true },
   },
 };
 
-// Conteos de actividad del anuncio (accesos e interesados).
+// Listing activity counts (views and interested users).
 const includeCounts = {
   _count: { select: { visits: true, interests: true } },
 };
 
-// Campos mínimos para puntuar el orden del listado público (ver byRelevance),
-// sin traer los textos del anuncio.
+// Minimal fields to score the public listing order (see byRelevance),
+// without fetching the listing texts.
 const selectRanking = {
   id: true,
   priority: true,
@@ -59,8 +59,8 @@ const selectRanking = {
 
 type RankedAd = Prisma.AdGetPayload<{ select: typeof selectRanking }>;
 
-// Datos opcionales que suman al grado de completitud del anuncio (tercer
-// criterio de orden). El salario no cuenta aquí: ya es el primer criterio.
+// Optional fields that add to the listing's completeness score (third sort
+// criterion). Salary does not count here: it is already the first criterion.
 const OPTIONAL_FIELDS = [
   'requirements',
   'location',
@@ -70,8 +70,8 @@ const OPTIONAL_FIELDS = [
   'schedule',
 ] as const;
 
-// Cuántos datos opcionales llenó el publicante (0..7). El pin del mapa cuenta
-// como un solo dato aunque sean dos columnas.
+// How many optional fields the poster filled in (0..7). The map pin counts
+// as a single field even though it spans two columns.
 function completeness(ad: RankedAd) {
   let score = OPTIONAL_FIELDS.reduce(
     (n, field) => (ad[field] != null && ad[field] !== '' ? n + 1 : n),
@@ -81,10 +81,10 @@ function completeness(ad: RankedAd) {
   return score;
 }
 
-// Orden del listado público: 0) la prioridad fijada a mano desde el panel
-// manda sobre todo lo demás, 1) después los que tienen salario definido,
-// 2) luego los de más accesos acumulados, 3) luego los más completos y
-// 4) el más reciente como desempate.
+// Public listing order: 0) the priority set by hand from the panel overrides
+// everything else, 1) then those with a defined salary, 2) then those with
+// the most accumulated views, 3) then the most complete ones and 4) the most
+// recent as a tiebreaker.
 function byRelevance(a: RankedAd, b: RankedAd) {
   const withSalary = (ad: RankedAd) => (ad.salary != null ? 0 : 1);
   return (
@@ -96,9 +96,9 @@ function byRelevance(a: RankedAd, b: RankedAd) {
   );
 }
 
-// La prioridad es una herramienta del panel: si quien publica o edita no tiene
-// acceso a él, el campo se descarta aunque venga en el cuerpo de la petición
-// (nadie se cuela al principio del listado publicando desde el portal).
+// Priority is a panel tool: if whoever posts or edits has no access to the
+// panel, the field is dropped even if it comes in the request body (nobody
+// sneaks to the top of the list by posting from the portal).
 function stripAdminOnly<T extends { priority?: number }>(
   dto: T,
   user: AuthUser,
@@ -114,7 +114,7 @@ function expiryDate(durationDays: number, from = new Date()) {
   return new Date(from.getTime() + durationDays * DAY_MS);
 }
 
-// "VENTAS,GASTRONOMIA" -> ['VENTAS','GASTRONOMIA'], filtrando valores válidos.
+// "VENTAS,GASTRONOMIA" -> ['VENTAS','GASTRONOMIA'], keeping only valid values.
 function parseEnums<T extends string>(csv: string | undefined, valid: T[]): T[] {
   if (!csv) return [];
   return csv
@@ -123,21 +123,21 @@ function parseEnums<T extends string>(csv: string | undefined, valid: T[]): T[] 
     .filter((s): s is T => (valid as string[]).includes(s));
 }
 
-// Solo anuncios vigentes (activos y no vencidos) — regla de negocio compartida.
+// Only live listings (active and not expired) — shared business rule.
 function whereActive(): Prisma.AdWhereInput {
   return { status: AdStatus.ACTIVO, expiresAt: { gt: new Date() } };
 }
 
-// El número de prioridad es una herramienta interna del panel: solo viaja en
-// la vista de administración (/listings/all). Al portal se le manda en su
-// lugar `featured`, que le basta para marcar la tarjeta como destacada sin
-// revelar la posición asignada.
+// The priority number is an internal panel tool: it is only sent in the
+// admin view (/listings/all). The portal gets `featured` instead, which is
+// enough to mark the card as featured without revealing the assigned
+// position.
 function toPublicAd<T extends { priority?: number }>(ad: T) {
   const { priority, ...rest } = ad;
   return { ...rest, featured: (priority ?? 0) > 0 };
 }
 
-// Descripción corta para las trazas del sistema.
+// Short description for the system traces.
 function summary(description: string) {
   return description.length > 60 ? `${description.slice(0, 60)}…` : description;
 }
@@ -151,14 +151,14 @@ export class AdsService {
     private indexing: GoogleIndexingService,
   ) {}
 
-  // Listado público: solo anuncios vigentes (activos y no vencidos), ordenados
-  // por relevancia (salario definido → accesos → completitud).
+  // Public list: only live listings (active and not expired), sorted by
+  // relevance (defined salary → views → completeness).
   async findAll(query: QueryAdDto) {
     const page = await this.paginate(query, whereActive(), 'relevance');
     return { ...page, items: page.items.map(toPublicAd) };
   }
 
-  // Conteos por opción sobre anuncios vigentes (para la barra de filtros).
+  // Per-option counts over live listings (for the filter bar).
   async facets() {
     const where = whereActive();
     const [byJobType, byDepartment, byCategory, agg, total] = await Promise.all([
@@ -168,8 +168,8 @@ export class AdsService {
       this.prisma.ad.aggregate({
         where,
         _min: { salary: true },
-        // El techo del deslizador considera los rangos: un anuncio "3500 a
-        // 4500" empuja el máximo a 4500, no a 3500.
+        // The slider ceiling takes ranges into account: a "3500 a 4500"
+        // listing pushes the maximum to 4500, not 3500.
         _max: { salary: true, salaryMax: true },
       }),
       this.prisma.ad.count({ where }),
@@ -200,8 +200,8 @@ export class AdsService {
     };
   }
 
-  // Listado para el panel admin: incluye vencidos y dados de baja, con los
-  // filtros del reporte (solo clientes, rango de fechas, publicante, estado).
+  // List for the admin panel: includes expired and deactivated listings, with
+  // the report filters (clients only, date range, poster, status).
   async findAllAdmin(query: QueryAdDto) {
     const base: Prisma.AdWhereInput = {};
 
@@ -217,10 +217,10 @@ export class AdsService {
     if (query.from || query.to) {
       base.createdAt = {};
       if (query.from) base.createdAt.gte = startOfDay(query.from);
-      // Hasta el final del día indicado (en hora de Bolivia).
+      // Up to the end of the given day (Bolivia time).
       if (query.to) base.createdAt.lte = endOfDay(query.to);
     }
-    // VENCIDO no se persiste: se traduce a "activo con vigencia pasada".
+    // VENCIDO is not persisted: it translates to "active with past validity".
     if (query.status === 'ACTIVO') {
       base.status = AdStatus.ACTIVO;
       base.expiresAt = { gt: new Date() };
@@ -251,14 +251,14 @@ export class AdsService {
     if (departments.length) where.department = { in: departments };
     if (categories.length) where.category = { in: categories };
 
-    // El sueldo del anuncio puede ser un monto fijo (salary) o un rango
-    // [salary, salaryMax]: pasan los que se solapan con el rango pedido. Los
-    // anuncios sin salario quedan fuera al filtrar por sueldo, como antes.
+    // The listing salary can be a fixed amount (salary) or a range
+    // [salary, salaryMax]: those overlapping the requested range pass.
+    // Listings without a salary are left out when filtering by salary, as before.
     if (query.salaryMin != null || query.salaryMax != null) {
-      // El piso del anuncio no puede superar el techo pedido.
+      // The listing floor cannot exceed the requested ceiling.
       if (query.salaryMax != null) where.salary = { lte: query.salaryMax };
       if (query.salaryMin != null) {
-        // El techo del anuncio es salaryMax si es un rango; si no, su salary.
+        // The listing ceiling is salaryMax if it is a range; otherwise its salary.
         where.AND = [
           {
             OR: [
@@ -280,7 +280,7 @@ export class AdsService {
       ];
     }
 
-    // Filtro del campo "dónde" del buscador (ciudad o zona).
+    // Filter for the search bar's "dónde" field (city or area).
     if (query.location) {
       where.location = { contains: query.location, mode: 'insensitive' };
     }
@@ -290,10 +290,10 @@ export class AdsService {
     const [items, total] = await Promise.all([
       this.prisma.ad.findMany({
         where,
-        // includeCounts añade _count.visits para el contador de las tarjetas.
+        // includeCounts adds _count.visits for the cards' counter.
         include: { ...includeAuthor, ...includeCounts },
-        // El panel refleja el mismo criterio que el portal: los anuncios
-        // priorizados a mano encabezan la lista, luego los más recientes.
+        // The panel mirrors the portal's criterion: listings prioritized by
+        // hand lead the list, then the most recent ones.
         orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
         skip: (page - 1) * limit,
         take: limit,
@@ -310,11 +310,11 @@ export class AdsService {
     };
   }
 
-  // Página del listado público ordenada por relevancia. Prisma no puede
-  // ordenar por "tiene salario" ni por completitud (son expresiones
-  // calculadas), así que se traen solo los campos de ranking de los anuncios
-  // que pasan el filtro —los vigentes, un conjunto acotado—, se ordenan aquí y
-  // se hidrata únicamente la página pedida.
+  // Public list page sorted by relevance. Prisma cannot sort by "has
+  // salary" or by completeness (they are computed expressions), so only the
+  // ranking fields of the listings that pass the filter are fetched —the
+  // live ones, a bounded set—, they are sorted here and only the requested
+  // page is hydrated.
   private async pageByRelevance(
     where: Prisma.AdWhereInput,
     page: number,
@@ -334,7 +334,7 @@ export class AdsService {
           include: { ...includeAuthor, ...includeCounts },
         })
       : [];
-    // findMany con "in" no respeta el orden de los ids: se reordena aquí.
+    // findMany with "in" does not keep the ids order: it is reordered here.
     const byId = new Map(rows.map((row) => [row.id, row]));
     const items = ids
       .map((id) => byId.get(id))
@@ -349,8 +349,8 @@ export class AdsService {
     };
   }
 
-  // Calificación del publicante (promedio y conteo de reseñas) para mostrar
-  // en las tarjetas del listado, con una sola consulta agrupada por página.
+  // Poster rating (average and review count) to show on the list cards,
+  // with a single grouped query per page.
   private async attachOwnerRatings<T extends { createdById: string }>(
     items: T[],
   ) {
@@ -388,9 +388,9 @@ export class AdsService {
     return ad;
   }
 
-  // Detalle público: los teléfonos y la ubicación (con su referencia) solo se
-  // exponen a usuarios con sesión (regla de negocio). Los anónimos ven el resto
-  // (para SEO); el departamento sí queda visible como zona general.
+  // Public detail: phones and location (with its reference) are only exposed
+  // to signed-in users (business rule). Anonymous users see the rest (for
+  // SEO); the department does stay visible as a general area.
   async findOnePublic(id: string, user: AuthUser | null) {
     const ad = await this.findOne(id);
     void this.traces.record(
@@ -399,12 +399,12 @@ export class AdsService {
       user,
       { resource: `ad:${id}` },
     );
-    // El panel edita la prioridad desde el formulario de anuncio, así que el
-    // admin sí la recibe en el detalle; el resto del portal no.
+    // The panel edits the priority from the listing form, so the admin does
+    // get it in the detail; the rest of the portal does not.
     if (user?.isAdmin) return ad;
     if (user) return toPublicAd(ad);
-    // toPublicAd ya cambia la prioridad por `featured`; aquí solo se quitan
-    // además los datos que exigen sesión.
+    // toPublicAd already swaps the priority for `featured`; here we only also
+    // strip the data that requires a session.
     const {
       phone: _phone,
       extraPhones: _extraPhones,
@@ -417,7 +417,7 @@ export class AdsService {
     return publicAd;
   }
 
-  // Contacto y ubicación del anuncio: requieren sesión.
+  // Listing contact and location: require a session.
   async getContact(id: string) {
     const ad = await this.prisma.ad.findUnique({
       where: { id },
@@ -435,7 +435,7 @@ export class AdsService {
   }
 
   async create(dto: CreateAdDto, user: AuthUser) {
-    // Anti-spam: hay que verificar el correo antes de publicar (admin exento).
+    // Anti-spam: the email must be verified before posting (admin exempt).
     if (!user.isAdmin) {
       const author = await this.prisma.user.findUnique({
         where: { id: user.id },
@@ -458,11 +458,11 @@ export class AdsService {
       },
       include: includeAuthor,
     });
-    // El aviso a suscriptores no debe romper la publicación si falla.
+    // Notifying subscribers must not break posting if it fails.
     try {
       await this.notifications.notifyNewAd(ad);
     } catch {
-      /* noop: la notificación es best-effort */
+      /* noop: the notification is best-effort */
     }
     await this.traces.record(
       TraceType.AD_CREATED,
@@ -470,15 +470,15 @@ export class AdsService {
       ad.createdBy,
       { resource: `ad:${ad.id}` },
     );
-    // Google indexa la oferta mientras está viva (fire-and-forget).
+    // Google indexes the listing while it is live (fire-and-forget).
     void this.indexing.notifyUpdated(ad.id);
     return toPublicAd(ad);
   }
 
-  // Importación masiva desde el panel admin (CSV). A diferencia de create():
-  // no notifica a suscriptores (evitaría una ráfaga de correos), deja una
-  // única traza resumen en lugar de una por anuncio, y la duración por
-  // defecto es de 7 días (regla de importación).
+  // Bulk import from the admin panel (CSV). Unlike create(): it does not
+  // notify subscribers (that would trigger a burst of emails), it leaves a
+  // single summary trace instead of one per listing, and the default
+  // duration is 7 days (import rule).
   async bulkCreate(dtos: CreateAdDto[], user: AuthUser) {
     const now = new Date();
     const { count } = await this.prisma.ad.createMany({
@@ -486,9 +486,9 @@ export class AdsService {
         const durationDays = dto.durationDays ?? 7;
         return {
           ...dto,
-          // createMany arma un INSERT con la unión de columnas de todo el lote:
-          // las filas sin teléfonos adicionales mandarían NULL explícito en vez
-          // de tomar el default, y la columna es NOT NULL.
+          // createMany builds an INSERT with the union of columns of the whole
+          // batch: rows without extra phones would send an explicit NULL
+          // instead of taking the default, and the column is NOT NULL.
           extraPhones: dto.extraPhones ?? [],
           durationDays,
           expiresAt: expiryDate(durationDays, now),
@@ -508,7 +508,7 @@ export class AdsService {
     const ad = await this.findOne(id);
     this.assertCanModify(ad.createdById, user);
 
-    // Cambiar la duración extiende la vigencia desde ahora.
+    // Changing the duration extends the validity from now.
     const data: Prisma.AdUpdateInput = { ...stripAdminOnly(dto, user) };
     if (dto.durationDays && dto.durationDays !== ad.durationDays) {
       data.expiresAt = expiryDate(dto.durationDays);
@@ -529,7 +529,7 @@ export class AdsService {
     return toPublicAd(updated);
   }
 
-  // Baja manual: el anuncio deja de listarse públicamente pero no se borra.
+  // Manual deactivation: the listing stops being publicly listed but is not deleted.
   async unpublish(id: string, user: AuthUser) {
     const ad = await this.findOne(id);
     this.assertCanModify(ad.createdById, user);
@@ -548,8 +548,8 @@ export class AdsService {
     return toPublicAd(updated);
   }
 
-  // Reactiva un anuncio dado de baja (o vencido aún no barrido por la
-  // limpieza horaria) con una nueva ventana de vigencia.
+  // Reactivates a deactivated listing (or an expired one not yet swept by the
+  // hourly cleanup) with a new validity window.
   async republish(id: string, user: AuthUser) {
     const ad = await this.findOne(id);
     this.assertCanModify(ad.createdById, user);
@@ -571,7 +571,7 @@ export class AdsService {
     return toPublicAd(updated);
   }
 
-  // Borrado físico: dueño del anuncio o admin.
+  // Hard delete: listing owner or admin.
   async remove(id: string, user: AuthUser) {
     const ad = await this.findOne(id);
     this.assertCanModify(ad.createdById, user);
@@ -586,9 +586,9 @@ export class AdsService {
     return { deleted: true };
   }
 
-  // Borrado físico por lotes (panel admin). Como en bulkCreate se deja una
-  // única traza resumen; la indexación se notifica por anuncio con el mismo
-  // tope que el barrido de vencidos para cuidar la cuota diaria de la API.
+  // Batch hard delete (admin panel). As in bulkCreate, a single summary
+  // trace is left; indexing is notified per listing with the same cap as the
+  // expired sweep to protect the API daily quota.
   async bulkRemove(ids: string[], user: AuthUser) {
     const existing = await this.prisma.ad.findMany({
       where: { id: { in: ids } },
@@ -608,11 +608,11 @@ export class AdsService {
     return { deleted: count };
   }
 
-  // Borrado físico de todos los anuncios (panel admin). Igual que el borrado
-  // por lotes: traza resumen única e indexación notificada por anuncio con
-  // tope de 100 para cuidar la cuota diaria de la API.
+  // Hard delete of all listings (admin panel). Same as the batch delete: a
+  // single summary trace and indexing notified per listing, capped at 100 to
+  // protect the API daily quota.
   async removeAll(user: AuthUser, clientsOnly = false) {
-    // clientsOnly: solo los anuncios de clientes (reporte del panel).
+    // clientsOnly: only client listings (panel report).
     const where = clientsOnly ? { createdBy: { isAdmin: false } } : {};
     const existing = await this.prisma.ad.findMany({
       where,
@@ -630,7 +630,7 @@ export class AdsService {
     return { deleted: count };
   }
 
-  // Anuncios propios, con accesos e interesados para ver su actividad.
+  // Own listings, with views and interested users to see their activity.
   async findMine(userId: string) {
     const ads = await this.prisma.ad.findMany({
       where: { createdById: userId },
@@ -640,7 +640,7 @@ export class AdsService {
     return ads.map(toPublicAd);
   }
 
-  // Solo el dueño del anuncio o un admin pueden modificarlo o borrarlo.
+  // Only the listing owner or an admin can modify or delete it.
   private assertCanModify(ownerId: string, user: AuthUser) {
     if (!user.isAdmin && user.id !== ownerId) {
       throw new ForbiddenException('No puedes modificar este anuncio');

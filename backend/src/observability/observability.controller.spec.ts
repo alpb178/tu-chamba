@@ -4,8 +4,8 @@ function build() {
   const errors = { findAll: jest.fn(), resolve: jest.fn(), removeAll: jest.fn(), remove: jest.fn(), removeMany: jest.fn() };
   return { c: new ObservabilityController(status as never, errors as never), status, errors };
 }
-describe('ObservabilityController (delegación)', () => {
-  it('delega estado, métricas y registro de errores', () => {
+describe('ObservabilityController (delegation)', () => {
+  it('delegates status, metrics and the error log', () => {
     const { c, status, errors } = build();
     c.services(); expect(status.services).toHaveBeenCalled();
     c.metrics(); expect(status.performance).toHaveBeenCalled();

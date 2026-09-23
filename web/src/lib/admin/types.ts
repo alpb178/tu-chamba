@@ -77,13 +77,13 @@ export const CATEGORY_LABEL: Record<Category, string> = {
   OTRO: 'Otro',
 };
 
-// Duraciones de publicación permitidas (en días). 3 es el valor por defecto.
+// Allowed publication durations (in days). 3 is the default.
 export const DURATION_DAYS = [3, 7, 15, 30];
 
-// Tope de la prioridad manual (mismo que valida la API).
+// Cap for the manual priority (the same one the API validates).
 export const MAX_PRIORITY = 99;
 
-// DADO_DE_BAJA se persiste; VENCIDO se calcula con expiresAt (ver adEffectiveStatus).
+// DADO_DE_BAJA is persisted; VENCIDO is computed from expiresAt (see adEffectiveStatus).
 export type AdStatus = 'ACTIVO' | 'DADO_DE_BAJA';
 export type EffectiveStatus = 'ACTIVO' | 'VENCIDO' | 'DADO_DE_BAJA';
 
@@ -114,10 +114,10 @@ export interface User {
   email: string;
   name: string;
   phone: string | null;
-  // Único distintivo entre usuarios: acceso a este panel.
+  // The only distinction between users: access to this panel.
   isAdmin: boolean;
-  // Método de registro: 'google' (sin contraseña local) o 'email'. El backend
-  // lo deriva de googleId; solo las cuentas 'email' permiten cambiar la clave.
+  // Sign-up method: 'google' (no local password) or 'email'. The backend
+  // derives it from googleId; only 'email' accounts can change the password.
   provider?: 'google' | 'email';
   createdAt: string;
   updatedAt: string;
@@ -129,23 +129,23 @@ export interface Ad {
   description: string;
   requirements?: string | null;
   location?: string | null;
-  // Referencia en texto libre ("frente al mercado Los Pozos"): solo se muestra.
+  // Free-text reference ("frente al mercado Los Pozos"): display only.
   locationReference?: string | null;
   department?: Department | null;
   category?: Category | null;
   latitude?: number | null;
   longitude?: number | null;
   schedule?: string | null;
-  // Nulo = salario a convenir (p. ej. anuncios importados por CSV sin salario).
-  // Con salaryMax el par es un rango; salary es siempre el extremo inferior.
+  // Null = negotiable salary (e.g. CSV-imported listings without a salary).
+  // With salaryMax the pair is a range; salary is always the lower bound.
   salary?: string | number | null;
   salaryMax?: string | number | null;
   phone: string;
-  // Números de contacto adicionales (los avisos suelen publicar dos o tres).
+  // Additional contact numbers (listings often publish two or three).
   extraPhones?: string[];
   jobType: JobType;
   status: AdStatus;
-  // Prioridad manual: el mayor va primero en el portal y en el panel (0 = normal).
+  // Manual priority: the highest goes first in the portal and the panel (0 = normal).
   priority: number;
   durationDays: number;
   expiresAt: string;
@@ -230,18 +230,19 @@ export interface Trace {
   actorEmail: string | null;
   ip: string | null;
   userAgent: string | null;
-  // País (ISO-2) y fuente/origen del request (utm_source o host del Referer).
+  // Country (ISO-2) and request source/origin (utm_source or Referer host).
   country: string | null;
   source: string | null;
-  // Recurso afectado en formato "tipo:id" (ej. "ad:<uuid>").
+  // Affected resource in "type:id" format (e.g. "ad:<uuid>").
   resource: string | null;
   result: TraceResult;
-  // Milisegundos desde el inicio del request hasta el evento.
+  // Milliseconds from the start of the request to the event.
   durationMs: number | null;
   createdAt: string;
 }
 
-// Reseña del reporte admin (el anuncio es null si ya fue eliminado).
+// Review as shown in the admin report (the listing is null if it was already
+// deleted).
 export interface AdminReview {
   id: string;
   rating: number;
@@ -252,7 +253,7 @@ export interface AdminReview {
   ad: { id: string; description: string; status: AdStatus; expiresAt: string } | null;
 }
 
-// ——— Actividad del sitio (observabilidad) ———
+// ——— Site activity (observability) ———
 
 export type ServiceState = 'up' | 'warning' | 'down' | 'not_applicable';
 
@@ -301,7 +302,7 @@ export const ERROR_STATUS_LABEL: Record<ErrorStatus, string> = {
   RESOLVED: 'Resuelto',
 };
 
-// "Mozilla/5.0 (iPhone...) Chrome/126..." -> "Chrome · Móvil" para las tablas.
+// "Mozilla/5.0 (iPhone...) Chrome/126..." -> "Chrome · Móvil" for the tables.
 export function formatUserAgent(ua: string | null): string {
   if (!ua) return '—';
   const browser = /Edg\//.test(ua)
@@ -319,13 +320,13 @@ export function formatUserAgent(ua: string | null): string {
   return `${browser} · ${device}`;
 }
 
-// Punto de una serie diaria del dashboard (fecha en formato YYYY-MM-DD).
+// Point of a daily dashboard series (date in YYYY-MM-DD format).
 export interface DayPoint {
   date: string;
   total: number;
 }
 
-// Punto de la distribución horaria (hora local de Bolivia, 0-23).
+// Point of the hourly distribution (Bolivia local time, 0-23).
 export interface HourPoint {
   hour: number;
   total: number;
@@ -339,21 +340,21 @@ export interface VisitStats {
 }
 
 export interface AdminStats {
-  // byDay: registros por día calendario, siempre sin administradores.
+  // byDay: sign-ups per calendar day, always excluding admins.
   users: { total: number; admins: number; byDay: DayPoint[] };
   ads: { total: number; byDay: DayPoint[] };
-  // Visitas al detalle de anuncios. `liveAds` es la parte del acumulado que
-  // corresponde a anuncios que aún existen: al borrar un anuncio sus visitas
-  // se conservan sin dueño, y es lo único que ve "Top anuncios".
+  // Listing detail visits. `liveAds` is the part of the total that belongs to
+  // listings that still exist: when a listing is deleted its visits are kept
+  // without an owner, and this is all "Top anuncios" sees.
   visits: VisitStats & { liveAds: number };
-  // Páginas vistas del portal (visitas generales al sitio); byHour es la
-  // distribución por hora del día de la última semana.
+  // Portal page views (general site visits); byHour is the distribution by
+  // hour of day over the last week.
   siteVisits: VisitStats & { byHour: HourPoint[] };
 }
 
-// Fila de la estadística de actividad de usuarios registrados (sin admins):
-// última visita al portal y tiempo de estancia (sesiones por huecos de
-// inactividad de 30 min sobre los últimos 30 días).
+// Row of the registered-user activity statistics (no admins): last portal
+// visit and time spent (sessions split by 30-min inactivity gaps over the
+// last 30 days).
 export interface UserActivity {
   id: string;
   name: string;
@@ -366,13 +367,13 @@ export interface UserActivity {
   avgSessionMinutes: number;
 }
 
-// Fila del ranking de anuncios más clickeados (visitas al detalle).
+// Row of the most-clicked listings ranking (detail visits).
 export interface TopAd extends Ad {
   visitsTotal: number;
   visitsLast7Days: number;
 }
 
-// Accesos a una tarjeta de "Sitios de interés" (empresa del Grupo CorpSC).
+// Clicks on a "Sitios de interés" card (a Grupo CorpSC company).
 export interface SiteClickRow {
   company: string;
   label: string;
@@ -388,14 +389,14 @@ export interface Paginated<T> {
   totalPages: number;
 }
 
-// Estado efectivo de un anuncio: un ACTIVO con expiresAt en el pasado está VENCIDO.
+// Effective status of a listing: an ACTIVO one with expiresAt in the past is VENCIDO.
 export function adEffectiveStatus(ad: Pick<Ad, 'status' | 'expiresAt'>): EffectiveStatus {
   if (ad.status === 'DADO_DE_BAJA') return 'DADO_DE_BAJA';
   return new Date(ad.expiresAt).getTime() > Date.now() ? 'ACTIVO' : 'VENCIDO';
 }
 
-// Sueldo del anuncio como texto: monto fijo, rango ("Bs 3.500 a 4.500") o
-// "A convenir" (mismo criterio que el portal, ver lib/types.ts).
+// Listing salary as text: fixed amount, range ("Bs 3.500 a 4.500") or
+// "A convenir" (same rule as the portal, see lib/types.ts).
 export function salaryLabel(
   ad: Pick<Ad, 'salary' | 'salaryMax'>,
   fallback = 'A convenir',

@@ -32,22 +32,22 @@ export class UsersService {
 
   async findAll() {
     const users = await this.prisma.user.findMany({
-      // googleId se usa solo para derivar el método de registro; no se expone
-      // en crudo al panel.
+      // googleId is only used to derive the sign-up method; it is not exposed
+      // raw to the panel.
       select: { ...selectSafe, googleId: true, _count: { select: { ads: true } } },
       orderBy: { createdAt: 'desc' },
     });
     return users.map(({ googleId, ...u }) => ({
       ...u,
-      // 'google' = cuenta creada con Google (sin contraseña local);
-      // 'email' = registro con correo y contraseña.
+      // 'google' = account created with Google (no local password);
+      // 'email' = sign-up with email and password.
       provider: googleId ? 'google' : 'email',
     }));
   }
 
-  // Perfil propio: datos personales y, opcionalmente, la contraseña.
-  // Con contraseña existente se exige la actual; las cuentas de Google
-  // (sin contraseña local) pueden definir una directamente.
+  // Own profile: personal data and, optionally, the password.
+  // If a password exists the current one is required; Google accounts
+  // (no local password) can set one directly.
   async updateProfile(userId: string, dto: UpdateProfileDto) {
     const user = await this.ensureExists(userId);
 
@@ -75,7 +75,7 @@ export class UsersService {
     });
   }
 
-  // Edición de los datos de un usuario desde el panel de administración.
+  // Editing a user's data from the admin panel.
   async adminUpdate(id: string, dto: UpdateUserDto, actor: AuthUser) {
     const user = await this.ensureExists(id);
 
@@ -87,8 +87,8 @@ export class UsersService {
       if (taken) throw new ConflictException('El correo ya está registrado');
     }
 
-    // Cambio de contraseña desde el panel: solo para cuentas locales. Las de
-    // Google no tienen contraseña local, así que no se permite fijarla.
+    // Password change from the panel: local accounts only. Google accounts
+    // have no local password, so setting one is not allowed.
     let hashed: string | undefined;
     if (dto.password) {
       if (user.googleId) {
@@ -120,7 +120,7 @@ export class UsersService {
     return updated;
   }
 
-  // Alta de un administrador desde el panel (solo correo y contraseña).
+  // Creating an administrator from the panel (email and password only).
   async createAdmin(dto: CreateAdminDto, actor: AuthUser) {
     const exists = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -131,10 +131,10 @@ export class UsersService {
       data: {
         email: dto.email,
         password: await bcrypt.hash(dto.password, 10),
-        // El usuario sirve para iniciar sesión; si no se indica, del correo.
+        // The username is used to log in; if not given, derived from the email.
         name: dto.name?.trim() || dto.email.split('@')[0],
         isAdmin: true,
-        // Cuenta creada por un admin de confianza: no exige verificación.
+        // Account created by a trusted admin: no verification required.
         emailVerified: true,
       },
       select: selectSafe,
@@ -148,7 +148,7 @@ export class UsersService {
     return admin;
   }
 
-  // Concede o revoca el acceso al panel de administración.
+  // Grants or revokes access to the admin panel.
   async setAdmin(id: string, isAdmin: boolean, actor: AuthUser) {
     const user = await this.ensureExists(id);
     const updated = await this.prisma.user.update({
@@ -175,8 +175,8 @@ export class UsersService {
     return { deleted: true };
   }
 
-  // Borrado total de los usuarios registrados. Los administradores se
-  // conservan a propósito: se eliminan solo de a uno o por lotes.
+  // Deletes all registered users. Administrators are kept on purpose:
+  // they are only deleted one at a time or in batches.
   async removeAllClients(actor: AuthUser) {
     const { count } = await this.prisma.user.deleteMany({
       where: { isAdmin: false },
@@ -189,8 +189,8 @@ export class UsersService {
     return { deleted: count };
   }
 
-  // Borrado por lotes desde el panel, con traza resumen única. El actor no
-  // puede borrarse a sí mismo en el lote (evita quedarse sin sesión).
+  // Batch deletion from the panel, with a single summary trace. The actor
+  // cannot delete themselves in the batch (avoids losing their session).
   async removeMany(ids: string[], actor: AuthUser) {
     const targets = ids.filter((id) => id !== actor.id);
     const { count } = await this.prisma.user.deleteMany({

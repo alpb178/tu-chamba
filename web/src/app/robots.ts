@@ -1,24 +1,29 @@
 import type { MetadataRoute } from 'next';
+import { locales } from '@/i18n/routing';
+import { SITE } from '@/lib/seo';
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tu-chamba.corpsc.com';
+// Private pages or pages with no indexing value, in every locale.
+const PRIVATE_PATHS = [
+  '/my-listings',
+  '/alerts',
+  '/interests',
+  '/profile',
+  '/listings/new',
+  '/login',
+  '/register',
+  '/verify',
+  '/forgot-password',
+  '/reset-password',
+];
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      // Rutas privadas o sin valor de indexación.
       disallow: [
-        '/my-listings',
-        '/alerts',
-        '/interests',
-        '/profile',
-        '/listings/new',
-        '/login',
-        '/register',
-        '/verify',
-        '/forgot-password',
-        '/reset-password',
+        '/admin',
+        ...locales.flatMap((locale) => PRIVATE_PATHS.map((p) => `/${locale}${p}`)),
       ],
     },
     sitemap: `${SITE}/sitemap.xml`,

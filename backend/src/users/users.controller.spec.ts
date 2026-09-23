@@ -8,8 +8,8 @@ function build() {
   };
   return { c: new UsersController(users as never), users };
 }
-describe('UsersController (delegación)', () => {
-  it('delega cada endpoint al servicio con el actor correcto', () => {
+describe('UsersController (delegation)', () => {
+  it('delegates each endpoint to the service with the right actor', () => {
     const { c, users } = build();
     c.updateProfile(a, {} as never); expect(users.updateProfile).toHaveBeenCalledWith('adm', {});
     c.findAll(); expect(users.findAll).toHaveBeenCalled();

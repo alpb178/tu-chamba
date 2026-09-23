@@ -5,17 +5,17 @@ function build() {
   return { c: new VisitsController(visits as never), visits };
 }
 describe('VisitsController', () => {
-  it('con adId registra la visita al anuncio', () => {
+  it('with adId records the ad visit', () => {
     const { c, visits } = build();
     c.record({ adId: 'a1' } as never, null);
     expect(visits.record).toHaveBeenCalledWith('a1');
   });
-  it('con path registra la página vista pasando el userId de sesión', () => {
+  it('with path records the page view passing the session userId', () => {
     const { c, visits } = build();
     c.record({ path: '/x' } as never, { id: 'u1' } as never);
     expect(visits.recordPageView).toHaveBeenCalledWith('/x', 'u1');
   });
-  it('sin adId ni path lanza 400', () => {
+  it('without adId or path throws 400', () => {
     const { c } = build();
     expect(() => c.record({} as never, null)).toThrow(BadRequestException);
   });

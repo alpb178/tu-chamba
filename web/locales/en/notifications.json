@@ -1,0 +1,20 @@
+{
+  "verification": {
+    "message": "Verify your email <b>{email}</b> to activate your account and start posting.",
+    "sent": "We sent you the link again. Check your inbox.",
+    "sending": "Sending...",
+    "resend": "Resend link"
+  },
+  "bell": {
+    "title": "Notifications",
+    "ariaLabel": "Notifications{unread, plural, =0 {} other { (# unread)}}",
+    "markAllRead": "Mark all as read",
+    "empty": "You have no notifications.",
+    "viewDetails": "View details"
+  },
+  "timeAgo": {
+    "now": "just now",
+    "minutes": "{count} min ago",
+    "hours": "{count} h ago"
+  }
+}

@@ -5,9 +5,9 @@ import {
   Injectable,
 } from '@nestjs/common';
 
-// Acceso al panel de administración: requiere sesión (JwtAuthGuard antes)
-// y el flag isAdmin. Es la única distinción entre usuarios: los permisos
-// de negocio dependen solo de la propiedad del recurso.
+// Admin panel access: requires a session (JwtAuthGuard first) and the
+// isAdmin flag. It is the only distinction between users: business
+// permissions depend only on resource ownership.
 @Injectable()
 export class AdminGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {

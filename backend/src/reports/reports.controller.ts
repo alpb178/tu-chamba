@@ -25,14 +25,14 @@ import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator
 export class ReportsController {
   constructor(private reports: ReportsService) {}
 
-  // Cualquier usuario autenticado puede reportar un anuncio.
+  // Any authenticated user can report a listing.
   @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() dto: CreateReportDto, @CurrentUser() user: AuthUser) {
     return this.reports.create(dto, user);
   }
 
-  // Cola de reportes: solo admin.
+  // Report queue: admin only.
   @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiQuery({ name: 'status', enum: ReportStatus, required: false })
   @Get()
@@ -40,7 +40,7 @@ export class ReportsController {
     return this.reports.findAll(status);
   }
 
-  // Cambiar el estado del reporte (atender, descartar o reabrir): solo admin.
+  // Change the report status (resolve, dismiss or reopen): admin only.
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Patch(':id')
   resolve(
@@ -51,22 +51,22 @@ export class ReportsController {
     return this.reports.resolve(id, dto.status, actor);
   }
 
-  // Borrado total de la cola de reportes: solo admin. Declarado antes
-  // de ':id' para que 'all' no se interprete como un id.
+  // Delete the entire report queue: admin only. Declared before ':id' so
+  // that 'all' is not interpreted as an id.
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Delete('all')
   removeAll(@CurrentUser() actor: AuthUser) {
     return this.reports.removeAll(actor);
   }
 
-  // Eliminar el reporte (no toca el anuncio reportado): solo admin.
+  // Delete the report (leaves the reported listing untouched): admin only.
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() actor: AuthUser) {
     return this.reports.remove(id, actor);
   }
 
-  // Borrado por lotes de reportes seleccionados: solo admin.
+  // Batch delete of selected reports: admin only.
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Post('bulk-delete')
   removeMany(@Body() dto: BulkIdsDto, @CurrentUser() actor: AuthUser) {

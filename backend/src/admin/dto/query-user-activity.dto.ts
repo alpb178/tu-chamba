@@ -2,7 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 
-// Filtros de la estadística de actividad de usuarios registrados.
+// Filters for the registered-user activity statistics.
 export class QueryUserActivityDto {
   @ApiPropertyOptional({ description: 'Nombre o correo del usuario' })
   @IsOptional()

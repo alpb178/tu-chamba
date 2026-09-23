@@ -1,11 +1,11 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Icon } from './Icon';
 
-// Paginación numerada (estilo "card footer with page buttons"): a la
-// izquierda el rango mostrado y a la derecha los botones de página con
-// puntos suspensivos para saltos grandes. Solo se usa en escritorio; en
-// móvil el paso de página es por scroll.
+// Numbered pagination ("card footer with page buttons" style): the shown
+// range on the left and the page buttons on the right, with ellipses for
+// large jumps. Only used on desktop; on mobile paging happens via scroll.
 function pageItems(page: number, totalPages: number): (number | '…')[] {
   if (totalPages <= 7) {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -41,6 +41,7 @@ export function Pagination({
   limit: number;
   onPage: (p: number) => void;
 }) {
+  const t = useTranslations('home.pagination');
   if (totalPages <= 1) return null;
   const from = (page - 1) * limit + 1;
   const to = Math.min(page * limit, total);
@@ -48,14 +49,18 @@ export function Pagination({
   return (
     <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-outline-variant pt-4">
       <p className="text-sm text-on-surface-variant">
-        Mostrando del <span className="font-medium text-on-surface">{from}</span> al{' '}
-        <span className="font-medium text-on-surface">{to}</span> de{' '}
-        <span className="font-medium text-on-surface">{total}</span>{' '}
-        {total === 1 ? 'resultado' : 'resultados'}
+        {t.rich('summary', {
+          from,
+          to,
+          total,
+          b: (chunks) => (
+            <span className="font-medium text-on-surface">{chunks}</span>
+          ),
+        })}
       </p>
 
       <nav
-        aria-label="Paginación"
+        aria-label={t('label')}
         className="flex divide-x divide-outline-variant overflow-hidden border border-outline-variant bg-surface-container-lowest"
       >
         <button
@@ -63,7 +68,7 @@ export function Pagination({
           className={`${ITEM_CLASS} text-on-surface-variant hover:bg-surface-container-low disabled:opacity-40 disabled:hover:bg-transparent`}
           disabled={page <= 1}
           onClick={() => onPage(page - 1)}
-          aria-label="Página anterior"
+          aria-label={t('previous')}
         >
           <Icon name="chevron_left" className="text-lg" />
         </button>
@@ -83,7 +88,7 @@ export function Pagination({
               type="button"
               onClick={() => onPage(item)}
               aria-current={item === page ? 'page' : undefined}
-              aria-label={`Página ${item}`}
+              aria-label={t('page', { page: item })}
               className={`${ITEM_CLASS} ${
                 item === page
                   ? 'bg-primary font-bold text-on-primary'
@@ -100,7 +105,7 @@ export function Pagination({
           className={`${ITEM_CLASS} text-on-surface-variant hover:bg-surface-container-low disabled:opacity-40 disabled:hover:bg-transparent`}
           disabled={page >= totalPages}
           onClick={() => onPage(page + 1)}
-          aria-label="Página siguiente"
+          aria-label={t('next')}
         >
           <Icon name="chevron_right" className="text-lg" />
         </button>

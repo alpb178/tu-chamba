@@ -2,56 +2,77 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 
 /**
- * Recoge la analítica de este sitio y la reenvía al hub del grupo.
+ * Collects this site's analytics and forwards it to the group's hub.
  *
- * Existe por un motivo: **la clave del hub no puede bajar al navegador**. Quien
- * la tenga puede escribir métricas de este proyecto, así que la página escribe
- * a su propio origen y la clave se añade aquí, en el servidor.
+ * It exists for one reason: **the hub key must never reach the browser**.
+ * Whoever holds it can write metrics for this project, so the page writes to
+ * its own origin and the key is added here, on the server.
  *
- * Aquí no se agrega nada ni se guarda nada: se manda el hecho suelto y el hub
- * consolida los días de madrugada. Contrato en
+ * Nothing is aggregated or stored here: the raw event is sent and the hub
+ * consolidates the days overnight. Contract in
  * corpsc-admin/docs/envio-de-metricas/eventos.md.
  *
- * Entorno (sin él la ruta no envía nada, que es lo que se quiere en local y en
- * las vistas previas):
+ * Environment (without it the route sends nothing, which is what we want
+ * locally and in previews):
  *   HUB_URL      https://hub.corpsc.com/api
- *   HUB_API_KEY  la clave de este proyecto
+ *   HUB_API_KEY  this project's key
  */
 
-/** El mismo tope que aplica el hub. */
+/** The same cap the hub applies. */
 const MAX_EVENTS = 50;
 
 /**
- * La cookie de visita. Media hora de inactividad la cierra, que es la ventana
- * de sesión habitual, y no sobrevive al navegador cerrado.
+ * The visit cookie. Half an hour of inactivity closes it, which is the usual
+ * session window, and it doesn't survive the browser being closed.
  *
- * Lleva un identificador aleatorio y nada más: ni identidad, ni historial. Es
- * lo único que impide que cinco páginas cuenten como cinco visitas.
+ * It carries a random identifier and nothing else: no identity, no history.
+ * It's the only thing that keeps five pages from counting as five visits.
  */
 const SESSION_COOKIE = 'hub_v';
 const SESSION_MINUTES = 30;
 
 /**
- * Los rastreadores se anuncian y no hay razón para contarlos como personas.
- * El filtro es a propósito grueso: lo que deja pasar es un error de redondeo y
- * lo que bloquearía de más sería un lector.
+ * Crawlers announce themselves and there's no reason to count them as people.
+ * The filter is deliberately coarse: what slips through is a rounding error,
+ * and what it would over-block is a reader.
  */
 const BOT = /bot|crawl|spider|slurp|bingpreview|headless|lighthouse|monitor|pingdom|curl|wget/i;
 
 interface IncomingEvent {
-  type: 'page_view' | 'site_click';
+  type: 'page_view' | 'site_click' | 'click';
   path: string;
+  section?: string;
+  label?: string;
+  referrer?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
   target?: string;
   linkType?: 'web' | 'android' | 'ios';
+}
+
+function isText(value: unknown, max: number): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= max;
 }
 
 function isValid(event: unknown): event is IncomingEvent {
   if (typeof event !== 'object' || event === null) return false;
   const e = event as Record<string, unknown>;
 
-  if (e.type !== 'page_view' && e.type !== 'site_click') return false;
+  if (e.type !== 'page_view' && e.type !== 'site_click' && e.type !== 'click') return false;
   if (typeof e.path !== 'string' || e.path.length === 0 || e.path.length > 512) return false;
   if (e.type === 'site_click' && typeof e.target !== 'string') return false;
+  // Same limits as the hub: a click must say where it happened.
+  if (e.type === 'click' && (!isText(e.section, 64) || !isText(e.label, 120))) return false;
+  if (e.section !== undefined && !isText(e.section, 64)) return false;
+  if (e.label !== undefined && !isText(e.label, 120)) return false;
+  // Only the domain: a full URL could carry the visitor's search or an id.
+  if (e.referrer !== undefined && !(typeof e.referrer === 'string' && /^[a-z0-9.-]{1,255}$/.test(e.referrer))) {
+    return false;
+  }
+  for (const utm of [e.utmSource, e.utmMedium, e.utmCampaign]) {
+    if (utm !== undefined && !isText(utm, 100)) return false;
+  }
   if (e.linkType !== undefined && !['web', 'android', 'ios'].includes(e.linkType as string)) {
     return false;
   }
@@ -59,9 +80,9 @@ function isValid(event: unknown): event is IncomingEvent {
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
-  // Siempre 204, pase lo que pase. Para la página esto es "mandar y olvidar":
-  // un problema de analítica no puede parecerse a un sitio roto, y explicar a
-  // quien llama por qué se descartó su envío solo ayuda a quien lo sondea.
+  // Always 204, no matter what. For the page this is "fire and forget": an
+  // analytics problem must not look like a broken site, and explaining to the
+  // caller why their submission was dropped only helps whoever is probing it.
   const noContent = new NextResponse(null, { status: 204 });
 
   if (BOT.test(request.headers.get('user-agent') ?? '')) return noContent;
@@ -79,9 +100,9 @@ export async function POST(request: Request): Promise<NextResponse> {
   const events = incoming.filter(isValid).slice(0, MAX_EVENTS);
   if (events.length === 0) return noContent;
 
-  // El identificador se emite aquí y no en la página: como cookie httpOnly
-  // ningún script puede leerlo, así que un fallo en un snippet de terceros no
-  // puede llevárselo ni falsificar la visita de otro.
+  // The identifier is issued here and not on the page: as an httpOnly cookie
+  // no script can read it, so a flaw in a third-party snippet can't steal it
+  // or forge someone else's visit.
   const existing = request.headers
     .get('cookie')
     ?.split(';')
@@ -95,8 +116,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
     path: '/',
-    // Se renueva con cada evento, así la visita acaba tras media hora de
-    // silencio y no media hora después de haber empezado.
+    // Renewed with every event, so the visit ends after half an hour of
+    // silence and not half an hour after it started.
     maxAge: SESSION_MINUTES * 60,
   });
 
@@ -105,6 +126,10 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (!hubUrl || !apiKey) return noContent;
 
   const at = new Date().toISOString();
+  // Vercel resolves the country from the IP at its edge; the IP itself never
+  // leaves this server.
+  const countryHeader = request.headers.get('x-vercel-ip-country')?.toUpperCase();
+  const country = countryHeader && /^[A-Z]{2}$/.test(countryHeader) ? countryHeader : undefined;
 
   try {
     await fetch(`${hubUrl}/ingest/events`, {
@@ -116,6 +141,18 @@ export async function POST(request: Request): Promise<NextResponse> {
           type: event.type,
           sessionId,
           path: event.path,
+          ...(country ? { country } : {}),
+          ...(event.type === 'page_view'
+            ? {
+                referrer: event.referrer,
+                utmSource: event.utmSource,
+                utmMedium: event.utmMedium,
+                utmCampaign: event.utmCampaign,
+              }
+            : {}),
+          ...(event.type !== 'page_view' && event.section && event.label
+            ? { section: event.section, label: event.label }
+            : {}),
           ...(event.type === 'site_click'
             ? { target: event.target, linkType: event.linkType ?? 'web' }
             : {}),
@@ -125,9 +162,9 @@ export async function POST(request: Request): Promise<NextResponse> {
       cache: 'no-store',
     });
   } catch {
-    // Que el hub esté caído no es problema de quien navega. El evento se pierde
-    // a propósito: encolarlo significaría almacenamiento, que es justo lo que
-    // este sitio no tiene que poner.
+    // The hub being down isn't the visitor's problem. The event is dropped on
+    // purpose: queueing it would mean storage, which is exactly what this site
+    // shouldn't have to provide.
   }
 
   return noContent;

@@ -7,9 +7,8 @@ import {
   MinLength,
 } from 'class-validator';
 
-// Alta de administradores desde el panel: correo, contraseña y, opcional,
-// el nombre de usuario (sirve para iniciar sesión; si falta se toma del
-// correo).
+// Admin creation from the panel: email, password and, optionally, the
+// username (used to sign in; if missing it is taken from the email).
 export class CreateAdminDto {
   @ApiProperty({ example: 'nuevo-admin@tuchamba.com' })
   @IsEmail()

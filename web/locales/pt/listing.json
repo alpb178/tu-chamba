@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "notFoundTitle": "Vaga não encontrada — Tu Chamba",
+    "inDepartment": "em {department}",
+    "fallbackCategory": "Emprego"
+  },
+  "breadcrumb": {
+    "label": "Trilha de navegação",
+    "allListings": "Todas as vagas"
+  },
+  "inactiveNotice": "Este anúncio está {status} e não aparece mais no portal.",
+  "refTitle": "Referência para mencionar o anúncio ao entrar em contato",
+  "ref": "Ref. {ref}",
+  "publisherFallback": "Anunciante",
+  "verified": "Verificado",
+  "descriptionHeading": "Descrição da vaga",
+  "requirementsHeading": "Requisitos do candidato",
+  "salaryNegotiable": "Salário a combinar",
+  "zone": "Região: {department}",
+  "schedule": "Horário: {schedule}",
+  "dates": "Publicado em: {published} · Vence em: {expires}",
+  "visits": "{count, plural, one {# visita} other {# visitas}}",
+  "reviewsOwnerFallback": "este anunciante",
+  "actions": {
+    "expand": "Ampliar",
+    "approximateLocation": "Localização aproximada de acordo com o endereço do anúncio.",
+    "openInGoogleMaps": "Abrir no Google Maps",
+    "expandedMap": "Mapa ampliado",
+    "close": "Fechar",
+    "location": "Localização: {location}",
+    "reference": "Referência: {reference}",
+    "share": "Compartilhar:",
+    "shareLocation": "Compartilhar localização pelo WhatsApp",
+    "shareListing": "Compartilhar anúncio pelo WhatsApp",
+    "shareLocationText": "Localização do anúncio Ref. {ref} no Tu Chamba: {url}",
+    "shareListingText": "Veja este anúncio no Tu Chamba (Ref. {ref}): {url}",
+    "waMessage": "Olá, vi seu anúncio no Tu Chamba (Ref. {ref}) e tenho interesse.",
+    "call": "Ligar",
+    "phone": "Telefone: {phone}",
+    "loginToContact": "Entre na sua conta para entrar em contato: o telefone aparece depois do login.",
+    "otherNumbers": "Outros números:",
+    "whatsappTo": "Enviar mensagem pelo WhatsApp para {phone}",
+    "unpublishConfirm": "Desativar este anúncio? Ele deixará de aparecer no portal.",
+    "edit": "Editar",
+    "unpublish": "Desativar",
+    "republish": "Republicar ({days} dias)"
+  }
+}

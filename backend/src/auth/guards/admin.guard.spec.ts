@@ -10,17 +10,17 @@ function ctxWith(user: unknown) {
 describe('AdminGuard', () => {
   const guard = new AdminGuard();
 
-  it('deja pasar a un admin', () => {
+  it('lets an admin through', () => {
     expect(guard.canActivate(ctxWith({ id: 'a', isAdmin: true }))).toBe(true);
   });
 
-  it('bloquea a un usuario sin isAdmin', () => {
+  it('blocks a user without isAdmin', () => {
     expect(() => guard.canActivate(ctxWith({ id: 'u', isAdmin: false }))).toThrow(
       ForbiddenException,
     );
   });
 
-  it('bloquea si no hay usuario (sin sesión)', () => {
+  it('blocks when there is no user (not logged in)', () => {
     expect(() => guard.canActivate(ctxWith(undefined))).toThrow(
       ForbiddenException,
     );

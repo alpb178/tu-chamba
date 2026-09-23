@@ -8,8 +8,8 @@ import { ErrorLogFilter } from './error-log.filter';
 import { StatusService } from './status.service';
 import { ObservabilityController } from './observability.controller';
 
-// Global: el cron de limpieza reporta sus ejecuciones y errores sin importar
-// este módulo (mismo criterio que TracesModule).
+// Global: the cleanup cron reports its runs and errors without importing
+// this module (same approach as TracesModule).
 @Global()
 @Module({
   imports: [MailModule],
@@ -18,7 +18,7 @@ import { ObservabilityController } from './observability.controller';
     MetricsService,
     ErrorsService,
     StatusService,
-    // Todas las requests pasan por las métricas y el registro de errores.
+    // Every request goes through the metrics and the error log.
     { provide: APP_INTERCEPTOR, useClass: MetricsInterceptor },
     { provide: APP_FILTER, useClass: ErrorLogFilter },
   ],

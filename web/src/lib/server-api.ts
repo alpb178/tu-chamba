@@ -2,13 +2,13 @@ import { cache } from 'react';
 import { headers } from 'next/headers';
 import { Ad, Department, Paginated } from './types';
 
-// Fetch en servidor (SSR/metadata). No usa el token del navegador, así que
-// el detalle llega sin teléfono (público); el contacto se pide en cliente.
+// Server-side fetch (SSR/metadata). It doesn't use the browser token, so the
+// detail arrives without a phone (public); contact info is fetched client-side.
 const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
 
-// Datos del visitante que se reenvían al backend en las peticiones de
-// servidor: sin ellos la API solo ve al servidor de Next y la auditoría
-// registra su IP y su país (EE. UU.) en lugar de los del visitante real.
+// Visitor data forwarded to the backend on server requests: without it the
+// API only sees the Next server and the audit log records its IP and country
+// (US) instead of the real visitor's.
 async function visitorHeaders(): Promise<Record<string, string>> {
   try {
     const incoming = await headers();
@@ -24,14 +24,14 @@ async function visitorHeaders(): Promise<Record<string, string>> {
     }
     return forward;
   } catch {
-    // Fuera del ciclo de un request (build, sitemap): no hay visitante.
+    // Outside a request cycle (build, sitemap): there is no visitor.
     return {};
   }
 }
 
-// cache() de React memoiza la llamada dentro de un mismo render: la página de
-// detalle y su generateMetadata piden el mismo anuncio, y sin esto el backend
-// registraba dos trazas "detalle visto" por cada visita.
+// React's cache() memoizes the call within a single render: the detail page
+// and its generateMetadata request the same listing, and without this the
+// backend recorded two "detail viewed" traces per visit.
 export const fetchAd = cache(async (id: string): Promise<Ad | null> => {
   try {
     const res = await fetch(`${API}/listings/${id}`, {
@@ -63,8 +63,8 @@ export async function fetchAds(params: {
   }
 }
 
-// Todos los anuncios vigentes paginando de a 100 (tope de la API), con un
-// máximo defensivo — pensado para el sitemap.
+// All active listings, paging 100 at a time (the API cap), with a defensive
+// maximum — meant for the sitemap.
 export async function fetchAllAds(max = 1000): Promise<Ad[]> {
   const items: Ad[] = [];
   for (let page = 1; items.length < max; page++) {

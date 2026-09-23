@@ -21,7 +21,7 @@ function build() {
 const user = { id: 'u1', email: 'u@t.com', isAdmin: false };
 
 describe('NotificationsService.findMine / markRead / markAllRead', () => {
-  it('findMine devuelve items y conteo de no leídas', async () => {
+  it('findMine returns items and the unread count', async () => {
     const { service, prisma } = build();
     prisma.notification.findMany.mockResolvedValue([{ id: 'n1' }]);
     prisma.notification.count.mockResolvedValue(2);
@@ -29,15 +29,15 @@ describe('NotificationsService.findMine / markRead / markAllRead', () => {
     expect(res).toEqual({ items: [{ id: 'n1' }], unread: 2 });
   });
 
-  it('markRead falla si la notificación es de otro usuario', async () => {
+  it('markRead fails if the notification belongs to another user', async () => {
     const { service, prisma } = build();
-    prisma.notification.findUnique.mockResolvedValue({ id: 'n1', userId: 'otro' });
+    prisma.notification.findUnique.mockResolvedValue({ id: 'n1', userId: 'other' });
     await expect(service.markRead('n1', 'u1')).rejects.toBeInstanceOf(
       NotFoundException,
     );
   });
 
-  it('markRead marca la propia como leída', async () => {
+  it('markRead marks your own notification as read', async () => {
     const { service, prisma } = build();
     prisma.notification.findUnique.mockResolvedValue({ id: 'n1', userId: 'u1' });
     prisma.notification.update.mockResolvedValue({ id: 'n1', read: true });
@@ -48,7 +48,7 @@ describe('NotificationsService.findMine / markRead / markAllRead', () => {
     });
   });
 
-  it('markAllRead marca todas las no leídas del usuario', () => {
+  it('markAllRead marks all of the user\'s unread notifications', () => {
     const { service, prisma } = build();
     service.markAllRead('u1');
     expect(prisma.notification.updateMany).toHaveBeenCalledWith({
@@ -59,7 +59,7 @@ describe('NotificationsService.findMine / markRead / markAllRead', () => {
 });
 
 describe('NotificationsService.notify*', () => {
-  it('notifyInterest avisa al dueño con el nombre del interesado', async () => {
+  it('notifyInterest notifies the owner with the interested user\'s name', async () => {
     const { service, prisma } = build();
     prisma.user.findUnique.mockResolvedValue({ name: 'Ana' });
     await service.notifyInterest(
@@ -72,7 +72,7 @@ describe('NotificationsService.notify*', () => {
     expect(data.message).toContain('Ana');
   });
 
-  it('notifyReview avisa al calificado', async () => {
+  it('notifyReview notifies the reviewed user', async () => {
     const { service, prisma } = build();
     await service.notifyReview(
       { ownerId: 'owner', rating: 5, comment: 'Excelente' } as never,
@@ -84,12 +84,12 @@ describe('NotificationsService.notify*', () => {
     expect(data.message).toContain('5★');
   });
 
-  it('notifyNewAd notifica a los suscriptores coincidentes (sin duplicar)', async () => {
+  it('notifyNewAd notifies matching subscribers (without duplicates)', async () => {
     const { service, prisma } = build();
     prisma.jobAlert.findMany.mockResolvedValue([
       { userId: 'x' },
       { userId: 'y' },
-      { userId: 'x' }, // duplicado -> una sola notificación
+      { userId: 'x' }, // duplicate -> a single notification
     ]);
     await service.notifyNewAd({
       id: 'a1',
@@ -102,7 +102,7 @@ describe('NotificationsService.notify*', () => {
     expect(rows.map((r: { userId: string }) => r.userId).sort()).toEqual(['x', 'y']);
   });
 
-  it('notifyNewAd no crea nada si no hay suscriptores', async () => {
+  it('notifyNewAd creates nothing if there are no subscribers', async () => {
     const { service, prisma } = build();
     prisma.jobAlert.findMany.mockResolvedValue([]);
     await service.notifyNewAd({ id: 'a1', description: 'x', createdById: 'o' } as never);

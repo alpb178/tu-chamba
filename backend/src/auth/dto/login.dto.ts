@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString, ValidateIf } from 'class-validator';
 
-// Debe venir identifier o email (al menos uno). identifier acepta el
-// nombre de usuario o el correo (lo usa el panel admin); email queda por
-// compatibilidad con la web y la app móvil, que envían solo el correo.
+// Either identifier or email must be present (at least one). identifier
+// accepts the username or the email (used by the admin panel); email is kept
+// for compatibility with the web and the mobile app, which send only the email.
 export class LoginDto {
   @ApiPropertyOptional({
     example: 'admin',

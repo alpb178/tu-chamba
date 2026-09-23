@@ -1,0 +1,51 @@
+{
+  "jobType": {
+    "DIARIA": "Diaria",
+    "TIEMPO_COMPLETO": "Tiempo completo",
+    "MEDIA_JORNADA": "Media jornada",
+    "POR_CONTRATO": "Por contrato",
+    "PASANTIA": "Pasantía",
+    "FREELANCE": "Freelance",
+    "A_CONVENIR": "A convenir"
+  },
+  "category": {
+    "VENTAS": "Ventas",
+    "GASTRONOMIA": "Gastronomía",
+    "CONSTRUCCION": "Construcción",
+    "LIMPIEZA": "Limpieza",
+    "CUIDADO_PERSONAS": "Cuidado de personas",
+    "TRANSPORTE": "Transporte",
+    "ADMINISTRACION": "Administración",
+    "TECNOLOGIA": "Tecnología",
+    "EDUCACION": "Educación",
+    "SALUD": "Salud",
+    "BELLEZA": "Belleza",
+    "SEGURIDAD": "Seguridad",
+    "AGROPECUARIA": "Agropecuaria",
+    "MECANICA": "Mecánica",
+    "MARKETING_DISENO": "Marketing y diseño",
+    "OTRO": "Otro"
+  },
+  "status": {
+    "ACTIVO": "Activo",
+    "VENCIDO": "Vencido",
+    "DADO_DE_BAJA": "Dado de baja"
+  },
+  "reportReason": {
+    "SPAM": "Spam",
+    "FRAUDE": "Fraude / estafa",
+    "CONTENIDO_INAPROPIADO": "Contenido inapropiado",
+    "OTRO": "Otro"
+  },
+  "sort": {
+    "newest": "Más recientes",
+    "oldest": "Más antiguos",
+    "salary-desc": "Salario: mayor a menor",
+    "salary-asc": "Salario: menor a mayor"
+  },
+  "salary": {
+    "negotiable": "A convenir",
+    "amount": "Bs {amount}",
+    "range": "Bs {min} a {max}"
+  }
+}

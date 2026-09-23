@@ -3,7 +3,7 @@ import { Ad, NotificationType, Review } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthUser } from '../auth/decorators/current-user.decorator';
 
-// Recorte para mensajes legibles en la campana de notificaciones.
+// Truncation for readable messages in the notification bell.
 function summary(text: string, max = 60) {
   return text.length > max ? `${text.slice(0, max - 1)}…` : text;
 }
@@ -12,8 +12,8 @@ function summary(text: string, max = 60) {
 export class NotificationsService {
   constructor(private prisma: PrismaService) {}
 
-  // Listado propio + conteo de no leídas. Las notificaciones de vencimiento
-  // las crea AdsCleanupService al eliminar el anuncio vencido.
+  // Own list + unread count. Expiration notifications are created by
+  // AdsCleanupService when it deletes the expired listing.
   async findMine(user: AuthUser) {
     const [items, unread] = await Promise.all([
       this.prisma.notification.findMany({
@@ -48,8 +48,8 @@ export class NotificationsService {
     });
   }
 
-  // Alguien mostró interés en un anuncio (la llama InterestsService la
-  // primera vez que ese usuario contacta): avisa al dueño.
+  // Someone showed interest in a listing (called by InterestsService the
+  // first time that user makes contact): notifies the owner.
   async notifyInterest(ad: Ad, interestedUserId: string) {
     const who = await this.prisma.user.findUnique({
       where: { id: interestedUserId },
@@ -65,7 +65,7 @@ export class NotificationsService {
     });
   }
 
-  // Nueva calificación recibida (la llama ReviewsService).
+  // New rating received (called by ReviewsService).
   async notifyReview(review: Review, authorName: string) {
     await this.prisma.notification.create({
       data: {
@@ -76,13 +76,13 @@ export class NotificationsService {
     });
   }
 
-  // Anuncio nuevo publicado: avisa solo a los usuarios con una alerta
-  // que coincide (departamento y categoría; null = cualquiera). Un usuario
-  // con varias alertas coincidentes recibe una sola notificación.
+  // New listing published: notifies only users with a matching alert
+  // (department and category; null = any). A user with several matching
+  // alerts receives a single notification.
   async notifyNewAd(ad: Ad) {
     const alerts = await this.prisma.jobAlert.findMany({
       where: {
-        // El dueño del anuncio no se notifica a sí mismo.
+        // The listing owner is not notified about their own listing.
         userId: { not: ad.createdById },
         AND: [
           { OR: [{ department: null }, { department: ad.department }] },

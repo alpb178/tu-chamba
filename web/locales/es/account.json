@@ -1,0 +1,55 @@
+{
+  "myListings": {
+    "title": "Mis anuncios",
+    "postJob": "Publicar oferta de trabajo",
+    "emptyTitle": "Aún no has publicado anuncios.",
+    "emptyText": "Publica tu primera oferta: es gratis y los interesados te escriben directo por WhatsApp.",
+    "postFirstJob": "Publicar mi primera oferta de trabajo",
+    "visits": "{count, plural, one {# acceso} other {# accesos}}",
+    "interested": "{count, plural, one {# interesado} other {# interesados}}",
+    "expires": "Vence: {date}",
+    "unpublish": "Dar de baja",
+    "republish": "Republicar ({days} días)",
+    "delete": "Eliminar",
+    "confirmUnpublish": "¿Dar de baja este anuncio? Dejará de mostrarse en el portal.",
+    "confirmDelete": "¿Eliminar este anuncio definitivamente? Esta acción no se puede deshacer."
+  },
+  "interests": {
+    "title": "Anuncios de tu interés",
+    "empty": "Aún no tienes anuncios de interés. Los anuncios cuyos detalles abras aparecerán aquí automáticamente. <link>Explora las ofertas</link>.",
+    "interestedOn": "Te interesaste el {date}",
+    "remove": "Quitar"
+  },
+  "alerts": {
+    "title": "Alertas de empleo",
+    "intro": "Te avisamos con una notificación cuando se publique una oferta que coincida con tus criterios.",
+    "department": "Departamento",
+    "category": "Categoría",
+    "allCountry": "Todo el país",
+    "allCategories": "Todas las categorías",
+    "anyCategory": "Cualquier categoría",
+    "wholeCountry": "todo el país",
+    "creating": "Creando...",
+    "create": "Crear alerta",
+    "yourAlerts": "Tus alertas",
+    "empty": "Aún no tienes alertas. Crea una para recibir avisos de nuevas ofertas.",
+    "delete": "Eliminar"
+  },
+  "profile": {
+    "title": "Mi perfil",
+    "email": "Correo (no se puede modificar)",
+    "name": "Nombre",
+    "phone": "Teléfono (opcional, se precarga al publicar)",
+    "passwordLegend": "Contraseña",
+    "changePassword": "Cambiar contraseña",
+    "setPassword": "Definir contraseña",
+    "optional": "(opcional)",
+    "googleNote": "Tu cuenta usa Google. Si defines una contraseña, también podrás entrar con tu correo.",
+    "currentPassword": "Contraseña actual",
+    "newPassword": "Nueva contraseña (mín. 6)",
+    "confirmPassword": "Confirmar nueva contraseña",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "saving": "Guardando...",
+    "save": "Guardar cambios"
+  }
+}

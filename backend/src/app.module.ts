@@ -22,7 +22,7 @@ import { IndexingModule } from './indexing/indexing.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    // Tareas programadas (limpieza horaria de anuncios vencidos).
+    // Scheduled tasks (hourly cleanup of expired ads).
     ScheduleModule.forRoot(),
     PrismaModule,
     TracesModule,
@@ -44,7 +44,7 @@ import { IndexingModule } from './indexing/indexing.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // IP y user-agent de cada request quedan disponibles para las trazas.
+    // Each request's IP and user-agent are made available to the audit trail.
     consumer.apply(RequestContextMiddleware).forRoutes('*');
   }
 }

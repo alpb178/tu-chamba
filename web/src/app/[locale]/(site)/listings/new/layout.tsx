@@ -1,0 +1,11 @@
+import type { Metadata } from 'next';
+import type { ReactNode } from 'react';
+
+// Private or session-only page: kept out of search engine indexes.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
+export default function Layout({ children }: { children: ReactNode }) {
+  return children;
+}

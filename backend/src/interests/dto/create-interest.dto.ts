@@ -6,8 +6,8 @@ export class CreateInterestDto {
   @IsUUID()
   adId: string;
 
-  // true cuando el interés viene de contactar (Chatear/Llamar): la primera
-  // vez avisa al dueño. Sin él, solo se registra el acceso al detalle.
+  // true when the interest comes from contacting (Chatear/Llamar): the first
+  // time it notifies the owner. Without it, only the detail visit is recorded.
   @ApiPropertyOptional({ default: false })
   @IsOptional()
   @IsBoolean()

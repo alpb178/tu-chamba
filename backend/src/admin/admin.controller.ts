@@ -28,51 +28,51 @@ export class AdminController {
     private traces: TracesService,
   ) {}
 
-  // KPIs del dashboard del panel.
+  // Admin panel dashboard KPIs.
   @Get('stats')
   stats() {
     return this.admin.stats();
   }
 
-  // Ranking de anuncios más clickeados (visitas al detalle).
+  // Ranking of the most clicked listings (detail page visits).
   @Get('top-ads')
   topAds() {
     return this.admin.topAds();
   }
 
-  // Accesos a las tarjetas de "Sitios de interés" (empresas del grupo).
+  // Clicks on the "Sitios de interés" cards (group companies).
   @Get('site-clicks')
   siteClicks() {
     return this.admin.siteClicks();
   }
 
-  // Actividad de los usuarios registrados (excluye administradores):
-  // última visita y tiempo de estancia en el portal.
+  // Activity of registered users (excludes admins):
+  // last visit and time spent on the portal.
   @Get('user-activity')
   userActivity(@Query() query: QueryUserActivityDto) {
     return this.admin.userActivity(query);
   }
 
-  // Trazas del sistema, paginadas y filtrables por tipo.
+  // System traces, paginated and filterable by type.
   @Get('traces')
   findTraces(@Query() query: QueryTraceDto) {
     return this.traces.findAll(query);
   }
 
-  // Borrado total del historial de trazas (queda la traza resumen).
-  // Declarado antes de ':id' para que 'all' no se interprete como un id.
+  // Deletes the whole trace history (a summary trace is kept).
+  // Declared before ':id' so 'all' is not parsed as an id.
   @Delete('traces/all')
   removeAllTraces(@CurrentUser() actor: AuthUser) {
     return this.traces.removeAll(actor);
   }
 
-  // Borra una traza puntual (la eliminación queda auditada).
+  // Deletes a single trace (the deletion is audited).
   @Delete('traces/:id')
   removeTrace(@Param('id') id: string, @CurrentUser() actor: AuthUser) {
     return this.traces.remove(id, actor);
   }
 
-  // Borrado por lotes de trazas seleccionadas (auditado con traza resumen).
+  // Batch deletion of selected traces (audited with a summary trace).
   @Post('traces/bulk-delete')
   removeTraces(@Body() dto: BulkIdsDto, @CurrentUser() actor: AuthUser) {
     return this.traces.removeMany(dto.ids, actor);

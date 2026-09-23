@@ -22,7 +22,7 @@ export class RegisterDto {
   @IsNotEmpty()
   name: string;
 
-  // Opcional: cada anuncio lleva su propio teléfono de contacto.
+  // Optional: each listing carries its own contact phone.
   @ApiPropertyOptional({ example: '70000000' })
   @IsOptional()
   @IsString()

@@ -1,9 +1,9 @@
 /// <reference types="nativewind/types" />
 
-// Augmentación de tipos para la prop `className` de NativeWind.
-// Se declara localmente porque `react-native-css-interop` queda anidado
-// dentro de `node_modules/nativewind` y su `/// <reference>` no resuelve
-// desde el nivel superior del proyecto.
+// Type augmentation for NativeWind's `className` prop.
+// Declared locally because `react-native-css-interop` is nested inside
+// `node_modules/nativewind` and its `/// <reference>` does not resolve from
+// the project's top level.
 import 'react-native';
 
 declare module 'react-native' {

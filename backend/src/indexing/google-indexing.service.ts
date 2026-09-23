@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 
-// Notifica a Google los altas/bajas de anuncios vía Indexing API (permitida
-// oficialmente para páginas con JobPosting). Los anuncios viven pocos días:
-// sin esto, el crawler suele llegar cuando la oferta ya venció.
+// Notifies Google of ad additions/removals via the Indexing API (officially
+// allowed for pages with JobPosting). Ads only live a few days: without this,
+// the crawler usually arrives after the offer has already expired.
 //
-// Config por entorno (sin ella, el servicio es un no-op):
-//   GOOGLE_INDEXING_CLIENT_EMAIL  service account con acceso en Search Console
-//   GOOGLE_INDEXING_PRIVATE_KEY   clave privada (los \n pueden venir escapados)
+// Configured via environment (without it, the service is a no-op):
+//   GOOGLE_INDEXING_CLIENT_EMAIL  service account with Search Console access
+//   GOOGLE_INDEXING_PRIVATE_KEY   private key (the \n may come escaped)
 const TOKEN_URL = 'https://oauth2.googleapis.com/token';
 const PUBLISH_URL =
   'https://indexing.googleapis.com/v3/urlNotifications:publish';
@@ -30,17 +30,17 @@ export class GoogleIndexingService {
     return Boolean(this.clientEmail && this.privateKey);
   }
 
-  // Anuncio publicado, editado o republicado.
+  // Ad published, edited or republished.
   async notifyUpdated(adId: string) {
     await this.notify(adId, 'URL_UPDATED');
   }
 
-  // Anuncio eliminado o dado de baja: sale del índice.
+  // Ad deleted or taken down: removed from the index.
   async notifyDeleted(adId: string) {
     await this.notify(adId, 'URL_DELETED');
   }
 
-  // Best-effort: un fallo (red, cuota 429) jamás rompe la operación principal.
+  // Best-effort: a failure (network, 429 quota) never breaks the main operation.
   private async notify(adId: string, type: 'URL_UPDATED' | 'URL_DELETED') {
     if (!this.enabled) return;
     const base = process.env.WEB_URL ?? 'https://tu-chamba.corpsc.com';
@@ -51,7 +51,10 @@ export class GoogleIndexingService {
           Authorization: `Bearer ${await this.accessToken()}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url: `${base}/listings/${adId}`, type }),
+        // Public URLs carry the locale (/es, /en). Only the Spanish (default)
+        // version is notified to save quota; Google finds the English one
+        // through the page's hreflang alternates and the sitemap.
+        body: JSON.stringify({ url: `${base}/es/listings/${adId}`, type }),
       });
       if (!res.ok) {
         this.logger.warn(
@@ -63,7 +66,7 @@ export class GoogleIndexingService {
     }
   }
 
-  // Token OAuth del service account (JWT RS256), cacheado hasta su expiración.
+  // Service account OAuth token (JWT RS256), cached until it expires.
   private async accessToken(): Promise<string> {
     if (this.token && Date.now() < this.token.expiresAt - 60_000) {
       return this.token.value;

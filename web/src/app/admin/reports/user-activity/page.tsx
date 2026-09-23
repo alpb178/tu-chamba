@@ -27,7 +27,7 @@ const HEADERS = [
 
 const LIMIT = 10;
 
-// "125 min" -> "2 h 5 min"; menos de un minuto se muestra como "< 1 min".
+// "125 min" -> "2 h 5 min"; under a minute is shown as "< 1 min".
 function formatMinutes(min: number) {
   if (min < 1) return '< 1 min';
   const h = Math.floor(min / 60);
@@ -35,9 +35,9 @@ function formatMinutes(min: number) {
   return h > 0 ? `${h} h ${m} min` : `${m} min`;
 }
 
-// Estadística de actividad de los usuarios registrados (sin administradores):
-// última visita al portal y tiempo de estancia por sesiones (huecos de
-// inactividad de 30 minutos, últimos 30 días).
+// Activity stats for registered users (excluding administrators): last
+// visit to the portal and time spent per session (30-minute inactivity
+// gaps, last 30 days).
 export default function UserActivityPage() {
   const [data, setData] = useState<Paginated<UserActivity> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -81,8 +81,8 @@ export default function UserActivityPage() {
     setReload((n) => n + 1);
   }
 
-  // El endpoint borra todos los usuarios registrados (sin admins), la
-  // misma población que muestra esta tabla.
+  // The endpoint deletes all registered users (excluding admins), the
+  // same population this table shows.
   async function removeAll() {
     setConfirmAll(false);
     await api('/users/all', { method: 'DELETE' });

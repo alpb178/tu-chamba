@@ -3,9 +3,9 @@ import { validate } from 'class-validator';
 import { CreateAdDto } from './create-ad.dto';
 import { BulkCreateAdsDto } from './bulk-create-ads.dto';
 
-// El pipe global usa whitelist + forbidNonWhitelisted (ver main.ts): una
-// propiedad que el DTO no declare rechaza toda la petición, así que estas
-// pruebas cubren el payload real de la importación por CSV.
+// The global pipe uses whitelist + forbidNonWhitelisted (see main.ts): a
+// property the DTO doesn't declare rejects the whole request, so these tests
+// cover the real payload of the CSV import.
 async function errorsOf(payload: Record<string, unknown>) {
   const dto = plainToInstance(CreateAdDto, payload);
   const errors = await validate(dto, {
@@ -15,8 +15,8 @@ async function errorsOf(payload: Record<string, unknown>) {
   return errors.flatMap((e) => Object.values(e.constraints ?? {}));
 }
 
-// department y category son obligatorios en el DTO (la importación siempre
-// manda un valor por defecto).
+// department and category are required in the DTO (the import always sends
+// a default value).
 const base = {
   title: 'Mecánico de motos',
   description: 'Prueba',
@@ -26,8 +26,8 @@ const base = {
   jobType: 'A_CONVENIR',
 };
 
-describe('CreateAdDto — campos de la importación de prensa', () => {
-  it('acepta jornadas nuevas, rubros nuevos, rango, varios teléfonos y referencia', async () => {
+describe('CreateAdDto — newspaper import fields', () => {
+  it('accepts new job types, new categories, a range, several phones and a reference', async () => {
     expect(
       await errorsOf({
         ...base,
@@ -40,7 +40,7 @@ describe('CreateAdDto — campos de la importación de prensa', () => {
     ).toEqual([]);
   });
 
-  it('acepta las cuatro jornadas agregadas', async () => {
+  it('accepts the four added job types', async () => {
     for (const jobType of [
       'POR_CONTRATO',
       'PASANTIA',
@@ -51,26 +51,26 @@ describe('CreateAdDto — campos de la importación de prensa', () => {
     }
   });
 
-  it('acepta los tres rubros agregados', async () => {
+  it('accepts the three added categories', async () => {
     for (const category of ['AGROPECUARIA', 'MECANICA', 'MARKETING_DISENO']) {
       expect(await errorsOf({ ...base, category })).toEqual([]);
     }
   });
 
-  it('rechaza un techo salarial sin mínimo o menor al mínimo', async () => {
-    const sinMinimo = await errorsOf({ ...base, salaryMax: 4500 });
-    expect(sinMinimo.join(' ')).toMatch(/salario máximo/i);
-    const alRevés = await errorsOf({ ...base, salary: 4500, salaryMax: 3500 });
-    expect(alRevés.join(' ')).toMatch(/salario máximo/i);
+  it('rejects a salary ceiling without a minimum or below the minimum', async () => {
+    const withoutMinimum = await errorsOf({ ...base, salaryMax: 4500 });
+    expect(withoutMinimum.join(' ')).toMatch(/salario máximo/i);
+    const reversed = await errorsOf({ ...base, salary: 4500, salaryMax: 3500 });
+    expect(reversed.join(' ')).toMatch(/salario máximo/i);
   });
 
-  it('tolera un techo igual al mínimo (monto fijo, no rango)', async () => {
+  it('tolerates a ceiling equal to the minimum (fixed amount, not a range)', async () => {
     expect(await errorsOf({ ...base, salary: 3500, salaryMax: 3500 })).toEqual(
       [],
     );
   });
 
-  it('rechaza más teléfonos adicionales que el tope', async () => {
+  it('rejects more extra phones than the cap', async () => {
     const errors = await errorsOf({
       ...base,
       extraPhones: ['1', '2', '3', '4', '5'],
@@ -78,7 +78,7 @@ describe('CreateAdDto — campos de la importación de prensa', () => {
     expect(errors.join(' ')).toMatch(/teléfonos adicionales/i);
   });
 
-  it('el lote valida cada item con los campos nuevos', async () => {
+  it('the batch validates each item with the new fields', async () => {
     const dto = plainToInstance(BulkCreateAdsDto, {
       items: [
         { ...base, extraPhones: ['67894829'], salary: 3500, salaryMax: 4500 },

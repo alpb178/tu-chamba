@@ -26,8 +26,8 @@ import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator
 export class ReviewsController {
   constructor(private reviews: ReviewsService) {}
 
-  // Crear reseña: cualquier usuario autenticado, una única vez por anuncio
-  // (nunca sobre un anuncio propio; validado en el servicio).
+  // Create a review: any authenticated user, only once per ad
+  // (never on their own ad; validated in the service).
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post()
@@ -35,8 +35,8 @@ export class ReviewsController {
     return this.reviews.create(dto, user.id);
   }
 
-  // Reporte del panel admin: todas las reseñas con autor, calificado y
-  // anuncio (debe ir antes de ':id' y de '/').
+  // Admin panel report: all reviews with author, reviewed user and ad
+  // (must come before ':id' and '/').
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('all')
@@ -44,8 +44,8 @@ export class ReviewsController {
     return this.reviews.findAllAdmin(query);
   }
 
-  // Público: reseñas y promedio de un publicante (sin datos de contacto).
-  // Con token y adId, la respuesta incluye alreadyReviewed del usuario.
+  // Public: a poster's reviews and average (no contact details).
+  // With a token and adId, the response includes the user's alreadyReviewed.
   @UseGuards(OptionalJwtAuthGuard)
   @Get()
   findByOwner(
@@ -60,7 +60,7 @@ export class ReviewsController {
     );
   }
 
-  // Moderación: borrado por lotes de reseñas seleccionadas en el panel.
+  // Moderation: bulk deletion of reviews selected in the panel.
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Post('bulk-delete')
@@ -68,7 +68,7 @@ export class ReviewsController {
     return this.reviews.removeMany(dto.ids, actor);
   }
 
-  // Moderación: el admin corrige la calificación o el comentario.
+  // Moderation: the admin corrects the rating or the comment.
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Patch(':id')
@@ -80,8 +80,8 @@ export class ReviewsController {
     return this.reviews.update(id, dto, actor);
   }
 
-  // Moderación: borrado total de las reseñas de la plataforma. Declarado
-  // antes de ':id' para que 'all' no se interprete como un id.
+  // Moderation: deletes every review on the platform. Declared before ':id'
+  // so 'all' isn't interpreted as an id.
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Delete('all')
@@ -89,7 +89,7 @@ export class ReviewsController {
     return this.reviews.removeAll(actor);
   }
 
-  // Eliminar: autor o admin.
+  // Delete: author or admin.
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete(':id')

@@ -26,13 +26,13 @@ import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator
 export class UsersController {
   constructor(private users: UsersService) {}
 
-  // Perfil propio: cualquier usuario autenticado edita sus datos personales.
+  // Own profile: any authenticated user edits their personal data.
   @Patch('me')
   updateProfile(@CurrentUser() user: AuthUser, @Body() dto: UpdateProfileDto) {
     return this.users.updateProfile(user.id, dto);
   }
 
-  // ——— Panel de administración ———
+  // ——— Admin panel ———
 
   @UseGuards(AdminGuard)
   @Get()
@@ -40,14 +40,14 @@ export class UsersController {
     return this.users.findAll();
   }
 
-  // Alta de otro administrador (solo correo y contraseña).
+  // Create another admin (email and password only).
   @UseGuards(AdminGuard)
   @Post('admin')
   createAdmin(@Body() dto: CreateAdminDto, @CurrentUser() actor: AuthUser) {
     return this.users.createAdmin(dto, actor);
   }
 
-  // Edición de los datos de un usuario desde el panel.
+  // Edit a user's data from the panel.
   @UseGuards(AdminGuard)
   @Patch(':id')
   update(
@@ -58,7 +58,7 @@ export class UsersController {
     return this.users.adminUpdate(id, dto, actor);
   }
 
-  // Concede o revoca acceso al panel de administración.
+  // Grants or revokes admin panel access.
   @UseGuards(AdminGuard)
   @Patch(':id/admin')
   setAdmin(
@@ -69,8 +69,8 @@ export class UsersController {
     return this.users.setAdmin(id, dto.isAdmin, actor);
   }
 
-  // Borrado de TODOS los usuarios registrados (los admins se conservan).
-  // Declarado antes de ':id' para que 'all' no se interprete como un id.
+  // Deletes ALL registered users (admins are kept).
+  // Declared before ':id' so 'all' is not interpreted as an id.
   @UseGuards(AdminGuard)
   @Delete('all')
   removeAll(@CurrentUser() actor: AuthUser) {
@@ -83,7 +83,7 @@ export class UsersController {
     return this.users.remove(id, actor);
   }
 
-  // Borrado por lotes de usuarios seleccionados en el panel.
+  // Batch delete of users selected in the panel.
   @UseGuards(AdminGuard)
   @Post('bulk-delete')
   removeMany(@Body() dto: BulkIdsDto, @CurrentUser() actor: AuthUser) {

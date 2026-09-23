@@ -14,6 +14,18 @@ export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+const NETWORK_ERROR = {
+  es: 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
+  en: "Couldn't reach the server. Check your connection and try again.",
+  pt: 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
+};
+
+// <html lang> is "es", "en" or "pt-BR"; its primary subtag picks the message.
+function pageLanguage(): keyof typeof NETWORK_ERROR {
+  const lang = typeof document !== 'undefined' ? document.documentElement.lang.split('-')[0] : '';
+  return lang in NETWORK_ERROR ? (lang as keyof typeof NETWORK_ERROR) : 'es';
+}
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -37,12 +49,10 @@ export async function api<T>(
   try {
     res = await fetch(`${API_URL}${path}`, { ...options, headers });
   } catch {
-    // fetch lanza TypeError ("Failed to fetch") en fallos de red/CORS.
-    // Lo traducimos a un mensaje entendible para el usuario.
-    throw new ApiError(
-      0,
-      'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
-    );
+    // fetch throws TypeError ("Failed to fetch") on network/CORS failures.
+    // We translate it into a message the user can understand, in the page's
+    // language (<html lang> follows the URL locale; the admin panel is "es").
+    throw new ApiError(0, NETWORK_ERROR[pageLanguage()]);
   }
 
   if (!res.ok) {
@@ -53,7 +63,7 @@ export async function api<T>(
         ? body.message.join(', ')
         : body.message ?? message;
     } catch {
-      /* sin cuerpo JSON */
+      /* no JSON body */
     }
     throw new ApiError(res.status, message);
   }

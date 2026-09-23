@@ -5,9 +5,9 @@ import Image from 'next/image';
 import React, { useState } from 'react';
 
 /**
- * Imagen que entra con un desenfoque suave y se aclara al terminar de cargar.
- * Portado de Iris Natural (sin la prop legacy `layout`, retirada en next/image
- * moderno).
+ * Image that enters with a soft blur and sharpens once it finishes loading.
+ * Ported from Iris Natural (without the legacy `layout` prop, removed in
+ * modern next/image).
  */
 export const BlurImage = (props: React.ComponentProps<typeof Image>) => {
   const [isLoading, setLoading] = useState(true);

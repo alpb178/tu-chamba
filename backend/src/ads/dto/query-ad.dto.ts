@@ -13,12 +13,12 @@ import {
 } from 'class-validator';
 import { Category, Department, JobType } from '@prisma/client';
 
-// Estados efectivos filtrables en el panel (VENCIDO se calcula con expiresAt).
+// Effective statuses filterable in the panel (VENCIDO is derived from expiresAt).
 export const EFFECTIVE_STATUSES = ['ACTIVO', 'VENCIDO', 'DADO_DE_BAJA'] as const;
 export type EffectiveStatus = (typeof EFFECTIVE_STATUSES)[number];
 
-// Los filtros de lista aceptan selección múltiple como cadenas separadas por
-// coma (p. ej. "VENTAS,GASTRONOMIA"). El servicio valida contra los enums.
+// List filters accept multiple selection as comma-separated strings
+// (e.g. "VENTAS,GASTRONOMIA"). The service validates against the enums.
 export class QueryAdDto {
   @ApiPropertyOptional({ description: 'JobType(s) separados por coma' })
   @IsOptional()
@@ -61,7 +61,7 @@ export class QueryAdDto {
   @IsString()
   location?: string;
 
-  // ——— Filtros del reporte admin (solo aplican en /listings/all) ———
+  // ——— Admin report filters (only apply on /listings/all) ———
 
   @ApiPropertyOptional({ description: 'Solo anuncios de clientes (no admins)' })
   @IsOptional()
@@ -95,7 +95,7 @@ export class QueryAdDto {
   @Min(1)
   page?: number = 1;
 
-  // Páginas de 10 pensadas para web y mobile; tope para vistas admin/SEO.
+  // Pages of 10 meant for web and mobile; cap for admin/SEO views.
   @ApiPropertyOptional({ default: 10, maximum: 100 })
   @IsOptional()
   @Type(() => Number)
@@ -105,7 +105,7 @@ export class QueryAdDto {
   limit?: number = 10;
 }
 
-// Enums válidos para filtrar (se ignoran valores desconocidos en la query).
+// Valid enums for filtering (unknown values in the query are ignored).
 export const JOB_TYPES = Object.values(JobType);
 export const DEPARTMENTS = Object.values(Department);
 export const CATEGORIES = Object.values(Category);

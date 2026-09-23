@@ -20,7 +20,7 @@ function build() {
 const user = { id: 'u1', email: 'u@t.com', isAdmin: false };
 
 describe('AlertsService', () => {
-  it('findMine filtra por usuario, más recientes primero', () => {
+  it('findMine filters by user, newest first', () => {
     const { service, prisma } = build();
     service.findMine('u1');
     expect(prisma.jobAlert.findMany).toHaveBeenCalledWith({
@@ -29,7 +29,7 @@ describe('AlertsService', () => {
     });
   });
 
-  it('create normaliza criterios ausentes a null', async () => {
+  it('create normalizes missing criteria to null', async () => {
     const { service, prisma } = build();
     prisma.jobAlert.findFirst.mockResolvedValue(null);
     prisma.jobAlert.create.mockResolvedValue({ id: 'al1' });
@@ -39,15 +39,15 @@ describe('AlertsService', () => {
     });
   });
 
-  it('create rechaza una alerta duplicada', async () => {
+  it('create rejects a duplicate alert', async () => {
     const { service, prisma } = build();
-    prisma.jobAlert.findFirst.mockResolvedValue({ id: 'existe' });
+    prisma.jobAlert.findFirst.mockResolvedValue({ id: 'existing' });
     await expect(service.create({} as never, 'u1')).rejects.toBeInstanceOf(
       ConflictException,
     );
   });
 
-  it('remove falla si no existe', async () => {
+  it('remove fails if it does not exist', async () => {
     const { service, prisma } = build();
     prisma.jobAlert.findUnique.mockResolvedValue(null);
     await expect(service.remove('al1', user)).rejects.toBeInstanceOf(
@@ -55,15 +55,15 @@ describe('AlertsService', () => {
     );
   });
 
-  it('remove no permite borrar la alerta de otro usuario', async () => {
+  it('remove does not allow deleting an alert owned by another user', async () => {
     const { service, prisma } = build();
-    prisma.jobAlert.findUnique.mockResolvedValue({ id: 'al1', userId: 'otro' });
+    prisma.jobAlert.findUnique.mockResolvedValue({ id: 'al1', userId: 'other' });
     await expect(service.remove('al1', user)).rejects.toBeInstanceOf(
       ForbiddenException,
     );
   });
 
-  it('remove borra la alerta propia', async () => {
+  it('remove deletes the own alert', async () => {
     const { service, prisma } = build();
     prisma.jobAlert.findUnique.mockResolvedValue({ id: 'al1', userId: 'u1' });
     prisma.jobAlert.delete.mockResolvedValue({});

@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "notFoundTitle": "Job not found — Tu Chamba",
+    "inDepartment": "in {department}",
+    "fallbackCategory": "Job"
+  },
+  "breadcrumb": {
+    "label": "Breadcrumb",
+    "allListings": "All jobs"
+  },
+  "inactiveNotice": "This listing is {status} and is no longer shown on the site.",
+  "refTitle": "Reference to mention when you get in touch about this listing",
+  "ref": "Ref. {ref}",
+  "publisherFallback": "Poster",
+  "verified": "Verified",
+  "descriptionHeading": "Job description",
+  "requirementsHeading": "Candidate requirements",
+  "salaryNegotiable": "Salary negotiable",
+  "zone": "Area: {department}",
+  "schedule": "Hours: {schedule}",
+  "dates": "Posted: {published} · Expires: {expires}",
+  "visits": "{count, plural, one {# view} other {# views}}",
+  "reviewsOwnerFallback": "this poster",
+  "actions": {
+    "expand": "Expand",
+    "approximateLocation": "Approximate location based on the listing's address.",
+    "openInGoogleMaps": "Open in Google Maps",
+    "expandedMap": "Expanded map",
+    "close": "Close",
+    "location": "Location: {location}",
+    "reference": "Landmark: {reference}",
+    "share": "Share:",
+    "shareLocation": "Share location on WhatsApp",
+    "shareListing": "Share listing on WhatsApp",
+    "shareLocationText": "Location of listing Ref. {ref} on Tu Chamba: {url}",
+    "shareListingText": "Check out this job on Tu Chamba (Ref. {ref}): {url}",
+    "waMessage": "Hi, I saw your listing on Tu Chamba (Ref. {ref}) and I'm interested.",
+    "call": "Call",
+    "phone": "Phone: {phone}",
+    "loginToContact": "Log in to get in touch: the phone number is shown once you're signed in.",
+    "otherNumbers": "Other numbers:",
+    "whatsappTo": "Message {phone} on WhatsApp",
+    "unpublishConfirm": "Take this listing down? It will no longer be shown on the site.",
+    "edit": "Edit",
+    "unpublish": "Take down",
+    "republish": "Republish ({days} days)"
+  }
+}

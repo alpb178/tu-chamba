@@ -1,0 +1,27 @@
+{
+  "logoAlt": "Tu Chamba",
+  "tagline": "Bolivia's leading platform to find and post jobs quickly and safely.",
+  "company": {
+    "title": "Company",
+    "about": "About us",
+    "contact": "Contact"
+  },
+  "legal": {
+    "title": "Legal",
+    "privacy": "Privacy policy",
+    "cookies": "Cookie policy",
+    "terms": "Terms of service",
+    "termsSubject": "Terms of service"
+  },
+  "employers": {
+    "title": "Employers",
+    "publish": "Post a job"
+  },
+  "departments": "Jobs by department",
+  "copyright": "© {year} TuChamba. All rights reserved.",
+  "social": {
+    "site": "CorpSC website",
+    "email": "Email us",
+    "facebook": "Follow us on Facebook"
+  }
+}

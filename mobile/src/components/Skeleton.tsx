@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, View } from 'react-native';
 
-// Siluetas de carga con pulso de opacidad (equivalente al animate-pulse web).
+// Loading skeletons with an opacity pulse (equivalent to web animate-pulse).
 export function Pulse({ children }: { children: React.ReactNode }) {
   const opacity = useRef(new Animated.Value(1)).current;
 
@@ -31,7 +31,7 @@ export function Skeleton({ className = '' }: { className?: string }) {
   return <View className={`rounded bg-gray-200 ${className}`} />;
 }
 
-// Silueta de una AdCard del listado.
+// Skeleton of a list AdCard.
 export function AdCardSkeleton() {
   return (
     <View className="mb-3 rounded-lg border border-gray-200 bg-white p-4">

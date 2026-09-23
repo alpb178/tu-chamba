@@ -7,9 +7,9 @@ import { useThree, Canvas, extend, type ThreeElement } from "@react-three/fiber"
 import { OrbitControls } from "@react-three/drei";
 import countries from "./globe.json";
 
-// En @react-three/fiber v9 el tipado de elementos custom se hace aumentando la
-// interfaz `ThreeElements` con `ThreeElement<typeof T>` (antes se usaba
-// `Object3DNode`, eliminado en v9).
+// In @react-three/fiber v9, custom elements are typed by augmenting the
+// `ThreeElements` interface with `ThreeElement<typeof T>` (previously
+// `Object3DNode` was used, removed in v9).
 declare module "@react-three/fiber" {
   interface ThreeElements {
     threeGlobe: ThreeElement<typeof ThreeGlobe>;

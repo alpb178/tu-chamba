@@ -1,11 +1,11 @@
-// Bloques de carga (skeletons) que replican la silueta del contenido real,
-// en lugar de un texto "Cargando...". Todos pulsan con animate-pulse.
+// Loading blocks (skeletons) that mimic the shape of the real content,
+// instead of a "Cargando..." text. All of them pulse with animate-pulse.
 
 export function Skeleton({ className = '' }: { className?: string }) {
   return <div className={`animate-pulse rounded bg-surface-container-high ${className}`} />;
 }
 
-// Silueta de una AdCard del listado.
+// Skeleton of an AdCard in the listing.
 export function AdCardSkeleton() {
   return (
     <div className="rounded-card border border-outline-variant bg-surface-container-lowest p-4">
@@ -39,7 +39,7 @@ export function AdListSkeleton({ count = 4 }: { count?: number }) {
   );
 }
 
-// Silueta de una reseña (detalle del anuncio).
+// Skeleton of a review (listing detail).
 export function ReviewSkeleton() {
   return (
     <li className="bg-surface-container-low p-3">

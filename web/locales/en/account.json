@@ -1,0 +1,55 @@
+{
+  "myListings": {
+    "title": "My job posts",
+    "postJob": "Post a job",
+    "emptyTitle": "You haven't posted any jobs yet.",
+    "emptyText": "Post your first job: it's free and candidates message you directly on WhatsApp.",
+    "postFirstJob": "Post my first job",
+    "visits": "{count, plural, one {# view} other {# views}}",
+    "interested": "{count, plural, one {# interested} other {# interested}}",
+    "expires": "Expires: {date}",
+    "unpublish": "Take down",
+    "republish": "Repost ({days} days)",
+    "delete": "Delete",
+    "confirmUnpublish": "Take down this job post? It will no longer be shown on the site.",
+    "confirmDelete": "Delete this job post permanently? This can't be undone."
+  },
+  "interests": {
+    "title": "Jobs you're interested in",
+    "empty": "You don't have any saved jobs yet. Jobs whose details you open will show up here automatically. <link>Browse jobs</link>.",
+    "interestedOn": "Viewed on {date}",
+    "remove": "Remove"
+  },
+  "alerts": {
+    "title": "Job alerts",
+    "intro": "We'll send you a notification when a job matching your criteria is posted.",
+    "department": "Department",
+    "category": "Category",
+    "allCountry": "Entire country",
+    "allCategories": "All categories",
+    "anyCategory": "Any category",
+    "wholeCountry": "entire country",
+    "creating": "Creating...",
+    "create": "Create alert",
+    "yourAlerts": "Your alerts",
+    "empty": "You don't have any alerts yet. Create one to get notified about new jobs.",
+    "delete": "Delete"
+  },
+  "profile": {
+    "title": "My profile",
+    "email": "Email (can't be changed)",
+    "name": "Name",
+    "phone": "Phone (optional, prefilled when you post)",
+    "passwordLegend": "Password",
+    "changePassword": "Change password",
+    "setPassword": "Set a password",
+    "optional": "(optional)",
+    "googleNote": "Your account uses Google. If you set a password, you can also sign in with your email.",
+    "currentPassword": "Current password",
+    "newPassword": "New password (min. 6)",
+    "confirmPassword": "Confirm new password",
+    "passwordMismatch": "Passwords don't match.",
+    "saving": "Saving...",
+    "save": "Save changes"
+  }
+}

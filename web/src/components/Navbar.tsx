@@ -1,26 +1,28 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link, usePathname } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
 import { NotificationsBell } from './NotificationsBell';
 import { CORPSC } from '@/lib/companies';
 import { Icon } from './Icon';
+import { LanguageMenu } from './LanguageMenu';
 
-// Iniciales para el avatar (máx. 2, a partir del nombre del usuario).
-function iniciales(nombre: string) {
-  const partes = nombre.trim().split(/\s+/);
-  return ((partes[0]?.[0] ?? '') + (partes[1]?.[0] ?? '')).toUpperCase() || '?';
+// Avatar initials (max. 2, taken from the user's name).
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?';
 }
 
-// Primer nombre para el saludo estilo "Hola, Ale".
-function primerNombre(nombre: string) {
-  return nombre.trim().split(/\s+/)[0] ?? '';
+// First name for the "Hola, Ale" style greeting.
+function firstName(name: string) {
+  return name.trim().split(/\s+/)[0] ?? '';
 }
 
-function IconoAnuncios() {
+function ListingsIcon() {
   return (
     <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M20 7H4a1 1 0 00-1 1v10a1 1 0 001 1h16a1 1 0 001-1V8a1 1 0 00-1-1zM9 7V5a1 1 0 011-1h4a1 1 0 011 1v2" />
@@ -28,7 +30,7 @@ function IconoAnuncios() {
   );
 }
 
-function IconoInteres() {
+function InterestIcon() {
   return (
     <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M11.05 4.5a1 1 0 011.9 0l1.6 4.1a1 1 0 00.9.64l4.4.2a1 1 0 01.58 1.78l-3.44 2.75a1 1 0 00-.34 1.06l1.18 4.24a1 1 0 01-1.53 1.1L12.55 18a1 1 0 00-1.1 0l-3.75 2.37a1 1 0 01-1.53-1.1l1.18-4.24a1 1 0 00-.34-1.06L3.57 11.2a1 1 0 01.58-1.78l4.4-.2a1 1 0 00.9-.63l1.6-4.1z" />
@@ -36,7 +38,7 @@ function IconoInteres() {
   );
 }
 
-function IconoPerfil() {
+function ProfileIcon() {
   return (
     <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM5 21a7 7 0 0114 0" />
@@ -44,7 +46,7 @@ function IconoPerfil() {
   );
 }
 
-function IconoAlertas() {
+function AlertsIcon() {
   return (
     <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.4-1.4a2 2 0 01-.6-1.4V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -52,7 +54,7 @@ function IconoAlertas() {
   );
 }
 
-function IconoExterno() {
+function ExternalIcon() {
   return (
     <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M18 13v6a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h6m4-2h6m0 0v6m0-6L10 14" />
@@ -60,7 +62,7 @@ function IconoExterno() {
   );
 }
 
-function IconoAdmin() {
+function AdminIcon() {
   return (
     <svg className="h-4 w-4 text-outline" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6l7-3z" />
@@ -69,7 +71,7 @@ function IconoAdmin() {
   );
 }
 
-function IconoSalir() {
+function LogoutIcon() {
   return (
     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} aria-hidden="true">
       <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H9m4 7H6a1 1 0 01-1-1V6a1 1 0 011-1h7" />
@@ -77,37 +79,48 @@ function IconoSalir() {
   );
 }
 
-// Ítem del menú desplegable de cuenta.
-function ItemMenu({
+// Account dropdown menu item.
+function MenuItem({
   href,
-  externo,
-  icono,
+  external,
+  plain,
+  icon,
   children,
 }: {
   href: string;
-  externo?: boolean;
-  icono: ReactNode;
+  external?: boolean;
+  // Link outside the locale routing (e.g. /admin): no locale prefix.
+  plain?: boolean;
+  icon: ReactNode;
   children: ReactNode;
 }) {
-  const clases =
+  const classes =
     'flex items-center gap-3 px-4 py-2.5 text-base text-on-surface-variant transition hover:bg-surface-container-low hover:text-brand';
-  if (externo) {
+  if (external) {
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" role="menuitem" className={clases}>
-        {icono}
+      <a href={href} target="_blank" rel="noopener noreferrer" role="menuitem" className={classes}>
+        {icon}
         {children}
       </a>
     );
   }
+  if (plain) {
+    return (
+      <NextLink href={href} role="menuitem" className={classes}>
+        {icon}
+        {children}
+      </NextLink>
+    );
+  }
   return (
-    <Link href={href} role="menuitem" className={clases}>
-      {icono}
+    <Link href={href} role="menuitem" className={classes}>
+      {icon}
       {children}
     </Link>
   );
 }
 
-function TituloSeccion({ children }: { children: ReactNode }) {
+function SectionTitle({ children }: { children: ReactNode }) {
   return (
     <p className="px-4 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-outline">
       {children}
@@ -116,25 +129,26 @@ function TituloSeccion({ children }: { children: ReactNode }) {
 }
 
 export function Navbar() {
+  const t = useTranslations('nav');
   const { user, logout } = useAuth();
   const pathname = usePathname();
-  // El CTA de publicar se muestra siempre: sin sesión manda a registrarse
-  // y, al crear la cuenta, vuelve directo al formulario de publicar.
+  // The publish CTA is always shown: signed out it sends the user to sign up
+  // and, once the account is created, straight back to the publish form.
   const publishHref = user
     ? '/listings/new'
     : `/register?next=${encodeURIComponent('/listings/new')}`;
 
-  const [menuUsuario, setMenuUsuario] = useState(false);
-  const [menuMovil, setMenuMovil] = useState(false);
-  // Barra compacta al hacer scroll (estética editorial de Iris): reduce el
-  // alto y refuerza la sombra una vez que la página se ha desplazado.
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Compact bar on scroll (Iris editorial look): reduces the height and
+  // strengthens the shadow once the page has been scrolled.
   const [scrolled, setScrolled] = useState(false);
-  const usuarioRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Cierra ambos menús al navegar.
+  // Close both menus on navigation.
   useEffect(() => {
-    setMenuUsuario(false);
-    setMenuMovil(false);
+    setUserMenuOpen(false);
+    setMobileMenuOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -144,14 +158,14 @@ export function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Cierra el menú de usuario al hacer clic fuera o con Escape.
+  // Close the user menu on outside click or Escape.
   useEffect(() => {
-    if (!menuUsuario) return;
+    if (!userMenuOpen) return;
     function onClick(e: MouseEvent) {
-      if (!usuarioRef.current?.contains(e.target as Node)) setMenuUsuario(false);
+      if (!userMenuRef.current?.contains(e.target as Node)) setUserMenuOpen(false);
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setMenuUsuario(false);
+      if (e.key === 'Escape') setUserMenuOpen(false);
     }
     document.addEventListener('mousedown', onClick);
     document.addEventListener('keydown', onKey);
@@ -159,16 +173,16 @@ export function Navbar() {
       document.removeEventListener('mousedown', onClick);
       document.removeEventListener('keydown', onKey);
     };
-  }, [menuUsuario]);
+  }, [userMenuOpen]);
 
-  const linkActivo = (href: string) =>
+  const activeLinkClass = (href: string) =>
     pathname === href ? 'text-brand' : 'text-on-surface-variant hover:text-brand';
 
   const chevron = (
     <Icon
       name="expand_more"
       className={`text-outline transition-all group-hover:text-primary ${
-        menuUsuario ? 'rotate-180' : ''
+        userMenuOpen ? 'rotate-180' : ''
       }`}
     />
   );
@@ -189,36 +203,37 @@ export function Navbar() {
         <div className="flex flex-1 items-center gap-8">
           <Link href="/" className="flex shrink-0 items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-full.png" alt="Tu Chamba" className="h-9 w-auto" />
+            <img src="/logo-full.png" alt={t('logoAlt')} className="h-9 w-auto" />
           </Link>
         </div>
 
-        {/* Navegación de escritorio: CTA + campana + menú de cuenta */}
+        {/* Desktop navigation: CTA + bell + account menu */}
         <nav className="hidden items-center md:flex">
           <div className="flex items-center gap-4 border-l border-outline-variant pl-6">
+            <LanguageMenu />
             <Link href={publishHref}>
               <Button variant="accent" className="px-5 py-2.5">
-                Publicar oferta de trabajo
+                {t('publish')}
               </Button>
             </Link>
 
             {user && <NotificationsBell />}
 
-            {/* Menú de cuenta: avatar + chevron (estilo del mock) */}
-            <div className="relative" ref={usuarioRef}>
+            {/* Account menu: avatar + chevron (mock style) */}
+            <div className="relative" ref={userMenuRef}>
               <button
                 type="button"
-                onClick={() => setMenuUsuario((o) => !o)}
+                onClick={() => setUserMenuOpen((o) => !o)}
                 className="group flex items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 aria-haspopup="menu"
-                aria-expanded={menuUsuario}
+                aria-expanded={userMenuOpen}
                 aria-label={
-                  user ? `Cuenta de ${primerNombre(user.name)}` : 'Cuenta y menú'
+                  user ? t('accountOf', { name: firstName(user.name) }) : t('accountMenu')
                 }
               >
                 {user ? (
                   <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-transparent bg-secondary-container text-sm font-bold text-on-secondary-container transition-all group-hover:border-primary">
-                    {iniciales(user.name)}
+                    {initials(user.name)}
                   </span>
                 ) : (
                   <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-transparent bg-surface-container text-on-surface-variant transition-all group-hover:border-primary">
@@ -228,7 +243,7 @@ export function Navbar() {
                 {chevron}
               </button>
 
-            {menuUsuario && (
+            {userMenuOpen && (
               <div
                 role="menu"
                 className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-tile border border-outline-variant bg-surface-container-lowest shadow-derek ring-1 ring-black/5"
@@ -237,7 +252,7 @@ export function Navbar() {
                   <>
                     <div className="flex items-center gap-3 border-b border-outline-variant/60 bg-surface-container-low/70 px-4 py-3">
                       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">
-                        {iniciales(user.name)}
+                        {initials(user.name)}
                       </span>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-on-surface">
@@ -248,36 +263,36 @@ export function Navbar() {
                     </div>
 
                     <div className="pb-1">
-                      <TituloSeccion>Mi cuenta</TituloSeccion>
-                      <ItemMenu href="/my-listings" icono={<IconoAnuncios />}>
-                        Mis anuncios
-                      </ItemMenu>
-                      <ItemMenu href="/interests" icono={<IconoInteres />}>
-                        Anuncios de tu interés
-                      </ItemMenu>
-                      <ItemMenu href="/alerts" icono={<IconoAlertas />}>
-                        Alertas de empleo
-                      </ItemMenu>
-                      <ItemMenu href="/profile" icono={<IconoPerfil />}>
-                        Mi perfil
-                      </ItemMenu>
+                      <SectionTitle>{t('sections.account')}</SectionTitle>
+                      <MenuItem href="/my-listings" icon={<ListingsIcon />}>
+                        {t('myListings')}
+                      </MenuItem>
+                      <MenuItem href="/interests" icon={<InterestIcon />}>
+                        {t('interests')}
+                      </MenuItem>
+                      <MenuItem href="/alerts" icon={<AlertsIcon />}>
+                        {t('alerts')}
+                      </MenuItem>
+                      <MenuItem href="/profile" icon={<ProfileIcon />}>
+                        {t('profile')}
+                      </MenuItem>
                     </div>
 
-                    {/* Acceso al panel: solo para administradores. */}
+                    {/* Panel access: admins only. */}
                     {user.isAdmin && (
                       <div className="border-t border-outline-variant/60 pb-1">
-                        <TituloSeccion>Administración</TituloSeccion>
-                        <ItemMenu href="/admin" icono={<IconoAdmin />}>
-                          Panel de administración
-                        </ItemMenu>
+                        <SectionTitle>{t('sections.admin')}</SectionTitle>
+                        <MenuItem href="/admin" plain icon={<AdminIcon />}>
+                          {t('adminPanel')}
+                        </MenuItem>
                       </div>
                     )}
 
                     <div className="border-t border-outline-variant/60 pb-1">
-                      <TituloSeccion>Enlaces</TituloSeccion>
-                      <ItemMenu href={CORPSC.url} externo icono={<IconoExterno />}>
+                      <SectionTitle>{t('sections.links')}</SectionTitle>
+                      <MenuItem href={CORPSC.url} external icon={<ExternalIcon />}>
                         {CORPSC.name}
-                      </ItemMenu>
+                      </MenuItem>
                     </div>
 
                     <div className="border-t border-outline-variant/60">
@@ -287,8 +302,8 @@ export function Navbar() {
                         onClick={logout}
                         className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-error transition hover:bg-error-container/40"
                       >
-                        <IconoSalir />
-                        Cerrar sesión
+                        <LogoutIcon />
+                        {t('logout')}
                       </button>
                     </div>
                   </>
@@ -297,21 +312,21 @@ export function Navbar() {
                     <div className="border-b border-outline-variant/60 px-4 py-4 text-center">
                       <Link href="/login" className="block">
                         <Button variant="accent" className="w-full">
-                          Ingresar
+                          {t('login')}
                         </Button>
                       </Link>
                       <p className="mt-3 text-xs text-on-surface-variant">
-                        ¿Eres nuevo?{' '}
+                        {t('newHere')}{' '}
                         <Link href="/register" className="font-medium text-brand hover:underline">
-                          Regístrate aquí
+                          {t('registerHere')}
                         </Link>
                       </p>
                     </div>
                     <div className="pb-1">
-                      <TituloSeccion>Enlaces</TituloSeccion>
-                      <ItemMenu href={CORPSC.url} externo icono={<IconoExterno />}>
+                      <SectionTitle>{t('sections.links')}</SectionTitle>
+                      <MenuItem href={CORPSC.url} external icon={<ExternalIcon />}>
                         {CORPSC.name}
-                      </ItemMenu>
+                      </MenuItem>
                     </div>
                   </>
                 )}
@@ -321,19 +336,19 @@ export function Navbar() {
           </div>
         </nav>
 
-        {/* Controles móviles: campana + hamburguesa */}
+        {/* Mobile controls: bell + hamburger */}
         <div className="flex items-center gap-1 md:hidden">
           {user && <NotificationsBell />}
           <button
             type="button"
-            onClick={() => setMenuMovil((o) => !o)}
+            onClick={() => setMobileMenuOpen((o) => !o)}
             className="p-2 text-on-surface-variant hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            aria-label="Abrir menú"
-            aria-expanded={menuMovil}
-            aria-controls="menu-movil"
+            aria-label={t('openMenu')}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
           >
             <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-              {menuMovil ? (
+              {mobileMenuOpen ? (
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               ) : (
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -343,16 +358,16 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Panel móvil desplegable */}
-      {menuMovil && (
+      {/* Mobile dropdown panel */}
+      {mobileMenuOpen && (
         <nav
-          id="menu-movil"
+          id="mobile-menu"
           className="border-t border-outline-variant bg-surface-container-lowest px-4 py-3 md:hidden"
         >
           {user && (
             <div className="mb-2 flex items-center gap-2 border-b border-outline-variant/60 pb-3">
               <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white">
-                {iniciales(user.name)}
+                {initials(user.name)}
               </span>
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-on-surface">{user.name}</p>
@@ -363,26 +378,26 @@ export function Navbar() {
 
           <div className="flex flex-col gap-1">
             <Link href={publishHref} className="rounded-full bg-secondary-container px-3 py-2 text-center text-sm font-bold text-on-secondary-container hover:brightness-105">
-              Publicar oferta de trabajo
+              {t('publish')}
             </Link>
             {user && (
               <>
-                <Link href="/my-listings" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/my-listings')}`}>
-                  Mis anuncios
+                <Link href="/my-listings" className={`px-3 py-2 text-base hover:bg-surface-container-low ${activeLinkClass('/my-listings')}`}>
+                  {t('myListings')}
                 </Link>
-                <Link href="/interests" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/interests')}`}>
-                  Anuncios de tu interés
+                <Link href="/interests" className={`px-3 py-2 text-base hover:bg-surface-container-low ${activeLinkClass('/interests')}`}>
+                  {t('interests')}
                 </Link>
-                <Link href="/alerts" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/alerts')}`}>
-                  Alertas de empleo
+                <Link href="/alerts" className={`px-3 py-2 text-base hover:bg-surface-container-low ${activeLinkClass('/alerts')}`}>
+                  {t('alerts')}
                 </Link>
-                <Link href="/profile" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/profile')}`}>
-                  Mi perfil
+                <Link href="/profile" className={`px-3 py-2 text-base hover:bg-surface-container-low ${activeLinkClass('/profile')}`}>
+                  {t('profile')}
                 </Link>
                 {user.isAdmin && (
-                  <Link href="/admin" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/admin')}`}>
-                    Panel de administración
-                  </Link>
+                  <NextLink href="/admin" className="px-3 py-2 text-base text-on-surface-variant hover:bg-surface-container-low hover:text-brand">
+                    {t('adminPanel')}
+                  </NextLink>
                 )}
               </>
             )}
@@ -395,21 +410,23 @@ export function Navbar() {
               {CORPSC.name} ↗
             </a>
 
+            <LanguageMenu align="start" className="mx-3 my-2 self-start" onSelect={() => setMobileMenuOpen(false)} />
+
             {user ? (
               <button
                 type="button"
                 onClick={logout}
                 className="px-3 py-2 text-left text-sm text-error hover:bg-error-container/40"
               >
-                Cerrar sesión
+                {t('logout')}
               </button>
             ) : (
               <>
-                <Link href="/login" className={`px-3 py-2 text-base hover:bg-surface-container-low ${linkActivo('/login')}`}>
-                  Ingresar
+                <Link href="/login" className={`px-3 py-2 text-base hover:bg-surface-container-low ${activeLinkClass('/login')}`}>
+                  {t('login')}
                 </Link>
                 <Link href="/register" className="rounded-full bg-primary-container px-3 py-2 text-center text-sm font-bold text-on-primary-container">
-                  Registrarse
+                  {t('register')}
                 </Link>
               </>
             )}

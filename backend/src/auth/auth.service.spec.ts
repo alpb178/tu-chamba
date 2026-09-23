@@ -6,7 +6,7 @@ import {
 import * as bcrypt from 'bcryptjs';
 import { AuthService } from './auth.service';
 
-// Mocks mínimos de las dependencias del servicio.
+// Minimal mocks of the service dependencies.
 function buildService() {
   const prisma = {
     user: {
@@ -54,7 +54,7 @@ const baseUser = {
 };
 
 describe('AuthService.register', () => {
-  it('crea la cuenta sin rol y devuelve sesión sin password', async () => {
+  it('creates the account without a role and returns a session without password', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue(null);
     prisma.user.create.mockResolvedValue({ ...baseUser });
@@ -72,7 +72,21 @@ describe('AuthService.register', () => {
     expect(res.user).not.toHaveProperty('password');
   });
 
-  it('rechaza correos ya registrados', async () => {
+  it('e-mails a verification link to the Spanish site', async () => {
+    const { service, prisma, mail } = buildService();
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue({ ...baseUser });
+
+    await service.register({ email: 'ana@test.com', password: 'secret123', name: 'Ana' });
+
+    expect(mail.sendVerification).toHaveBeenCalledWith(
+      baseUser.email,
+      baseUser.name,
+      expect.stringMatching(/\/es\/verify\?token=\w+/),
+    );
+  });
+
+  it('rejects already registered emails', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue(baseUser);
 
@@ -87,7 +101,7 @@ describe('AuthService.register', () => {
 });
 
 describe('AuthService.login', () => {
-  it('inicia sesión con credenciales válidas', async () => {
+  it('signs in with valid credentials', async () => {
     const { service, prisma } = buildService();
     const hash = await bcrypt.hash('secret123', 4);
     prisma.user.findUnique.mockResolvedValue({ ...baseUser, password: hash });
@@ -99,7 +113,7 @@ describe('AuthService.login', () => {
     expect(res.user.email).toBe('ana@test.com');
   });
 
-  it('rechaza contraseña incorrecta', async () => {
+  it('rejects a wrong password', async () => {
     const { service, prisma } = buildService();
     const hash = await bcrypt.hash('secret123', 4);
     prisma.user.findUnique.mockResolvedValue({ ...baseUser, password: hash });
@@ -109,7 +123,7 @@ describe('AuthService.login', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
-  it('rechaza cuentas de Google sin contraseña local', async () => {
+  it('rejects Google accounts without a local password', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue({ ...baseUser, password: null });
 
@@ -119,8 +133,8 @@ describe('AuthService.login', () => {
   });
 });
 
-describe('AuthService.login por identifier (usuario o correo)', () => {
-  it('con @ busca por correo (findUnique)', async () => {
+describe('AuthService.login by identifier (username or email)', () => {
+  it('with @ looks up by email (findUnique)', async () => {
     const { service, prisma } = buildService();
     const hash = await bcrypt.hash('secret123', 4);
     prisma.user.findUnique.mockResolvedValue({ ...baseUser, password: hash });
@@ -132,7 +146,7 @@ describe('AuthService.login por identifier (usuario o correo)', () => {
     expect(prisma.user.findMany).not.toHaveBeenCalled();
   });
 
-  it('sin @ busca por nombre sin distinguir mayúsculas', async () => {
+  it('without @ looks up by name case-insensitively', async () => {
     const { service, prisma } = buildService();
     const hash = await bcrypt.hash('secret123', 4);
     prisma.user.findMany.mockResolvedValue([{ ...baseUser, password: hash }]);
@@ -144,7 +158,7 @@ describe('AuthService.login por identifier (usuario o correo)', () => {
     });
   });
 
-  it('nombre ambiguo (2+ cuentas) pide usar el correo', async () => {
+  it('ambiguous name (2+ accounts) asks to use the email', async () => {
     const { service, prisma } = buildService();
     prisma.user.findMany.mockResolvedValue([
       { ...baseUser, id: 'a' },
@@ -155,11 +169,11 @@ describe('AuthService.login por identifier (usuario o correo)', () => {
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 
-  it('usuario inexistente: credenciales inválidas (401) y traza de fallo', async () => {
+  it('nonexistent user: invalid credentials (401) and failure trace', async () => {
     const { service, prisma, traces } = buildService();
     prisma.user.findMany.mockResolvedValue([]);
     await expect(
-      service.login({ identifier: 'fantasma', password: 'x' }),
+      service.login({ identifier: 'ghost', password: 'x' }),
     ).rejects.toBeInstanceOf(UnauthorizedException);
     expect(traces.record).toHaveBeenCalled();
   });
@@ -170,7 +184,7 @@ describe('AuthService.googleAuth', () => {
 
   beforeEach(() => {
     process.env.GOOGLE_CLIENT_ID = 'client-id-test';
-    // tokeninfo de Google: token válido para ana@test.com.
+    // Google tokeninfo: valid token for ana@test.com.
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       json: async () => ({
@@ -187,7 +201,7 @@ describe('AuthService.googleAuth', () => {
     process.env.GOOGLE_CLIENT_ID = OLD_ENV;
   });
 
-  it('la cuenta nueva se crea verificada automáticamente', async () => {
+  it('the new account is created automatically verified', async () => {
     const { service, prisma } = buildService();
     prisma.user.findFirst.mockResolvedValue(null);
     prisma.user.create.mockResolvedValue({
@@ -200,7 +214,7 @@ describe('AuthService.googleAuth', () => {
     expect(prisma.user.create.mock.calls[0][0].data.emailVerified).toBe(true);
   });
 
-  it('al vincular Google a una cuenta sin verificar, queda verificada', async () => {
+  it('linking Google to an unverified account verifies it', async () => {
     const { service, prisma } = buildService();
     prisma.user.findFirst.mockResolvedValue({
       ...baseUser,
@@ -220,7 +234,7 @@ describe('AuthService.googleAuth', () => {
     });
   });
 
-  it('una cuenta ya vinculada y verificada no se re-escribe', async () => {
+  it('an already linked and verified account is not rewritten', async () => {
     const { service, prisma } = buildService();
     prisma.user.findFirst.mockResolvedValue({
       ...baseUser,
@@ -234,16 +248,16 @@ describe('AuthService.googleAuth', () => {
 });
 
 describe('AuthService.forgotPassword / resetPassword', () => {
-  it('con correo no registrado responde sent sin enviar nada', async () => {
+  it('with an unregistered email responds sent without sending anything', async () => {
     const { service, prisma, mail } = buildService();
     prisma.user.findUnique.mockResolvedValue(null);
 
-    const res = await service.forgotPassword('nadie@test.com');
+    const res = await service.forgotPassword('nobody@test.com');
     expect(res).toEqual({ sent: true });
     expect(mail.sendPasswordReset).not.toHaveBeenCalled();
   });
 
-  it('con correo registrado crea el token y envía el enlace', async () => {
+  it('with a registered email creates the token and sends the link', async () => {
     const { service, prisma, mail } = buildService();
     prisma.user.findUnique.mockResolvedValue(baseUser);
     prisma.passwordResetToken.create.mockResolvedValue({ id: 't1' });
@@ -257,11 +271,11 @@ describe('AuthService.forgotPassword / resetPassword', () => {
     expect(mail.sendPasswordReset).toHaveBeenCalledWith(
       'ana@test.com',
       'Ana',
-      expect.stringContaining('/reset-password?token='),
+      expect.stringContaining('/es/reset-password?token='),
     );
   });
 
-  it('token inválido o vencido → 400', async () => {
+  it('invalid or expired token → 400', async () => {
     const { service, prisma } = buildService();
     prisma.passwordResetToken.findUnique.mockResolvedValue(null);
     await expect(
@@ -273,11 +287,11 @@ describe('AuthService.forgotPassword / resetPassword', () => {
       expiresAt: new Date(Date.now() - 1000),
     });
     await expect(
-      service.resetPassword('viejo', 'nueva123'),
+      service.resetPassword('old', 'nueva123'),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('token válido cambia la contraseña y verifica la cuenta', async () => {
+  it('valid token changes the password and verifies the account', async () => {
     const { service, prisma } = buildService();
     prisma.passwordResetToken.findUnique.mockResolvedValue({
       userId: 'u1',

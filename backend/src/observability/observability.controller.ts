@@ -17,8 +17,8 @@ import { ErrorsService } from './errors.service';
 import { QueryErrorDto } from './dto/query-error.dto';
 import { BulkIdsDto } from '../common/dto/bulk-ids.dto';
 
-// Actividad del Sitio: estado de servicios, métricas y registro de errores.
-// El feed de actividad reutiliza GET /admin/traces (con sus filtros).
+// Site activity: service status, metrics and error log.
+// The activity feed reuses GET /admin/traces (with its filters).
 @ApiTags('admin')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, AdminGuard)
@@ -49,7 +49,7 @@ export class ObservabilityController {
     return this.errors.resolve(id);
   }
 
-  // Declarado antes de ':id' para que 'all' no se interprete como un id.
+  // Declared before ':id' so 'all' is not parsed as an id.
   @Delete('errors/all')
   removeAllErrors() {
     return this.errors.removeAll();

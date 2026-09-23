@@ -16,11 +16,11 @@ import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator
 export class VisitsController {
   constructor(private visits: VisitsService) {}
 
-  // Público: el portal registra cada visita al detalle de un anuncio
-  // (adId) o cada página vista del sitio (path). La ruta es una sola a
-  // propósito: /visits ya está verificada contra listas de bloqueadores.
-  // Con sesión iniciada, la página vista se asocia al usuario (alimenta
-  // la estadística de última visita y tiempo de estancia del panel).
+  // Public: the portal records each visit to a listing detail (adId) or
+  // each page view of the site (path). It's a single route on purpose:
+  // /visits is already verified against blocker lists.
+  // When logged in, the page view is tied to the user (it feeds the
+  // panel's last-visit and time-on-site statistics).
   @UseGuards(OptionalJwtAuthGuard)
   @Post()
   record(@Body() dto: CreateVisitDto, @CurrentUser() user: AuthUser | null) {
