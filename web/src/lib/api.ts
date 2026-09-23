@@ -14,6 +14,17 @@ export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+const NETWORK_ERROR = {
+  es: 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
+  en: "Couldn't reach the server. Check your connection and try again.",
+};
+
+function pageLanguage(): keyof typeof NETWORK_ERROR {
+  return typeof document !== 'undefined' && document.documentElement.lang === 'en'
+    ? 'en'
+    : 'es';
+}
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -38,11 +49,9 @@ export async function api<T>(
     res = await fetch(`${API_URL}${path}`, { ...options, headers });
   } catch {
     // fetch throws TypeError ("Failed to fetch") on network/CORS failures.
-    // We translate it into a message the user can understand.
-    throw new ApiError(
-      0,
-      'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
-    );
+    // We translate it into a message the user can understand, in the page's
+    // language (<html lang> follows the URL locale; the admin panel is "es").
+    throw new ApiError(0, NETWORK_ERROR[pageLanguage()]);
   }
 
   if (!res.ok) {

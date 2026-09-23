@@ -1,6 +1,15 @@
+const createNextIntlPlugin = require('next-intl/plugin');
+
+const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    // The site and the admin panel have separate root layouts, so the 404 for
+    // URLs that match no route at all lives in app/global-not-found.tsx.
+    globalNotFound: true,
+  },
   // Old Spanish routes -> new English ones. Permanent because they are
   // indexed by Google and linked from emails already sent (verification and
   // password reset keep the ?token= when redirecting).
@@ -21,4 +30,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withNextIntl(nextConfig);
