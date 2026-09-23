@@ -1,0 +1,57 @@
+{
+  "hero": {
+    "bannerAlt": "Ofereça ou procure trabalho — contato direto, sem currículo"
+  },
+  "catalog": {
+    "title": "Encontre trabalhos por diária na hora",
+    "subtitle": "Fale direto com empregadores locais — sem currículo, pelo WhatsApp. <link>Publique ou ofereça trabalho em toda a Bolívia.</link>",
+    "searchPlaceholder": "Buscar vagas",
+    "searchLabel": "Buscar vagas"
+  },
+  "chips": {
+    "remove": "Remover o filtro {label}",
+    "salaryFrom": "Bs {min} ou mais",
+    "salaryRange": "Bs {min} – {max}",
+    "clearAll": "Limpar tudo"
+  },
+  "toolbar": {
+    "openFilters": "Abrir filtros",
+    "filters": "Filtros",
+    "count": "<b>{count}</b> <muted>{count, plural, one {vaga} other {vagas}}</muted>",
+    "countIn": "<b>{count}</b> <muted>{count, plural, one {vaga} other {vagas}} em {department}</muted>",
+    "sort": "Ordenar",
+    "comfortable": "Visualização confortável",
+    "compact": "Visualização compacta",
+    "publish": "Publicar vaga de emprego",
+    "refresh": "Atualizar a lista"
+  },
+  "empty": {
+    "title": "Nenhuma vaga encontrada com esses filtros.",
+    "hint": "Tente remover algum filtro ou buscar com outras palavras.",
+    "clear": "Limpar filtros"
+  },
+  "list": {
+    "loadingMore": "Carregando mais vagas…",
+    "showing": "Mostrando {shown} de {total} {total, plural, one {vaga} other {vagas}}"
+  },
+  "drawer": {
+    "close": "Fechar filtros",
+    "closeButton": "Fechar",
+    "title": "Filtros",
+    "show": "Ver {count} {count, plural, one {resultado} other {resultados}}"
+  },
+  "backToTop": "Voltar ao topo",
+  "pagination": {
+    "summary": "Mostrando de <b>{from}</b> a <b>{to}</b> de <b>{total}</b> {total, plural, one {resultado} other {resultados}}",
+    "label": "Paginação",
+    "previous": "Página anterior",
+    "next": "Próxima página",
+    "page": "Página {page}"
+  },
+  "select": {
+    "placeholder": "Selecione…",
+    "search": "Buscar…",
+    "searchLabel": "Buscar opção",
+    "noMatches": "Nenhum resultado."
+  }
+}

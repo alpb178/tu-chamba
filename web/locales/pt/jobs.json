@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "fallbackTitle": "Vagas de emprego — Tu Chamba",
+    "title": "Vagas de emprego em {department} — Tu Chamba",
+    "description": "Vagas de emprego e trabalhos em {department}, Bolívia. Encontre emprego perto de você e entre em contato pelo WhatsApp."
+  },
+  "home": "Início",
+  "heading": "Vagas de emprego em {department}",
+  "count": "{count} {count, plural, one {vaga disponível} other {vagas disponíveis}} em {department}, Bolívia.",
+  "empty": "Ainda não há vagas ativas em {department}. Volte em breve."
+}

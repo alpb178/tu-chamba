@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
-import type { Locale } from '@/i18n/routing';
+import { OG_LOCALE, type Locale } from '@/i18n/routing';
 import { localeAlternates } from '@/lib/seo';
 import { fetchAds } from '@/lib/server-api';
 import {
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      locale: locale === 'en' ? 'en_US' : 'es_BO',
+      locale: OG_LOCALE[locale as Locale],
     },
   };
 }

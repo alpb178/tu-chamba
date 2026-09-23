@@ -1,5 +1,5 @@
 // Messages of every locale: one JSON file per namespace in web/locales/<locale>.
-// Add new namespaces here for both locales.
+// Add new namespaces here for every locale.
 
 import es_enums from '../../locales/es/enums.json';
 import es_common from '../../locales/es/common.json';
@@ -41,6 +41,26 @@ import en_account from '../../locales/en/account.json';
 import en_auth from '../../locales/en/auth.json';
 import en_legal from '../../locales/en/legal.json';
 import en_notFound from '../../locales/en/notFound.json';
+import pt_enums from '../../locales/pt/enums.json';
+import pt_common from '../../locales/pt/common.json';
+import pt_meta from '../../locales/pt/meta.json';
+import pt_nav from '../../locales/pt/nav.json';
+import pt_footer from '../../locales/pt/footer.json';
+import pt_companies from '../../locales/pt/companies.json';
+import pt_notifications from '../../locales/pt/notifications.json';
+import pt_home from '../../locales/pt/home.json';
+import pt_filters from '../../locales/pt/filters.json';
+import pt_adCard from '../../locales/pt/adCard.json';
+import pt_jobs from '../../locales/pt/jobs.json';
+import pt_listing from '../../locales/pt/listing.json';
+import pt_reviews from '../../locales/pt/reviews.json';
+import pt_report from '../../locales/pt/report.json';
+import pt_map from '../../locales/pt/map.json';
+import pt_publish from '../../locales/pt/publish.json';
+import pt_account from '../../locales/pt/account.json';
+import pt_auth from '../../locales/pt/auth.json';
+import pt_legal from '../../locales/pt/legal.json';
+import pt_notFound from '../../locales/pt/notFound.json';
 
 import type { Locale } from './routing';
 
@@ -92,4 +112,27 @@ const en = {
 
 export type Messages = typeof es;
 
-export const messages: Record<Locale, Messages> = { es, en };
+const pt: Messages = {
+  enums: pt_enums,
+  common: pt_common,
+  meta: pt_meta,
+  nav: pt_nav,
+  footer: pt_footer,
+  companies: pt_companies,
+  notifications: pt_notifications,
+  home: pt_home,
+  filters: pt_filters,
+  adCard: pt_adCard,
+  jobs: pt_jobs,
+  listing: pt_listing,
+  reviews: pt_reviews,
+  report: pt_report,
+  map: pt_map,
+  publish: pt_publish,
+  account: pt_account,
+  auth: pt_auth,
+  legal: pt_legal,
+  notFound: pt_notFound,
+};
+
+export const messages: Record<Locale, Messages> = { es, en, pt };

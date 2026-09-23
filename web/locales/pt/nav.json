@@ -1,0 +1,25 @@
+{
+  "language": {
+    "label": "Idioma"
+  },
+  "logoAlt": "Tu Chamba",
+  "publish": "Publicar vaga de emprego",
+  "accountOf": "Conta de {name}",
+  "accountMenu": "Conta e menu",
+  "openMenu": "Abrir menu",
+  "sections": {
+    "account": "Minha conta",
+    "admin": "Administração",
+    "links": "Links"
+  },
+  "myListings": "Meus anúncios",
+  "interests": "Anúncios do seu interesse",
+  "alerts": "Alertas de emprego",
+  "profile": "Meu perfil",
+  "adminPanel": "Painel de administração",
+  "logout": "Sair",
+  "login": "Entrar",
+  "newHere": "É novo por aqui?",
+  "registerHere": "Cadastre-se aqui",
+  "register": "Cadastrar-se"
+}

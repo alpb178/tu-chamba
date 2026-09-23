@@ -14,6 +14,7 @@ import type { Locale } from './routing';
 export const INTL_LOCALE: Record<Locale, string> = {
   es: 'es-BO',
   en: 'en-US',
+  pt: 'pt-BR',
 };
 
 // Translator for the "enums" namespace, as returned by

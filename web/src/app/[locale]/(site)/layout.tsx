@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import type { Locale } from '@/i18n/routing';
+import { OG_LOCALE, type Locale } from '@/i18n/routing';
 import { Navbar } from '@/components/Navbar';
 import { GroupTicker } from '@/components/GroupTicker';
 import { Footer } from '@/components/Footer';
@@ -25,7 +25,7 @@ export async function generateMetadata({
     description: t('site.description'),
     openGraph: {
       siteName: 'Tu Chamba',
-      locale: locale === 'en' ? 'en_US' : 'es_BO',
+      locale: OG_LOCALE[locale as Locale],
       type: 'website',
       // Brand banner when sharing links on social media/WhatsApp.
       images: ['/banner.jpeg'],

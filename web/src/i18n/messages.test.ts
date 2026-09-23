@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { messages } from './messages';
+import { locales } from './routing';
 
 type Tree = { [key: string]: string | Tree };
 
@@ -23,20 +24,27 @@ function args(message: string): string[] {
 
 describe('messages', () => {
   const es = messages.es as unknown as Tree;
-  const en = messages.en as unknown as Tree;
+  // Spanish is the reference: every other locale must match it.
+  const others = Object.entries(messages)
+    .filter(([locale]) => locale !== 'es')
+    .map(([locale, tree]) => [locale, tree as unknown as Tree] as const);
 
-  it('English has exactly the same keys as Spanish', () => {
-    expect(keys(en).sort()).toEqual(keys(es).sort());
+  it('covers every locale', () => {
+    expect(Object.keys(messages).sort()).toEqual([...locales].sort());
   });
 
-  it('both locales use the same placeholders in every message', () => {
+  it.each(others)('%s has exactly the same keys as Spanish', (_, tree) => {
+    expect(keys(tree).sort()).toEqual(keys(es).sort());
+  });
+
+  it.each(others)('%s uses the same placeholders as Spanish in every message', (_, tree) => {
     for (const key of keys(es)) {
-      expect({ key, args: args(leaf(en, key)) }).toEqual({ key, args: args(leaf(es, key)) });
+      expect({ key, args: args(leaf(tree, key)) }).toEqual({ key, args: args(leaf(es, key)) });
     }
   });
 
   it('no message is empty', () => {
-    for (const tree of [es, en]) {
+    for (const tree of [es, ...others.map(([, t]) => t)]) {
       for (const key of keys(tree)) expect(leaf(tree, key).trim(), key).not.toBe('');
     }
   });

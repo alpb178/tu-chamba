@@ -17,12 +17,13 @@ export function clearToken() {
 const NETWORK_ERROR = {
   es: 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
   en: "Couldn't reach the server. Check your connection and try again.",
+  pt: 'Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.',
 };
 
+// <html lang> is "es", "en" or "pt-BR"; its primary subtag picks the message.
 function pageLanguage(): keyof typeof NETWORK_ERROR {
-  return typeof document !== 'undefined' && document.documentElement.lang === 'en'
-    ? 'en'
-    : 'es';
+  const lang = typeof document !== 'undefined' ? document.documentElement.lang.split('-')[0] : '';
+  return lang in NETWORK_ERROR ? (lang as keyof typeof NETWORK_ERROR) : 'es';
 }
 
 export class ApiError extends Error {

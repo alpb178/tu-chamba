@@ -1,0 +1,55 @@
+{
+  "myListings": {
+    "title": "Meus anúncios",
+    "postJob": "Publicar vaga de emprego",
+    "emptyTitle": "Você ainda não publicou nenhum anúncio.",
+    "emptyText": "Publique sua primeira vaga: é grátis, e os interessados falam com você direto pelo WhatsApp.",
+    "postFirstJob": "Publicar minha primeira vaga de emprego",
+    "visits": "{count, plural, one {# acesso} other {# acessos}}",
+    "interested": "{count, plural, one {# interessado} other {# interessados}}",
+    "expires": "Vence em: {date}",
+    "unpublish": "Desativar",
+    "republish": "Republicar ({days} dias)",
+    "delete": "Excluir",
+    "confirmUnpublish": "Desativar este anúncio? Ele deixará de aparecer no portal.",
+    "confirmDelete": "Excluir este anúncio definitivamente? Esta ação não pode ser desfeita."
+  },
+  "interests": {
+    "title": "Anúncios do seu interesse",
+    "empty": "Você ainda não tem anúncios de interesse. Os anúncios que você abrir aparecerão aqui automaticamente. <link>Explore as vagas</link>.",
+    "interestedOn": "Você se interessou em {date}",
+    "remove": "Remover"
+  },
+  "alerts": {
+    "title": "Alertas de emprego",
+    "intro": "Avisamos você com uma notificação quando for publicada uma vaga que corresponda aos seus critérios.",
+    "department": "Departamento",
+    "category": "Categoria",
+    "allCountry": "Todo o país",
+    "allCategories": "Todas as categorias",
+    "anyCategory": "Qualquer categoria",
+    "wholeCountry": "todo o país",
+    "creating": "Criando...",
+    "create": "Criar alerta",
+    "yourAlerts": "Seus alertas",
+    "empty": "Você ainda não tem alertas. Crie um para receber avisos de novas vagas.",
+    "delete": "Excluir"
+  },
+  "profile": {
+    "title": "Meu perfil",
+    "email": "E-mail (não pode ser alterado)",
+    "name": "Nome",
+    "phone": "Telefone (opcional, preenchido automaticamente ao publicar)",
+    "passwordLegend": "Senha",
+    "changePassword": "Alterar senha",
+    "setPassword": "Definir senha",
+    "optional": "(opcional)",
+    "googleNote": "Sua conta usa o Google. Se você definir uma senha, também poderá entrar com seu e-mail.",
+    "currentPassword": "Senha atual",
+    "newPassword": "Nova senha (mín. 6)",
+    "confirmPassword": "Confirmar nova senha",
+    "passwordMismatch": "As senhas não coincidem.",
+    "saving": "Salvando...",
+    "save": "Salvar alterações"
+  }
+}

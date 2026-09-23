@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './i18n/routing';
 
-// Locale routing for the public site: adds the /es or /en prefix to
+// Locale routing for the public site: adds the /es, /en or /pt prefix to
 // unprefixed URLs (query string included, so ?token= links keep working).
 const intl = createMiddleware(routing);
 

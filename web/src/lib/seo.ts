@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Ad, DEPARTMENT_LABEL, JobType } from './types';
-import { defaultLocale, locales, type Locale } from '@/i18n/routing';
+import { LANGUAGE_TAG, defaultLocale, locales, type Locale } from '@/i18n/routing';
 
 export const SITE =
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tu-chamba.corpsc.com';
@@ -8,6 +8,12 @@ export const SITE =
 // Path of a public page in the given locale: "/listings/1" -> "/en/listings/1".
 export function localePath(locale: Locale, path: string): string {
   return `/${locale}${path === '/' ? '' : path}`;
+}
+
+// hreflang -> path of the page in every locale (keys are BCP 47 tags: es, en,
+// pt-BR).
+export function localeLanguages(path: string): Record<string, string> {
+  return Object.fromEntries(locales.map((l) => [LANGUAGE_TAG[l], localePath(l, path)]));
 }
 
 // Canonical URL of the page in its own locale plus hreflang alternates for
@@ -19,7 +25,7 @@ export function localeAlternates(
   return {
     canonical: localePath(locale, path),
     languages: {
-      ...Object.fromEntries(locales.map((l) => [l, localePath(l, path)])),
+      ...localeLanguages(path),
       'x-default': localePath(defaultLocale, path),
     },
   };
@@ -49,11 +55,17 @@ const EMPLOYMENT_TYPE: Record<JobType, string> = {
   A_CONVENIR: 'OTHER',
 };
 
+const REQUIREMENTS_LABEL: Record<Locale, string> = {
+  es: 'Requisitos',
+  en: 'Requirements',
+  pt: 'Requisitos',
+};
+
 // JSON-LD JobPosting for Google for Jobs rich results.
 // Must only be emitted for live listings (Google penalizes the markup on
 // expired listings; validThrough covers natural expiration).
 export function jobPostingJsonLd(ad: Ad, locale: Locale = defaultLocale) {
-  const requirementsLabel = locale === 'en' ? 'Requirements' : 'Requisitos';
+  const requirementsLabel = REQUIREMENTS_LABEL[locale];
   return {
     '@context': 'https://schema.org',
     '@type': 'JobPosting',
@@ -116,7 +128,7 @@ export function webSiteJsonLd(locale: Locale = defaultLocale) {
     '@type': 'WebSite',
     name: 'Tu Chamba',
     url: home,
-    inLanguage: locale,
+    inLanguage: LANGUAGE_TAG[locale],
     potentialAction: {
       '@type': 'SearchAction',
       target: `${home}?q={search_term_string}`,
