@@ -1,6 +1,7 @@
 'use client';
 
 import { InputHTMLAttributes, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Icon } from './Icon';
 
 // Password field with an "eye" toggle to show/hide the value.
@@ -9,6 +10,7 @@ export function PasswordInput({
   className = '',
   ...props
 }: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>) {
+  const t = useTranslations('auth.passwordInput');
   const [visible, setVisible] = useState(false);
 
   return (
@@ -21,7 +23,7 @@ export function PasswordInput({
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+        aria-label={visible ? t('hide') : t('show')}
         aria-pressed={visible}
         className="absolute inset-y-0 right-0 flex w-10 items-center justify-center text-outline transition-colors hover:text-primary"
       >

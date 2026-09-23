@@ -1,0 +1,13 @@
+{
+  "title": "Filters",
+  "clear": "Clear",
+  "jobType": "Schedule",
+  "category": "Category",
+  "department": "Department",
+  "salary": "Salary (Bs)",
+  "salaryMin": "Minimum salary",
+  "salaryMax": "Maximum salary",
+  "amount": "Bs {amount}",
+  "allSameSalary": "All current jobs pay Bs {amount}.",
+  "noSalary": "No jobs with a posted salary."
+}

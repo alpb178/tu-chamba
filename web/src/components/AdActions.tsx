@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link, useRouter } from '@/i18n/navigation';
 import dynamic from 'next/dynamic';
 import { api } from '@/lib/api';
 import {
@@ -35,6 +35,7 @@ function LocationMap({
   lng: number;
   approximate?: boolean;
 }) {
+  const t = useTranslations('listing.actions');
   const [expanded, setExpanded] = useState(false);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 
@@ -55,13 +56,13 @@ function LocationMap({
           onClick={() => setExpanded(true)}
           className="absolute right-2 top-2 z-[1001] flex items-center gap-1 border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-aceternity hover:text-brand"
         >
-          <Icon name="open_in_full" className="text-sm" /> Ampliar
+          <Icon name="open_in_full" className="text-sm" /> {t('expand')}
         </button>
       </div>
       <div className="flex items-center justify-between gap-2">
         {approximate ? (
           <p className="text-xs text-outline">
-            Ubicación aproximada según la dirección del anuncio.
+            {t('approximateLocation')}
           </p>
         ) : (
           <span />
@@ -72,7 +73,7 @@ function LocationMap({
           rel="noopener noreferrer"
           className="flex shrink-0 items-center gap-0.5 text-xs text-brand underline hover:text-brand-dark"
         >
-          Abrir en Google Maps <Icon name="open_in_new" className="text-sm" />
+          {t('openInGoogleMaps')} <Icon name="open_in_new" className="text-sm" />
         </a>
       </div>
 
@@ -82,7 +83,7 @@ function LocationMap({
           onClick={() => setExpanded(false)}
           role="dialog"
           aria-modal="true"
-          aria-label="Mapa ampliado"
+          aria-label={t('expandedMap')}
         >
           <div
             className="relative z-0 h-[80vh] w-full max-w-4xl overflow-hidden bg-surface-container-lowest"
@@ -102,7 +103,7 @@ function LocationMap({
               onClick={() => setExpanded(false)}
               className="absolute right-3 top-3 z-[1001] flex items-center gap-1 border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow-aceternity hover:text-brand"
             >
-              <Icon name="close" className="text-base" /> Cerrar
+              <Icon name="close" className="text-base" /> {t('close')}
             </button>
           </div>
         </div>
@@ -212,6 +213,7 @@ async function geocode(
 // Interactive part of the detail: map, contact (phone only with a session),
 // owner actions and reporting. The text content is rendered by the server.
 export function AdActions({ ad }: { ad: Ad }) {
+  const t = useTranslations('listing.actions');
   const { user, loading } = useAuth();
   const router = useRouter();
   // The listing's contact numbers: the first is the main one (used by the
@@ -251,7 +253,7 @@ export function AdActions({ ad }: { ad: Ad }) {
   const adPath = `/listings/${ad.id}`;
   // Without a session, the contact CTAs go to login and back to the listing.
   const loginNext = `/login?next=${encodeURIComponent(adPath)}`;
-  const waMessage = `Hola, vi tu anuncio en Tu Chamba (Ref. ${adRef}) y me interesa.`;
+  const waMessage = t('waMessage', { ref: adRef });
 
   // Shared link (?shared=1): without a session, sign-up is required and,
   // once registration finishes, the user returns to this listing (next=).
@@ -318,7 +320,7 @@ export function AdActions({ ad }: { ad: Ad }) {
   }, [user, ad.id]);
 
   async function unpublish() {
-    if (!confirm('¿Dar de baja este anuncio? Dejará de mostrarse en el portal.'))
+    if (!confirm(t('unpublishConfirm')))
       return;
     await api(`/listings/${ad.id}/unpublish`, { method: 'POST' });
     router.push('/my-listings');
@@ -335,13 +337,13 @@ export function AdActions({ ad }: { ad: Ad }) {
       {/* Exact location and map: only with a session. */}
       {user && location && (
         <p className="flex items-center gap-1 text-sm text-on-surface-variant">
-          <Icon name="location_on" className="text-base" /> Ubicación: {location}
+          <Icon name="location_on" className="text-base" /> {t('location', { location })}
         </p>
       )}
       {/* Publisher's free-text reference ("frente al mercado"). */}
       {user && reference && (
         <p className="flex items-center gap-1 text-sm text-on-surface-variant">
-          <Icon name="explore" className="text-base" /> Referencia: {reference}
+          <Icon name="explore" className="text-base" /> {t('reference', { reference })}
         </p>
       )}
       {user &&
@@ -355,13 +357,16 @@ export function AdActions({ ad }: { ad: Ad }) {
 
       {/* Share via WhatsApp: subtle icons that don't compete with the CTA. */}
       <div className="flex items-center justify-end gap-2">
-        <span className="text-xs text-outline">Compartir:</span>
+        <span className="text-xs text-outline">{t('share')}</span>
         {coords && (
           <IconButton
-            label="Compartir ubicación por WhatsApp"
+            label={t('shareLocation')}
             onClick={() =>
               shareByWhatsApp(
-                `Ubicación del anuncio Ref. ${adRef} en Tu Chamba: https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`,
+                t('shareLocationText', {
+                  ref: adRef,
+                  url: `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`,
+                }),
               )
             }
           >
@@ -369,10 +374,13 @@ export function AdActions({ ad }: { ad: Ad }) {
           </IconButton>
         )}
         <IconButton
-          label="Compartir anuncio por WhatsApp"
+          label={t('shareListing')}
           onClick={() =>
             shareByWhatsApp(
-              `Mira este anuncio en Tu Chamba (Ref. ${adRef}): ${window.location.origin}${adPath}?shared=1`,
+              t('shareListingText', {
+                ref: adRef,
+                url: `${window.location.origin}${adPath}?shared=1`,
+              }),
             )
           }
         >
@@ -409,23 +417,23 @@ export function AdActions({ ad }: { ad: Ad }) {
                   className={`${CALL_BUTTON_CLASS} flex-1`}
                   onClick={registerInterest}
                 >
-                  <CallIcon /> Llamar
+                  <CallIcon /> {t('call')}
                 </a>
               ) : (
                 <Link href={loginNext} className={`${CALL_BUTTON_CLASS} flex-1`}>
-                  <CallIcon /> Llamar
+                  <CallIcon /> {t('call')}
                 </Link>
               )}
             </div>
             <p className="text-center text-xs text-on-surface-variant">
               {phone
-                ? `Teléfono: ${phone}`
-                : 'Inicia sesión para contactar: el teléfono se muestra al ingresar.'}
+                ? t('phone', { phone })
+                : t('loginToContact')}
             </p>
             {/* The listing's extra numbers: each one calls or opens WhatsApp. */}
             {extraPhones.length > 0 && (
               <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-on-surface-variant">
-                <span>Otros números:</span>
+                <span>{t('otherNumbers')}</span>
                 {extraPhones.map((p) => (
                   <span key={p} className="inline-flex items-center gap-1">
                     <a
@@ -439,7 +447,7 @@ export function AdActions({ ad }: { ad: Ad }) {
                       href={waLink(p, waMessage)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`Escribir por WhatsApp al ${p}`}
+                      aria-label={t('whatsappTo', { phone: p })}
                       className="text-[#25d366] hover:brightness-110"
                       onClick={registerInterest}
                     >
@@ -475,11 +483,11 @@ export function AdActions({ ad }: { ad: Ad }) {
                 className={`${CALL_BUTTON_CLASS} flex-1`}
                 onClick={registerInterest}
               >
-                <CallIcon /> Llamar
+                <CallIcon /> {t('call')}
               </a>
             ) : (
               <Link href={loginNext} className={`${CALL_BUTTON_CLASS} flex-1`}>
-                <CallIcon /> Llamar
+                <CallIcon /> {t('call')}
               </Link>
             )}
           </div>
@@ -492,15 +500,15 @@ export function AdActions({ ad }: { ad: Ad }) {
             variant="outline"
             onClick={() => router.push(`/listings/new?id=${ad.id}`)}
           >
-            Editar
+            {t('edit')}
           </Button>
           {status === 'ACTIVO' ? (
             <Button variant="danger" onClick={unpublish}>
-              Dar de baja
+              {t('unpublish')}
             </Button>
           ) : (
             <Button onClick={republish}>
-              Republicar ({ad.durationDays} días)
+              {t('republish', { days: ad.durationDays })}
             </Button>
           )}
         </div>

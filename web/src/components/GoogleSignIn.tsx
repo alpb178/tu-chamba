@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth';
 
@@ -27,6 +28,7 @@ declare global {
 // at runtime, with no environment variable in the frontend.
 // `next`: route to return to after signing in (e.g. the shared ad).
 export function GoogleSignIn({ next = '/' }: { next?: string }) {
+  const t = useTranslations('auth.google');
   const { loginWithGoogle } = useAuth();
   const router = useRouter();
   const buttonRef = useRef<HTMLDivElement>(null);
@@ -90,7 +92,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
     <div className="space-y-3">
       <div className="flex items-center gap-3">
         <div className="h-px flex-1 bg-surface-container-high" />
-        <span className="text-xs text-outline">o</span>
+        <span className="text-xs text-outline">{t('or')}</span>
         <div className="h-px flex-1 bg-surface-container-high" />
       </div>
 
@@ -102,9 +104,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
           type="button"
           onClick={() =>
             !clientId &&
-            setError(
-              'El inicio con Google aún no está disponible. Usa tu correo y contraseña.',
-            )
+            setError(t('unavailable'))
           }
           className="flex h-11 w-full items-center justify-center gap-3 border border-outline-variant bg-surface-container-lowest text-sm font-medium text-on-surface transition-all hover:border-primary active:scale-[0.99]"
         >
@@ -126,7 +126,7 @@ export function GoogleSignIn({ next = '/' }: { next?: string }) {
               d="M12 4.77c1.76 0 3.34.6 4.58 1.79l3.44-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.29 6.62l4 3.1C6.23 6.88 8.88 4.77 12 4.77z"
             />
           </svg>
-          Continuar con Google
+          {t('continue')}
         </button>
         {clientId && (
           <div

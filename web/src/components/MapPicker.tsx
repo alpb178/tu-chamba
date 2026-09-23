@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
+import { useTranslations } from 'next-intl';
 import 'leaflet/dist/leaflet.css';
 
 // Default center: Santa Cruz de la Sierra.
@@ -70,6 +71,7 @@ function PickerMap({
   onPlace?: (name: string) => void;
   className: string;
 }) {
+  const t = useTranslations('map');
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
@@ -163,7 +165,7 @@ function PickerMap({
         onClick={useMyLocation}
         className="absolute bottom-2 left-2 z-[1001] border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-aceternity hover:text-primary"
       >
-        📍 Usar mi ubicación
+        📍 {t('useMyLocation')}
       </button>
     </div>
   );
@@ -183,6 +185,7 @@ export function MapPicker({
   onChange: (lat: number, lng: number) => void;
   onPlace?: (name: string) => void;
 }) {
+  const t = useTranslations('map');
   const [expanded, setExpanded] = useState(false);
 
   // Close the modal with Escape.
@@ -208,11 +211,11 @@ export function MapPicker({
           onClick={() => setExpanded(true)}
           className="absolute right-2 top-2 z-[1001] border border-outline-variant bg-surface-container-lowest/95 px-2 py-1 text-xs font-medium text-on-surface-variant shadow-aceternity hover:text-primary"
         >
-          ⤢ Ampliar
+          ⤢ {t('expand')}
         </button>
       </div>
       <p className="text-xs text-on-surface-variant">
-        Haz clic en el mapa o arrastra el pin para marcar el lugar de trabajo.
+        {t('hint')}
       </p>
 
       {expanded && (
@@ -221,7 +224,7 @@ export function MapPicker({
           onClick={() => setExpanded(false)}
           role="dialog"
           aria-modal="true"
-          aria-label="Mapa ampliado"
+          aria-label={t('expandedLabel')}
         >
           <div
             className="relative z-0 h-[85vh] w-full max-w-5xl overflow-hidden bg-surface-container-lowest"
@@ -241,7 +244,7 @@ export function MapPicker({
               onClick={() => setExpanded(false)}
               className="absolute right-3 top-3 z-[1001] border border-outline-variant bg-surface-container-lowest px-3 py-1.5 text-sm font-medium text-on-surface-variant shadow-aceternity hover:text-primary"
             >
-              ✕ Cerrar
+              ✕ {t('close')}
             </button>
           </div>
         </div>

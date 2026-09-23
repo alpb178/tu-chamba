@@ -1,7 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
+import { useLabels } from '@/i18n/use-labels';
 import { api } from '@/lib/api';
 import { AppNotification, NotificationsResponse, NotificationType } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
@@ -16,19 +18,26 @@ const ICON: Record<NotificationType, string> = {
   NUEVO_ANUNCIO: '📢',
 };
 
-function timeAgo(date: string) {
+function timeAgo(
+  date: string,
+  t: ReturnType<typeof useTranslations<'notifications.timeAgo'>>,
+  formatDate: (iso: string) => string,
+) {
   const min = Math.floor((Date.now() - new Date(date).getTime()) / 60_000);
-  if (min < 1) return 'ahora';
-  if (min < 60) return `hace ${min} min`;
+  if (min < 1) return t('now');
+  if (min < 60) return t('minutes', { count: min });
   const h = Math.floor(min / 60);
-  if (h < 24) return `hace ${h} h`;
-  return new Date(date).toLocaleDateString('es-BO');
+  if (h < 24) return t('hours', { count: h });
+  return formatDate(date);
 }
 
 // In-app notifications bell (authenticated users only).
 // Refreshes by polling; on click the notification is marked as read and, if
 // it references an ad, navigates to its detail.
 export function NotificationsBell() {
+  const t = useTranslations('notifications.bell');
+  const tAgo = useTranslations('notifications.timeAgo');
+  const labels = useLabels();
   const { user } = useAuth();
   const router = useRouter();
   const [data, setData] = useState<NotificationsResponse | null>(null);
@@ -84,7 +93,7 @@ export function NotificationsBell() {
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="relative rounded-full p-2 transition-colors hover:bg-surface-container-high"
-        aria-label={`Notificaciones${unread ? ` (${unread} sin leer)` : ''}`}
+        aria-label={t('ariaLabel', { unread })}
       >
         <Icon name="notifications" className="text-on-surface-variant" />
         {unread > 0 && (
@@ -96,7 +105,7 @@ export function NotificationsBell() {
         <div className="absolute right-0 z-50 mt-2 w-80 rounded-tile border border-outline-variant bg-surface-container-lowest shadow-derek">
           <div className="flex items-center justify-between border-b border-outline-variant/60 px-3 py-2">
             <span className="text-sm font-semibold text-on-surface-variant">
-              Notificaciones
+              {t('title')}
             </span>
             {unread > 0 && (
               <button
@@ -104,14 +113,14 @@ export function NotificationsBell() {
                 onClick={markAllRead}
                 className="text-xs text-brand underline hover:text-brand-dark"
               >
-                Marcar todas como leídas
+                {t('markAllRead')}
               </button>
             )}
           </div>
           <ul className="max-h-96 overflow-y-auto">
             {!data || data.items.length === 0 ? (
               <li className="px-3 py-6 text-center text-sm text-on-surface-variant">
-                No tienes notificaciones.
+                {t('empty')}
               </li>
             ) : (
               data.items.map((n) => (
@@ -129,8 +138,8 @@ export function NotificationsBell() {
                         {n.message}
                       </span>
                       <span className="text-xs text-outline">
-                        {timeAgo(n.createdAt)}
-                        {n.adId ? ' · Ver detalles' : ''}
+                        {timeAgo(n.createdAt, tAgo, labels.date)}
+                        {n.adId ? ` · ${t('viewDetails')}` : ''}
                       </span>
                     </span>
                     {!n.read && (

@@ -1,0 +1,16 @@
+{
+  "starsLabel": "{value} de 5 estrellas",
+  "heading": "Reseñas de {name}",
+  "summary": "{average} · {count, plural, one {# reseña} other {# reseñas}}",
+  "empty": "Este publicante aún no tiene reseñas.",
+  "anonymous": "Usuario",
+  "thanks": "¡Gracias por tu reseña!",
+  "alreadyReviewed": "Ya calificaste este anuncio.",
+  "rate": "Calificar este anuncio",
+  "cancel": "Cancelar",
+  "rating": "Calificación",
+  "starOption": "{count, plural, other {# estrellas}}",
+  "comment": "Comentario",
+  "sending": "Enviando...",
+  "submit": "Enviar reseña"
+}

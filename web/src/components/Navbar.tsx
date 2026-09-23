@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import NextLink from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link, usePathname } from '@/i18n/navigation';
 import { useAuth } from '@/lib/auth';
 import { Button } from './ui';
 import { NotificationsBell } from './NotificationsBell';
 import { CORPSC } from '@/lib/companies';
 import { Icon } from './Icon';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 // Avatar initials (max. 2, taken from the user's name).
 function initials(name: string) {
@@ -81,11 +83,14 @@ function LogoutIcon() {
 function MenuItem({
   href,
   external,
+  plain,
   icon,
   children,
 }: {
   href: string;
   external?: boolean;
+  // Link outside the locale routing (e.g. /admin): no locale prefix.
+  plain?: boolean;
   icon: ReactNode;
   children: ReactNode;
 }) {
@@ -97,6 +102,14 @@ function MenuItem({
         {icon}
         {children}
       </a>
+    );
+  }
+  if (plain) {
+    return (
+      <NextLink href={href} role="menuitem" className={classes}>
+        {icon}
+        {children}
+      </NextLink>
     );
   }
   return (
@@ -116,6 +129,7 @@ function SectionTitle({ children }: { children: ReactNode }) {
 }
 
 export function Navbar() {
+  const t = useTranslations('nav');
   const { user, logout } = useAuth();
   const pathname = usePathname();
   // The publish CTA is always shown: signed out it sends the user to sign up
@@ -189,16 +203,17 @@ export function Navbar() {
         <div className="flex flex-1 items-center gap-8">
           <Link href="/" className="flex shrink-0 items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-full.png" alt="Tu Chamba" className="h-9 w-auto" />
+            <img src="/logo-full.png" alt={t('logoAlt')} className="h-9 w-auto" />
           </Link>
         </div>
 
         {/* Desktop navigation: CTA + bell + account menu */}
         <nav className="hidden items-center md:flex">
           <div className="flex items-center gap-4 border-l border-outline-variant pl-6">
+            <LanguageSwitcher className="text-on-surface-variant" />
             <Link href={publishHref}>
               <Button variant="accent" className="px-5 py-2.5">
-                Publicar oferta de trabajo
+                {t('publish')}
               </Button>
             </Link>
 
@@ -213,7 +228,7 @@ export function Navbar() {
                 aria-haspopup="menu"
                 aria-expanded={userMenuOpen}
                 aria-label={
-                  user ? `Cuenta de ${firstName(user.name)}` : 'Cuenta y menú'
+                  user ? t('accountOf', { name: firstName(user.name) }) : t('accountMenu')
                 }
               >
                 {user ? (
@@ -248,33 +263,33 @@ export function Navbar() {
                     </div>
 
                     <div className="pb-1">
-                      <SectionTitle>Mi cuenta</SectionTitle>
+                      <SectionTitle>{t('sections.account')}</SectionTitle>
                       <MenuItem href="/my-listings" icon={<ListingsIcon />}>
-                        Mis anuncios
+                        {t('myListings')}
                       </MenuItem>
                       <MenuItem href="/interests" icon={<InterestIcon />}>
-                        Anuncios de tu interés
+                        {t('interests')}
                       </MenuItem>
                       <MenuItem href="/alerts" icon={<AlertsIcon />}>
-                        Alertas de empleo
+                        {t('alerts')}
                       </MenuItem>
                       <MenuItem href="/profile" icon={<ProfileIcon />}>
-                        Mi perfil
+                        {t('profile')}
                       </MenuItem>
                     </div>
 
                     {/* Panel access: admins only. */}
                     {user.isAdmin && (
                       <div className="border-t border-outline-variant/60 pb-1">
-                        <SectionTitle>Administración</SectionTitle>
-                        <MenuItem href="/admin" icon={<AdminIcon />}>
-                          Panel de administración
+                        <SectionTitle>{t('sections.admin')}</SectionTitle>
+                        <MenuItem href="/admin" plain icon={<AdminIcon />}>
+                          {t('adminPanel')}
                         </MenuItem>
                       </div>
                     )}
 
                     <div className="border-t border-outline-variant/60 pb-1">
-                      <SectionTitle>Enlaces</SectionTitle>
+                      <SectionTitle>{t('sections.links')}</SectionTitle>
                       <MenuItem href={CORPSC.url} external icon={<ExternalIcon />}>
                         {CORPSC.name}
                       </MenuItem>
@@ -288,7 +303,7 @@ export function Navbar() {
                         className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-error transition hover:bg-error-container/40"
                       >
                         <LogoutIcon />
-                        Cerrar sesión
+                        {t('logout')}
                       </button>
                     </div>
                   </>
@@ -297,18 +312,18 @@ export function Navbar() {
                     <div className="border-b border-outline-variant/60 px-4 py-4 text-center">
                       <Link href="/login" className="block">
                         <Button variant="accent" className="w-full">
-                          Ingresar
+                          {t('login')}
                         </Button>
                       </Link>
                       <p className="mt-3 text-xs text-on-surface-variant">
-                        ¿Eres nuevo?{' '}
+                        {t('newHere')}{' '}
                         <Link href="/register" className="font-medium text-brand hover:underline">
-                          Regístrate aquí
+                          {t('registerHere')}
                         </Link>
                       </p>
                     </div>
                     <div className="pb-1">
-                      <SectionTitle>Enlaces</SectionTitle>
+                      <SectionTitle>{t('sections.links')}</SectionTitle>
                       <MenuItem href={CORPSC.url} external icon={<ExternalIcon />}>
                         {CORPSC.name}
                       </MenuItem>
@@ -328,7 +343,7 @@ export function Navbar() {
             type="button"
             onClick={() => setMobileMenuOpen((o) => !o)}
             className="p-2 text-on-surface-variant hover:bg-surface-container-low focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            aria-label="Abrir menú"
+            aria-label={t('openMenu')}
             aria-expanded={mobileMenuOpen}
             aria-controls="mobile-menu"
           >
@@ -363,26 +378,26 @@ export function Navbar() {
 
           <div className="flex flex-col gap-1">
             <Link href={publishHref} className="rounded-full bg-secondary-container px-3 py-2 text-center text-sm font-bold text-on-secondary-container hover:brightness-105">
-              Publicar oferta de trabajo
+              {t('publish')}
             </Link>
             {user && (
               <>
                 <Link href="/my-listings" className={`px-3 py-2 text-base hover:bg-surface-container-low ${activeLinkClass('/my-listings')}`}>
-                  Mis anuncios
+                  {t('myListings')}
                 </Link>
                 <Link href="/interests" className={`px-3 py-2 text-base hover:bg-surface-container-low ${activeLinkClass('/interests')}`}>
-                  Anuncios de tu interés
+                  {t('interests')}
                 </Link>
                 <Link href="/alerts" className={`px-3 py-2 text-base hover:bg-surface-container-low ${activeLinkClass('/alerts')}`}>
-                  Alertas de empleo
+                  {t('alerts')}
                 </Link>
                 <Link href="/profile" className={`px-3 py-2 text-base hover:bg-surface-container-low ${activeLinkClass('/profile')}`}>
-                  Mi perfil
+                  {t('profile')}
                 </Link>
                 {user.isAdmin && (
-                  <Link href="/admin" className={`px-3 py-2 text-base hover:bg-surface-container-low ${activeLinkClass('/admin')}`}>
-                    Panel de administración
-                  </Link>
+                  <NextLink href="/admin" className="px-3 py-2 text-base text-on-surface-variant hover:bg-surface-container-low hover:text-brand">
+                    {t('adminPanel')}
+                  </NextLink>
                 )}
               </>
             )}
@@ -395,21 +410,23 @@ export function Navbar() {
               {CORPSC.name} ↗
             </a>
 
+            <LanguageSwitcher className="px-3 py-2 text-on-surface-variant" />
+
             {user ? (
               <button
                 type="button"
                 onClick={logout}
                 className="px-3 py-2 text-left text-sm text-error hover:bg-error-container/40"
               >
-                Cerrar sesión
+                {t('logout')}
               </button>
             ) : (
               <>
                 <Link href="/login" className={`px-3 py-2 text-base hover:bg-surface-container-low ${activeLinkClass('/login')}`}>
-                  Ingresar
+                  {t('login')}
                 </Link>
                 <Link href="/register" className="rounded-full bg-primary-container px-3 py-2 text-center text-sm font-bold text-on-primary-container">
-                  Registrarse
+                  {t('register')}
                 </Link>
               </>
             )}

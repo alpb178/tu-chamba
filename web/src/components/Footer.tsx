@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { IconBrandFacebook } from '@tabler/icons-react';
 import { CORPSC } from '@/lib/companies';
 import { DEPARTMENT_LABEL, DEPARTMENT_SLUG, Department } from '@/lib/types';
 import { Icon } from './Icon';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
 const SUPPORT_EMAIL = 'alesx2soporte@gmail.com';
 
@@ -58,6 +60,7 @@ function SocialLink({
 }
 
 export function Footer() {
+  const t = useTranslations('footer');
   return (
     <footer className="mt-24 w-full bg-on-surface py-14 text-inverse-on-surface">
       <div className="mx-auto max-w-7xl 2xl:max-w-screen-2xl px-4 sm:px-6 lg:px-12">
@@ -66,49 +69,48 @@ export function Footer() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo-full.png"
-              alt="Tu Chamba"
+              alt={t('logoAlt')}
               className="mb-4 h-10 w-auto brightness-0 invert"
             />
             <p className="max-w-sm text-sm text-inverse-on-surface/70">
-              La plataforma líder en Bolivia para encontrar y publicar empleos
-              de forma rápida y segura.
+              {t('tagline')}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-x-12 gap-y-4 sm:grid-cols-3">
-            <FooterCol title="Compañía">
+            <FooterCol title={t('company.title')}>
               <a
                 href={CORPSC.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={linkClass}
               >
-                Sobre nosotros
+                {t('company.about')}
               </a>
               <a href={`mailto:${SUPPORT_EMAIL}`} className={linkClass}>
-                Contacto
+                {t('company.contact')}
               </a>
             </FooterCol>
-            <FooterCol title="Legal">
+            <FooterCol title={t('legal.title')}>
               <Link href="/privacy" className={linkClass}>
-                Política de privacidad
+                {t('legal.privacy')}
               </Link>
               <Link href="/cookies" className={linkClass}>
-                Política de cookies
+                {t('legal.cookies')}
               </Link>
               <a
-                href={`mailto:${SUPPORT_EMAIL}?subject=Términos de servicio`}
+                href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t('legal.termsSubject'))}`}
                 className={linkClass}
               >
-                Términos de servicio
+                {t('legal.terms')}
               </a>
             </FooterCol>
-            <FooterCol title="Empresas">
+            <FooterCol title={t('employers.title')}>
               <Link
                 href="/listings/new"
                 className="text-sm font-bold text-secondary-container transition hover:brightness-110"
               >
-                Publicar oferta de trabajo
+                {t('employers.publish')}
               </Link>
             </FooterCol>
           </div>
@@ -116,11 +118,11 @@ export function Footer() {
 
         {/* SEO landing per department (kept from the previous footer). */}
         <nav
-          aria-label="Empleos por departamento"
+          aria-label={t('departments')}
           className="border-t border-inverse-on-surface/15 pt-6"
         >
           <span className={`block ${colTitleClass}`}>
-            Empleos por departamento
+            {t('departments')}
           </span>
           <div className="flex flex-wrap gap-x-4 gap-y-2">
             {(Object.keys(DEPARTMENT_SLUG) as Department[]).map((dep) => (
@@ -137,20 +139,20 @@ export function Footer() {
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-inverse-on-surface/15 pt-8 md:flex-row">
           <p className="text-xs text-inverse-on-surface/60">
-            © {new Date().getFullYear()} TuChamba. Todos los derechos
-            reservados.
+            {t('copyright', { year: String(new Date().getFullYear()) })}
           </p>
+          <LanguageSwitcher className="text-inverse-on-surface/80" />
           <div className="flex gap-3">
-            <SocialLink href={CORPSC.url} label="Sitio de CorpSC" icon="public" />
+            <SocialLink href={CORPSC.url} label={t('social.site')} icon="public" />
             <SocialLink
               href={`mailto:${SUPPORT_EMAIL}`}
-              label="Escríbenos por correo"
+              label={t('social.email')}
               icon="mail"
               external={false}
             />
             <SocialLink
               href="https://www.facebook.com/corpsc"
-              label="Síguenos en Facebook"
+              label={t('social.facebook')}
               iconNode={<IconBrandFacebook className="h-5 w-5" stroke={1.75} />}
             />
           </div>

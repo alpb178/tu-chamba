@@ -1,13 +1,7 @@
-import Link from 'next/link';
-import {
-  Ad,
-  Category,
-  CATEGORY_LABEL,
-  DEPARTMENT_LABEL,
-  STATUS_LABEL,
-  adEffectiveStatus,
-  salaryLabel,
-} from '@/lib/types';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
+import { useLabels } from '@/i18n/use-labels';
+import { Ad, Category, adEffectiveStatus } from '@/lib/types';
 import { Badge } from './Badge';
 import { Icon } from './Icon';
 
@@ -53,6 +47,8 @@ export function AdCard({
   ad: Ad;
   showStatus?: boolean;
 }) {
+  const t = useTranslations('adCard');
+  const labels = useLabels();
   const status = adEffectiveStatus(ad);
   // Views of the listing detail (social counter on the card).
   const views = ad._count?.visits ?? 0;
@@ -113,23 +109,22 @@ export function AdCard({
               {(ad.location || ad.department) && (
                 <span className="flex items-center gap-1">
                   <Icon name="location_on" className="text-sm" />
-                  {ad.location || DEPARTMENT_LABEL[ad.department!]}
+                  {ad.location || labels.department(ad.department!)}
                 </span>
               )}
               <span className="hidden h-1 w-1 rounded-full bg-outline sm:block" />
               <span>
-                Publicado: {new Date(ad.createdAt).toLocaleDateString('es-BO')}
+                {t('published', { date: labels.date(ad.createdAt) })}
               </span>
               {views > 0 && (
                 <>
                   <span className="hidden h-1 w-1 rounded-full bg-outline sm:block" />
                   <span
                     className="flex items-center gap-1"
-                    title={`${views} ${views === 1 ? 'visita' : 'visitas'} a este anuncio`}
+                    title={t('viewsTitle', { count: views })}
                   >
                     <Icon name="visibility" className="text-sm" />
-                    {views.toLocaleString('es-BO')}{' '}
-                    {views === 1 ? 'visita' : 'visitas'}
+                    {t('views', { count: views, formatted: labels.number(views) })}
                   </span>
                 </>
               )}
@@ -145,7 +140,7 @@ export function AdCard({
                 className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-[0.06em] ${STATUS_STYLE[status]}`}
               >
                 <Icon name={STATUS_ICON[status]} className="text-sm" />
-                {STATUS_LABEL[status]}
+                {labels.status(status)}
               </span>
             )}
           </div>
@@ -156,7 +151,7 @@ export function AdCard({
               ad.salaryMax != null ? 'text-base md:text-xl' : 'text-lg md:text-2xl'
             }`}
           >
-            {salaryLabel(ad)}
+            {labels.salary(ad)}
           </div>
         </div>
       </div>
@@ -166,7 +161,7 @@ export function AdCard({
           {/* Trust signal: publisher with a verified email. */}
           {ad.createdBy?.emailVerified && (
             <span className="mr-1 flex items-center gap-0.5 rounded-full bg-tertiary-container px-2 py-0.5 text-xs font-medium text-on-tertiary-container">
-              <Icon name="verified" className="text-sm" /> Verificado
+              <Icon name="verified" className="text-sm" /> {t('verified')}
             </span>
           )}
           {ad.ownerRating && ad.ownerRating.count > 0 ? (
@@ -176,14 +171,13 @@ export function AdCard({
                 {Number(ad.ownerRating.average).toFixed(1)}
               </span>
               <span className="ml-1 text-xs text-on-surface-variant">
-                ({ad.ownerRating.count}{' '}
-                {ad.ownerRating.count === 1 ? 'reseña' : 'reseñas'})
+                {t('reviews', { count: ad.ownerRating.count })}
               </span>
             </>
           ) : (
             ad.category && (
               <span className="text-sm text-on-surface-variant">
-                {CATEGORY_LABEL[ad.category]}
+                {labels.category(ad.category)}
               </span>
             )
           )}
@@ -191,11 +185,11 @@ export function AdCard({
         {/* The whole card is the link; the "Ver detalles" action is shown
             as an icon with a tooltip. */}
         <span
-          title="Ver detalles"
+          title={t('viewDetails')}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-on-primary transition-all group-hover:brightness-110 md:h-10 md:w-10"
         >
           <Icon name="arrow_forward" className="text-lg" />
-          <span className="sr-only">Ver detalles</span>
+          <span className="sr-only">{t('viewDetails')}</span>
         </span>
       </div>
     </Link>

@@ -1,0 +1,27 @@
+{
+  "logoAlt": "Tu Chamba",
+  "tagline": "La plataforma líder en Bolivia para encontrar y publicar empleos de forma rápida y segura.",
+  "company": {
+    "title": "Compañía",
+    "about": "Sobre nosotros",
+    "contact": "Contacto"
+  },
+  "legal": {
+    "title": "Legal",
+    "privacy": "Política de privacidad",
+    "cookies": "Política de cookies",
+    "terms": "Términos de servicio",
+    "termsSubject": "Términos de servicio"
+  },
+  "employers": {
+    "title": "Empresas",
+    "publish": "Publicar oferta de trabajo"
+  },
+  "departments": "Empleos por departamento",
+  "copyright": "© {year} TuChamba. Todos los derechos reservados.",
+  "social": {
+    "site": "Sitio de CorpSC",
+    "email": "Escríbenos por correo",
+    "facebook": "Síguenos en Facebook"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "notFoundTitle": "Oferta no encontrada — Tu Chamba",
+    "inDepartment": "en {department}",
+    "fallbackCategory": "Empleo"
+  },
+  "breadcrumb": {
+    "label": "Ruta de navegación",
+    "allListings": "Todas las ofertas"
+  },
+  "inactiveNotice": "Este anuncio está {status} y ya no se muestra en el portal.",
+  "refTitle": "Referencia para mencionar el anuncio al contactar",
+  "ref": "Ref. {ref}",
+  "publisherFallback": "Publicante",
+  "verified": "Verificado",
+  "descriptionHeading": "Descripción del puesto",
+  "requirementsHeading": "Requisitos del candidato",
+  "salaryNegotiable": "Salario a convenir",
+  "zone": "Zona: {department}",
+  "schedule": "Horario: {schedule}",
+  "dates": "Publicado: {published} · Vence: {expires}",
+  "visits": "{count, plural, one {# visita} other {# visitas}}",
+  "reviewsOwnerFallback": "este publicante",
+  "actions": {
+    "expand": "Ampliar",
+    "approximateLocation": "Ubicación aproximada según la dirección del anuncio.",
+    "openInGoogleMaps": "Abrir en Google Maps",
+    "expandedMap": "Mapa ampliado",
+    "close": "Cerrar",
+    "location": "Ubicación: {location}",
+    "reference": "Referencia: {reference}",
+    "share": "Compartir:",
+    "shareLocation": "Compartir ubicación por WhatsApp",
+    "shareListing": "Compartir anuncio por WhatsApp",
+    "shareLocationText": "Ubicación del anuncio Ref. {ref} en Tu Chamba: {url}",
+    "shareListingText": "Mira este anuncio en Tu Chamba (Ref. {ref}): {url}",
+    "waMessage": "Hola, vi tu anuncio en Tu Chamba (Ref. {ref}) y me interesa.",
+    "call": "Llamar",
+    "phone": "Teléfono: {phone}",
+    "loginToContact": "Inicia sesión para contactar: el teléfono se muestra al ingresar.",
+    "otherNumbers": "Otros números:",
+    "whatsappTo": "Escribir por WhatsApp al {phone}",
+    "unpublishConfirm": "¿Dar de baja este anuncio? Dejará de mostrarse en el portal.",
+    "edit": "Editar",
+    "unpublish": "Dar de baja",
+    "republish": "Republicar ({days} días)"
+  }
+}
