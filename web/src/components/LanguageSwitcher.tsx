@@ -108,11 +108,6 @@ export function LanguageSwitcher({
   const menuId = useId();
 
   const active = options.find((o) => o.code === current) ?? options[0];
-  // Read by the focus effect below without being one of its dependencies: a
-  // site that rebuilds `options` on every render must not yank focus back to
-  // the current language while the visitor is moving through the list.
-  const activeIndexRef = useRef(0);
-  activeIndexRef.current = Math.max(options.indexOf(active), 0);
 
   // Clicking or focusing outside closes it.
   useEffect(() => {
@@ -124,9 +119,14 @@ export function LanguageSwitcher({
     return () => document.removeEventListener('pointerdown', onPointer);
   }, [open]);
 
-  // On open, focus the current language so arrows start from there.
+  // On open, focus the current language so arrows start from there. It is
+  // found through the DOM and the effect depends on `open` alone: a site that
+  // rebuilds `options` on every render must not yank focus back to the current
+  // language while the visitor is moving through the list.
   useEffect(() => {
-    if (open) itemsRef.current[activeIndexRef.current]?.focus();
+    if (!open) return;
+    const items = itemsRef.current;
+    (items.find((node) => node?.getAttribute('aria-current') === 'true') ?? items[0])?.focus();
   }, [open]);
 
   const close = (returnFocus: boolean) => {
