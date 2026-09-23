@@ -2,12 +2,16 @@
 
 import { useState } from 'react';
 import { api } from '@/lib/api';
+import { useTranslations } from 'next-intl';
 import { REPORT_REASON_LABEL, ReportReason } from '@/lib/types';
+import { useLabels } from '@/i18n/use-labels';
 import { Button, FormField } from './ui';
 import { CustomSelect } from './CustomSelect';
 
 // Spam/abuse report. The admin decides the listing's visibility.
 export function ReportAd({ adId }: { adId: string }) {
+  const t = useTranslations('report');
+  const labels = useLabels();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<ReportReason>('SPAM');
   const [comment, setComment] = useState('');
@@ -40,7 +44,7 @@ export function ReportAd({ adId }: { adId: string }) {
   if (sent) {
     return (
       <p className="text-sm text-on-surface-variant">
-        Gracias, tu reporte fue enviado y será revisado por un administrador.
+        {t('sent')}
       </p>
     );
   }
@@ -52,24 +56,24 @@ export function ReportAd({ adId }: { adId: string }) {
         onClick={() => setOpen(true)}
         className="text-sm text-outline underline hover:text-error"
       >
-        Reportar este anuncio
+        {t('open')}
       </button>
     );
   }
 
   return (
     <form onSubmit={onSubmit} className="space-y-3 border border-outline-variant p-3">
-      <p className="text-sm font-medium text-on-surface-variant">Reportar anuncio</p>
-      <FormField label="Motivo">
+      <p className="text-sm font-medium text-on-surface-variant">{t('title')}</p>
+      <FormField label={t('reason')}>
         <CustomSelect
           value={reason}
           onChange={(v) => setReason(v as ReportReason)}
-          options={Object.entries(REPORT_REASON_LABEL).map(
-            ([value, label]) => ({ value, label }),
+          options={(Object.keys(REPORT_REASON_LABEL) as ReportReason[]).map(
+            (value) => ({ value, label: labels.reportReason(value) }),
           )}
         />
       </FormField>
-      <FormField label="Comentario (opcional)">
+      <FormField label={t('comment')}>
         <textarea
           className="w-full border border-outline-variant px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand"
           rows={2}
@@ -80,10 +84,10 @@ export function ReportAd({ adId }: { adId: string }) {
       {error && <p className="text-sm text-error">{error}</p>}
       <div className="flex gap-2">
         <Button type="submit" variant="danger" disabled={saving}>
-          {saving ? 'Enviando...' : 'Enviar reporte'}
+          {saving ? t('sending') : t('submit')}
         </Button>
         <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-          Cancelar
+          {t('cancel')}
         </Button>
       </div>
     </form>

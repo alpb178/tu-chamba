@@ -1,0 +1,74 @@
+{
+  "updated": "Last updated: {date}",
+  "privacy": {
+    "metaTitle": "Privacy Policy — Tu Chamba",
+    "metaDescription": "How Tu Chamba collects, uses and protects your personal data when you use the job board.",
+    "title": "Privacy Policy",
+    "date": "July 11, 2026",
+    "whoWeAre": {
+      "title": "Who we are",
+      "body": "Tu Chamba is a Bolivian job board operated by Grupo CorpSC. If you have any questions about this policy or about your data, email us at <mail>{email}</mail>."
+    },
+    "dataCollected": {
+      "title": "What data we collect",
+      "account": "<b>Your account details:</b> name, email address and phone number (optional). Your password is stored encrypted; if you sign in with Google, we don't store a password.",
+      "listings": "<b>Listings you post:</b> description, salary, location and any contact phone number you choose to include.",
+      "activity": "<b>Activity on the site:</b> listing views (in aggregate), the listings you show interest in when you get in touch, your reviews and your notifications."
+    },
+    "purposes": {
+      "title": "How we use it",
+      "item1": "To run the site: posting listings, searching and getting in touch.",
+      "item2": "To show a listing's phone number and location only to signed-in users.",
+      "item3": "To notify you of relevant activity (people interested in your listings, reviews you receive, expiring listings, and any job alerts you set up).",
+      "item4": "To moderate reported content and prevent spam."
+    },
+    "sharing": {
+      "title": "Who we share data with",
+      "p1": "We don't sell your data or share it with third parties for advertising purposes. A listing's phone number and location are shown to registered users, because that's the whole point of the site: letting people contact you. Contact via WhatsApp or phone call happens outside Tu Chamba, directly between the people involved.",
+      "p2": "If you sign in with Google, Google confirms your email address to us in accordance with its own privacy policy."
+    },
+    "retention": {
+      "title": "How long we keep it",
+      "body": "For as long as your account exists. If you delete your account, your listings, interests, alerts and notifications are deleted too. Reviews you wrote are deleted along with your account."
+    },
+    "rights": {
+      "title": "Your rights",
+      "body": "You can view and correct your details from <b>My profile</b>, delete your listings from <b>My listings</b> and remove listings from your interest list. To delete your account or exercise any other right over your data, email us at <mail>{email}</mail>."
+    },
+    "changes": {
+      "title": "Changes to this policy",
+      "body": "If we change this policy, we'll update the date on this page. Significant changes will be announced on the site."
+    }
+  },
+  "cookies": {
+    "metaTitle": "Cookie Policy — Tu Chamba",
+    "metaDescription": "Which cookies and local storage Tu Chamba uses, and why.",
+    "title": "Cookie Policy",
+    "date": "July 11, 2026",
+    "essentials": {
+      "title": "The essentials",
+      "body": "Tu Chamba doesn't use advertising cookies or third-party tracking cookies. We only use the storage that is strictly necessary for the site to work."
+    },
+    "stored": {
+      "title": "What we store in your browser",
+      "colItem": "Item",
+      "colType": "Type",
+      "colPurpose": "What it's for",
+      "tokenType": "Local storage (technical)",
+      "tokenPurpose": "Keeps you signed in. It's deleted when you sign out.",
+      "googleItem": "Google cookies",
+      "googleType": "Third party (only if you use it)",
+      "googlePurpose": "If you choose \"Continue with Google\", Google may use its own cookies to authenticate you, in line with its policy."
+    },
+    "notDone": {
+      "title": "What we DON'T do",
+      "item1": "We don't use advertising or remarketing cookies.",
+      "item2": "We don't share your browsing with ad networks.",
+      "item3": "Listing views are counted in aggregate on our server, without identifying you through cookies."
+    },
+    "control": {
+      "title": "How to control it",
+      "body": "You can clear local storage from your browser settings (doing so will sign you out). If you have any questions, email us at <mail>{email}</mail>."
+    }
+  }
+}

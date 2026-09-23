@@ -72,6 +72,20 @@ describe('AuthService.register', () => {
     expect(res.user).not.toHaveProperty('password');
   });
 
+  it('e-mails a verification link to the Spanish site', async () => {
+    const { service, prisma, mail } = buildService();
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue({ ...baseUser });
+
+    await service.register({ email: 'ana@test.com', password: 'secret123', name: 'Ana' });
+
+    expect(mail.sendVerification).toHaveBeenCalledWith(
+      baseUser.email,
+      baseUser.name,
+      expect.stringMatching(/\/es\/verify\?token=\w+/),
+    );
+  });
+
   it('rejects already registered emails', async () => {
     const { service, prisma } = buildService();
     prisma.user.findUnique.mockResolvedValue(baseUser);
@@ -257,7 +271,7 @@ describe('AuthService.forgotPassword / resetPassword', () => {
     expect(mail.sendPasswordReset).toHaveBeenCalledWith(
       'ana@test.com',
       'Ana',
-      expect.stringContaining('/reset-password?token='),
+      expect.stringContaining('/es/reset-password?token='),
     );
   });
 

@@ -25,6 +25,7 @@
     "lucide-react": "^1.25.0",
     "mini-svg-data-uri": "^1.4.4",
     "next": "^16.2.5",
+    "next-intl": "^4.14.6",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-phone-number-input": "^3.4.17",

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useId, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Icon } from './Icon';
 
 export interface SelectOption {
@@ -24,7 +25,7 @@ export function CustomSelect({
   value,
   onChange,
   options,
-  placeholder = 'Selecciona…',
+  placeholder,
   icon,
   required = false,
   name,
@@ -44,6 +45,7 @@ export function CustomSelect({
   // Search box inside the dropdown; by default only for long lists.
   searchable?: boolean;
 }) {
+  const t = useTranslations('home.select');
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const [query, setQuery] = useState('');
@@ -166,7 +168,7 @@ export function CustomSelect({
           <Icon name={icon} className="text-outline" />
         )}
         <span className={`flex-1 truncate ${selected ? '' : 'text-outline'}`}>
-          {selected ? selected.label : placeholder}
+          {selected ? selected.label : (placeholder ?? t('placeholder'))}
         </span>
         <Icon
           name="expand_more"
@@ -202,8 +204,8 @@ export function CustomSelect({
                   setActive(0);
                 }}
                 onKeyDown={onNavKey}
-                placeholder="Buscar…"
-                aria-label="Buscar opción"
+                placeholder={t('search')}
+                aria-label={t('searchLabel')}
                 aria-controls={listboxId}
                 aria-activedescendant={
                   active >= 0 ? `${listboxId}-${active}` : undefined
@@ -221,7 +223,7 @@ export function CustomSelect({
           >
             {filtered.length === 0 && (
               <li className="px-3 py-2 text-sm text-outline">
-                Sin coincidencias.
+                {t('noMatches')}
               </li>
             )}
             {filtered.map((o, i) => (

@@ -1,4 +1,5 @@
-import { JobType, JOB_TYPE_LABEL } from '@/lib/types';
+import { JobType } from '@/lib/types';
+import { useLabels } from '@/i18n/use-labels';
 
 // Work schedule chips using the palette containers (amber/green/blue).
 const COLORS: Record<JobType, string> = {
@@ -13,11 +14,12 @@ const COLORS: Record<JobType, string> = {
 };
 
 export function Badge({ jobType }: { jobType: JobType }) {
+  const labels = useLabels();
   return (
     <span
       className={`inline-block rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.08em] ${COLORS[jobType]}`}
     >
-      {JOB_TYPE_LABEL[jobType]}
+      {labels.jobType(jobType)}
     </span>
   );
 }

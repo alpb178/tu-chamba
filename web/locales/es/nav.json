@@ -1,0 +1,27 @@
+{
+  "language": {
+    "label": "Idioma",
+    "es": "Ver en español",
+    "en": "View in English"
+  },
+  "logoAlt": "Tu Chamba",
+  "publish": "Publicar oferta de trabajo",
+  "accountOf": "Cuenta de {name}",
+  "accountMenu": "Cuenta y menú",
+  "openMenu": "Abrir menú",
+  "sections": {
+    "account": "Mi cuenta",
+    "admin": "Administración",
+    "links": "Enlaces"
+  },
+  "myListings": "Mis anuncios",
+  "interests": "Anuncios de tu interés",
+  "alerts": "Alertas de empleo",
+  "profile": "Mi perfil",
+  "adminPanel": "Panel de administración",
+  "logout": "Cerrar sesión",
+  "login": "Ingresar",
+  "newHere": "¿Eres nuevo?",
+  "registerHere": "Regístrate aquí",
+  "register": "Registrarse"
+}

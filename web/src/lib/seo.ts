@@ -1,7 +1,29 @@
+import type { Metadata } from 'next';
 import { Ad, DEPARTMENT_LABEL, JobType } from './types';
+import { defaultLocale, locales, type Locale } from '@/i18n/routing';
 
 export const SITE =
   process.env.NEXT_PUBLIC_SITE_URL ?? 'https://tu-chamba.corpsc.com';
+
+// Path of a public page in the given locale: "/listings/1" -> "/en/listings/1".
+export function localePath(locale: Locale, path: string): string {
+  return `/${locale}${path === '/' ? '' : path}`;
+}
+
+// Canonical URL of the page in its own locale plus hreflang alternates for
+// every locale (x-default points to Spanish, the default locale).
+export function localeAlternates(
+  locale: Locale,
+  path: string,
+): NonNullable<Metadata['alternates']> {
+  return {
+    canonical: localePath(locale, path),
+    languages: {
+      ...Object.fromEntries(locales.map((l) => [l, localePath(l, path)])),
+      'x-default': localePath(defaultLocale, path),
+    },
+  };
+}
 
 // Listing title. The field is required since the July 2026 migration;
 // deriving it from the description remains as a safety net.
@@ -30,12 +52,13 @@ const EMPLOYMENT_TYPE: Record<JobType, string> = {
 // JSON-LD JobPosting for Google for Jobs rich results.
 // Must only be emitted for live listings (Google penalizes the markup on
 // expired listings; validThrough covers natural expiration).
-export function jobPostingJsonLd(ad: Ad) {
+export function jobPostingJsonLd(ad: Ad, locale: Locale = defaultLocale) {
+  const requirementsLabel = locale === 'en' ? 'Requirements' : 'Requisitos';
   return {
     '@context': 'https://schema.org',
     '@type': 'JobPosting',
     title: adTitle(ad),
-    description: [ad.description, ad.requirements && `Requisitos: ${ad.requirements}`]
+    description: [ad.description, ad.requirements && `${requirementsLabel}: ${ad.requirements}`]
       .filter(Boolean)
       .join('\n\n'),
     datePosted: ad.createdAt,
@@ -80,21 +103,23 @@ export function jobPostingJsonLd(ad: Ad) {
       name: 'Tu Chamba',
       value: ad.id,
     },
-    url: `${SITE}/listings/${ad.id}`,
+    url: `${SITE}${localePath(locale, `/listings/${ad.id}`)}`,
     directApply: true,
   };
 }
 
 // WebSite with SearchAction: enables the sitelinks search box in Google.
-export function webSiteJsonLd() {
+export function webSiteJsonLd(locale: Locale = defaultLocale) {
+  const home = `${SITE}${localePath(locale, '/')}`;
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: 'Tu Chamba',
-    url: SITE,
+    url: home,
+    inLanguage: locale,
     potentialAction: {
       '@type': 'SearchAction',
-      target: `${SITE}/?q={search_term_string}`,
+      target: `${home}?q={search_term_string}`,
       'query-input': 'required name=search_term_string',
     },
   };

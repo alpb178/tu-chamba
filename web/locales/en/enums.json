@@ -1,0 +1,51 @@
+{
+  "jobType": {
+    "DIARIA": "Daily",
+    "TIEMPO_COMPLETO": "Full-time",
+    "MEDIA_JORNADA": "Part-time",
+    "POR_CONTRATO": "Contract",
+    "PASANTIA": "Internship",
+    "FREELANCE": "Freelance",
+    "A_CONVENIR": "Negotiable"
+  },
+  "category": {
+    "VENTAS": "Sales",
+    "GASTRONOMIA": "Food service",
+    "CONSTRUCCION": "Construction",
+    "LIMPIEZA": "Cleaning",
+    "CUIDADO_PERSONAS": "Caregiving",
+    "TRANSPORTE": "Transport",
+    "ADMINISTRACION": "Administration",
+    "TECNOLOGIA": "Technology",
+    "EDUCACION": "Education",
+    "SALUD": "Health",
+    "BELLEZA": "Beauty",
+    "SEGURIDAD": "Security",
+    "AGROPECUARIA": "Agriculture",
+    "MECANICA": "Mechanics",
+    "MARKETING_DISENO": "Marketing & design",
+    "OTRO": "Other"
+  },
+  "status": {
+    "ACTIVO": "Active",
+    "VENCIDO": "Expired",
+    "DADO_DE_BAJA": "Taken down"
+  },
+  "reportReason": {
+    "SPAM": "Spam",
+    "FRAUDE": "Fraud / scam",
+    "CONTENIDO_INAPROPIADO": "Inappropriate content",
+    "OTRO": "Other"
+  },
+  "sort": {
+    "newest": "Newest first",
+    "oldest": "Oldest first",
+    "salary-desc": "Salary: high to low",
+    "salary-asc": "Salary: low to high"
+  },
+  "salary": {
+    "negotiable": "Negotiable",
+    "amount": "Bs {amount}",
+    "range": "Bs {min} to {max}"
+  }
+}

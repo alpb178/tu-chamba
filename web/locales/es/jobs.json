@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "fallbackTitle": "Empleos — Tu Chamba",
+    "title": "Empleos en {department} — Tu Chamba",
+    "description": "Ofertas de trabajo y chamba en {department}, Bolivia. Encuentra empleo cerca de ti y contacta por WhatsApp."
+  },
+  "home": "Inicio",
+  "heading": "Empleos en {department}",
+  "count": "{count} {count, plural, one {oferta disponible} other {ofertas disponibles}} en {department}, Bolivia.",
+  "empty": "Aún no hay ofertas activas en {department}. Vuelve pronto."
+}

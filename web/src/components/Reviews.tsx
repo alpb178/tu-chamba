@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { api } from '@/lib/api';
 import { Review, ReviewsResponse } from '@/lib/types';
 import { useAuth } from '@/lib/auth';
@@ -8,8 +9,9 @@ import { Button, FormField } from './ui';
 import { ReviewSkeleton } from './Skeleton';
 
 function Stars({ value }: { value: number }) {
+  const t = useTranslations('reviews');
   return (
-    <span className="text-secondary-container" aria-label={`${value} de 5 estrellas`}>
+    <span className="text-secondary-container" aria-label={t('starsLabel', { value })}>
       {'★'.repeat(value)}
       <span className="text-outline-variant">{'★'.repeat(5 - value)}</span>
     </span>
@@ -27,6 +29,7 @@ export function Reviews({
   ownerId: string;
   ownerName: string;
 }) {
+  const t = useTranslations('reviews');
   const { user } = useAuth();
   const [data, setData] = useState<ReviewsResponse | null>(null);
   const [rating, setRating] = useState(5);
@@ -77,20 +80,22 @@ export function Reviews({
     <section className="space-y-3 border-t border-outline-variant/60 pt-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-on-surface-variant">
-          Reseñas de {ownerName}
+          {t('heading', { name: ownerName })}
         </h2>
         {data && data.total > 0 && (
           <p className="text-sm text-on-surface-variant">
             <Stars value={Math.round(data.average ?? 0)} />{' '}
-            {data.average?.toFixed(1)} · {data.total}{' '}
-            {data.total === 1 ? 'reseña' : 'reseñas'}
+            {t('summary', {
+              average: data.average?.toFixed(1) ?? '',
+              count: data.total,
+            })}
           </p>
         )}
       </div>
 
       {data && data.items.length === 0 && (
         <p className="text-sm text-on-surface-variant">
-          Este publicante aún no tiene reseñas.
+          {t('empty')}
         </p>
       )}
 
@@ -107,7 +112,7 @@ export function Reviews({
           <li key={r.id} className="bg-surface-container-low p-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-on-surface-variant">
-                {r.author?.name ?? 'Usuario'}
+                {r.author?.name ?? t('anonymous')}
               </span>
               <Stars value={r.rating} />
             </div>
@@ -118,15 +123,13 @@ export function Reviews({
 
       {user && !isOwner && alreadyReviewed && (
         <p className="text-sm text-on-surface-variant">
-          {submitted
-            ? '¡Gracias por tu reseña!'
-            : 'Ya calificaste este anuncio.'}
+          {submitted ? t('thanks') : t('alreadyReviewed')}
         </p>
       )}
 
       {canReview && !formOpen && (
         <Button variant="outline" onClick={() => setFormOpen(true)}>
-          Calificar este anuncio
+          {t('rate')}
         </Button>
       )}
 
@@ -134,17 +137,17 @@ export function Reviews({
         <form onSubmit={onSubmit} className="space-y-3 border border-outline-variant p-3">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium text-on-surface-variant">
-              Calificar este anuncio
+              {t('rate')}
             </p>
             <button
               type="button"
               onClick={() => setFormOpen(false)}
               className="text-xs text-on-surface-variant underline hover:text-brand"
             >
-              Cancelar
+              {t('cancel')}
             </button>
           </div>
-          <FormField label="Calificación">
+          <FormField label={t('rating')}>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
@@ -154,14 +157,14 @@ export function Reviews({
                   className={`text-2xl leading-none ${
                     n <= rating ? 'text-secondary-container' : 'text-outline-variant'
                   }`}
-                  aria-label={`${n} estrellas`}
+                  aria-label={t('starOption', { count: n })}
                 >
                   ★
                 </button>
               ))}
             </div>
           </FormField>
-          <FormField label="Comentario">
+          <FormField label={t('comment')}>
             <textarea
               className="w-full border border-outline-variant px-3 py-2 text-base outline-none focus:border-brand focus:ring-1 focus:ring-brand"
               rows={3}
@@ -172,7 +175,7 @@ export function Reviews({
           </FormField>
           {error && <p className="text-sm text-error">{error}</p>}
           <Button type="submit" disabled={saving}>
-            {saving ? 'Enviando...' : 'Enviar reseña'}
+            {saving ? t('sending') : t('submit')}
           </Button>
         </form>
       )}

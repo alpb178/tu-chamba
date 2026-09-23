@@ -1,0 +1,26 @@
+{
+  "section": {
+    "label": "Sites you may like",
+    "previous": "Previous",
+    "next": "Next",
+    "goTo": "Go to {name}",
+    "visit": "Visit site",
+    "visitLabel": "Visit the {name} website (opens in a new tab)"
+  },
+  "corpsc": {
+    "description": "Want to build your website, app or platform? We make it tailored to you.",
+    "tagline": "We turn your ideas into digital products"
+  },
+  "dando-muela": {
+    "description": "An app to connect with people. Download it and start chatting.",
+    "tagline": "Meet people and chat"
+  },
+  "iris-natural": {
+    "description": "Natural products store.",
+    "tagline": "Natural products"
+  },
+  "invoices": {
+    "description": "A portal to create and manage your invoices quickly and easily.",
+    "tagline": "PDF invoices in minutes"
+  }
+}

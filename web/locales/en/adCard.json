@@ -1,0 +1,8 @@
+{
+  "published": "Posted: {date}",
+  "views": "{formatted} {count, plural, one {view} other {views}}",
+  "viewsTitle": "{count} {count, plural, one {view} other {views}} of this listing",
+  "verified": "Verified",
+  "reviews": "({count} {count, plural, one {review} other {reviews}})",
+  "viewDetails": "View details"
+}

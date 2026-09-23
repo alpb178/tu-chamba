@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+import type { Messages } from '@/i18n/messages';
 import { COMPANIES } from '@/lib/companies';
 import { groupSiteUrl, siteDomain } from '@/lib/group-ticker';
 import { trackSiteClick } from '@/lib/track-site-click';
@@ -13,9 +15,13 @@ import { trackSiteClick } from '@/lib/track-site-click';
 // ends, the second is exactly where the first started, so the loop has no
 // jump. The duplicate copy is hidden from screen readers and out of the tab
 // order.
+// Slugs with localized copy in the `companies` namespace.
+type CompanySlug = Exclude<keyof Messages['companies'], 'section'>;
+
 export function GroupTicker() {
+  const t = useTranslations('companies');
   return (
-    <aside className="gt" aria-label="Sitios de interés">
+    <aside className="gt" aria-label={t('section.label')}>
       <div className="gt-viewport">
         <div className="gt-track">
           <TickerRow />
@@ -29,6 +35,7 @@ export function GroupTicker() {
 }
 
 function TickerRow({ duplicate = false }: { duplicate?: boolean }) {
+  const t = useTranslations('companies');
   return (
     <ul className="gt-row" aria-hidden={duplicate || undefined}>
       {COMPANIES.map((company) => (
@@ -48,7 +55,7 @@ function TickerRow({ duplicate = false }: { duplicate?: boolean }) {
             />
             <span className="gt-name">{company.name}</span>
             <span className="gt-url">{siteDomain(company.url)}</span>
-            <span className="gt-desc">{company.tagline}</span>
+            <span className="gt-desc">{t(`${company.slug as CompanySlug}.tagline`)}</span>
           </a>
         </li>
       ))}

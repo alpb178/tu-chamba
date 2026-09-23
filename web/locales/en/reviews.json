@@ -1,0 +1,16 @@
+{
+  "starsLabel": "{value} out of 5 stars",
+  "heading": "Reviews of {name}",
+  "summary": "{average} · {count, plural, one {# review} other {# reviews}}",
+  "empty": "This poster has no reviews yet.",
+  "anonymous": "User",
+  "thanks": "Thanks for your review!",
+  "alreadyReviewed": "You've already rated this listing.",
+  "rate": "Rate this listing",
+  "cancel": "Cancel",
+  "rating": "Rating",
+  "starOption": "{count, plural, one {# star} other {# stars}}",
+  "comment": "Comment",
+  "sending": "Sending...",
+  "submit": "Submit review"
+}

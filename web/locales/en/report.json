@@ -1,0 +1,10 @@
+{
+  "sent": "Thanks, your report has been sent and will be reviewed by an administrator.",
+  "open": "Report this listing",
+  "title": "Report listing",
+  "reason": "Reason",
+  "comment": "Comment (optional)",
+  "sending": "Sending...",
+  "submit": "Send report",
+  "cancel": "Cancel"
+}

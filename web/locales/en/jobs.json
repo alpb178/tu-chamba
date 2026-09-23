@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "fallbackTitle": "Jobs — Tu Chamba",
+    "title": "Jobs in {department} — Tu Chamba",
+    "description": "Job openings and gigs in {department}, Bolivia. Find work near you and get in touch via WhatsApp."
+  },
+  "home": "Home",
+  "heading": "Jobs in {department}",
+  "count": "{count} {count, plural, one {job available} other {jobs available}} in {department}, Bolivia.",
+  "empty": "No active jobs in {department} yet. Check back soon."
+}

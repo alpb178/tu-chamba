@@ -34,4 +34,27 @@ describe('GoogleIndexingService', () => {
     const service = new GoogleIndexingService();
     await expect(service.notifyDeleted('a1')).resolves.toBeUndefined();
   });
+
+  it('notifies the Spanish (locale-prefixed) URL of the listing', async () => {
+    process.env = {
+      ...env,
+      WEB_URL: 'https://tu-chamba.test',
+      GOOGLE_INDEXING_CLIENT_EMAIL: 'svc@project.iam.gserviceaccount.com',
+      GOOGLE_INDEXING_PRIVATE_KEY: 'key',
+    };
+    jest
+      .spyOn(GoogleIndexingService.prototype as never, 'accessToken' as never)
+      .mockResolvedValue('tok' as never);
+    const fetchSpy = jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue({ ok: true } as Response);
+
+    await new GoogleIndexingService().notifyUpdated('a1');
+
+    const body = JSON.parse(String(fetchSpy.mock.calls[0][1]?.body));
+    expect(body).toEqual({
+      url: 'https://tu-chamba.test/es/listings/a1',
+      type: 'URL_UPDATED',
+    });
+  });
 });

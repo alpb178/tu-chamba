@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+// next-intl's usePathname strips the locale, so stats keep recording
+// locale-less paths (/listings/1) like the historical rows.
+import { usePathname } from '@/i18n/navigation';
 import { api } from '@/lib/api';
 
 // Records every portal page view (the admin panel's site visits metric).

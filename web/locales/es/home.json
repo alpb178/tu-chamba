@@ -1,0 +1,57 @@
+{
+  "hero": {
+    "bannerAlt": "Ofrece o busca trabajo — conexión directa, sin CV"
+  },
+  "catalog": {
+    "title": "Encuentra trabajos diarios al instante",
+    "subtitle": "Conecta directo con empleadores locales — sin CV, por WhatsApp. <link>Publica u ofrece trabajo en toda Bolivia.</link>",
+    "searchPlaceholder": "Buscar ofertas",
+    "searchLabel": "Buscar ofertas"
+  },
+  "chips": {
+    "remove": "Quitar el filtro {label}",
+    "salaryFrom": "Bs {min} o más",
+    "salaryRange": "Bs {min} – {max}",
+    "clearAll": "Limpiar todo"
+  },
+  "toolbar": {
+    "openFilters": "Abrir filtros",
+    "filters": "Filtros",
+    "count": "<b>{count}</b> <muted>{count, plural, one {oferta} other {ofertas}}</muted>",
+    "countIn": "<b>{count}</b> <muted>{count, plural, one {oferta} other {ofertas}} en {department}</muted>",
+    "sort": "Ordenar",
+    "comfortable": "Vista cómoda",
+    "compact": "Vista compacta",
+    "publish": "Publicar oferta de trabajo",
+    "refresh": "Actualizar la lista"
+  },
+  "empty": {
+    "title": "No se encontraron ofertas con estos filtros.",
+    "hint": "Prueba quitar algún filtro o buscar con otras palabras.",
+    "clear": "Limpiar filtros"
+  },
+  "list": {
+    "loadingMore": "Cargando más ofertas…",
+    "showing": "Mostrando {shown} de {total} {total, plural, one {oferta} other {ofertas}}"
+  },
+  "drawer": {
+    "close": "Cerrar filtros",
+    "closeButton": "Cerrar",
+    "title": "Filtros",
+    "show": "Ver {count} {count, plural, one {resultado} other {resultados}}"
+  },
+  "backToTop": "Volver arriba",
+  "pagination": {
+    "summary": "Mostrando del <b>{from}</b> al <b>{to}</b> de <b>{total}</b> {total, plural, one {resultado} other {resultados}}",
+    "label": "Paginación",
+    "previous": "Página anterior",
+    "next": "Página siguiente",
+    "page": "Página {page}"
+  },
+  "select": {
+    "placeholder": "Selecciona…",
+    "search": "Buscar…",
+    "searchLabel": "Buscar opción",
+    "noMatches": "Sin coincidencias."
+  }
+}

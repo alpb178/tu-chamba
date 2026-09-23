@@ -53,7 +53,8 @@ export class AuthService {
     await this.mail.sendVerification(
       user.email,
       user.name,
-      `${base}/verify?token=${token}`,
+      // The e-mails are in Spanish, so the link opens the Spanish site.
+      `${base}/es/verify?token=${token}`,
     );
   }
 
@@ -302,7 +303,7 @@ export class AuthService {
     await this.mail.sendPasswordReset(
       user.email,
       user.name,
-      `${base}/reset-password?token=${token}`,
+      `${base}/es/reset-password?token=${token}`,
     );
     return { sent: true };
   }

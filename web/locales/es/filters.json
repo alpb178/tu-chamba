@@ -1,0 +1,13 @@
+{
+  "title": "Filtros",
+  "clear": "Limpiar",
+  "jobType": "Tipo de jornada",
+  "category": "Categoría",
+  "department": "Departamento",
+  "salary": "Salario (Bs)",
+  "salaryMin": "Salario mínimo",
+  "salaryMax": "Salario máximo",
+  "amount": "Bs {amount}",
+  "allSameSalary": "Todas las ofertas actuales pagan Bs {amount}.",
+  "noSalary": "Sin ofertas con salario publicado."
+}

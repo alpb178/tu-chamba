@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Category,
   CATEGORY_LABEL,
@@ -10,6 +11,7 @@ import {
   JobType,
   JOB_TYPE_LABEL,
 } from '@/lib/types';
+import { useLabels } from '@/i18n/use-labels';
 import { cn } from '@/lib/cn';
 import { Skeleton } from './Skeleton';
 
@@ -124,6 +126,8 @@ function SalaryRange({
   maxValue: number;
   onCommit: (lo: number, hi: number) => void;
 }) {
+  const t = useTranslations('filters');
+  const labels = useLabels();
   const [lo, setLo] = useState(minValue);
   const [hi, setHi] = useState(maxValue);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -204,8 +208,8 @@ function SalaryRange({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between text-sm text-on-surface">
-        <span>Bs {lo.toLocaleString('es-BO')}</span>
-        <span>Bs {hi.toLocaleString('es-BO')}</span>
+        <span>{t('amount', { amount: labels.number(lo) })}</span>
+        <span>{t('amount', { amount: labels.number(hi) })}</span>
       </div>
       <div
         ref={trackRef}
@@ -223,7 +227,7 @@ function SalaryRange({
         <div
           role="slider"
           tabIndex={0}
-          aria-label="Salario mínimo"
+          aria-label={t('salaryMin')}
           aria-valuemin={min}
           aria-valuemax={hi}
           aria-valuenow={lo}
@@ -234,7 +238,7 @@ function SalaryRange({
         <div
           role="slider"
           tabIndex={0}
-          aria-label="Salario máximo"
+          aria-label={t('salaryMax')}
           aria-valuemin={lo}
           aria-valuemax={max}
           aria-valuenow={hi}
@@ -259,6 +263,8 @@ export function FiltersSidebar({
   facets: Facets | null;
   onChange: (f: Filters) => void;
 }) {
+  const t = useTranslations('filters');
+  const labels = useLabels();
   function toggle<T>(list: T[], item: T): T[] {
     return list.includes(item)
       ? list.filter((x) => x !== item)
@@ -291,10 +297,10 @@ export function FiltersSidebar({
   const departments = Object.keys(DEPARTMENT_LABEL) as Department[];
 
   return (
-    <aside aria-label="Filtros" className="text-sm">
+    <aside aria-label={t('title')} className="text-sm">
       <div className="flex items-center justify-between pb-1">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-on-surface">
-          Filtros
+          {t('title')}
         </p>
         {hasFilters ? (
           <button
@@ -302,33 +308,33 @@ export function FiltersSidebar({
             onClick={() => onChange(NO_FILTERS)}
             className="text-xs font-semibold uppercase tracking-[0.12em] text-on-surface-variant underline-offset-4 hover:text-on-surface hover:underline"
           >
-            Limpiar
+            {t('clear')}
           </button>
         ) : null}
       </div>
 
-      <Section title="Tipo de jornada">
+      <Section title={t('jobType')}>
         <ul className="space-y-2">
-          {(Object.keys(JOB_TYPE_LABEL) as JobType[]).map((t) => (
+          {(Object.keys(JOB_TYPE_LABEL) as JobType[]).map((j) => (
             <Option
-              key={t}
-              label={JOB_TYPE_LABEL[t]}
-              count={facets?.jobType[t] ?? 0}
-              checked={value.jobType.includes(t)}
+              key={j}
+              label={labels.jobType(j)}
+              count={facets?.jobType[j] ?? 0}
+              checked={value.jobType.includes(j)}
               onToggle={() =>
-                onChange({ ...value, jobType: toggle(value.jobType, t) })
+                onChange({ ...value, jobType: toggle(value.jobType, j) })
               }
             />
           ))}
         </ul>
       </Section>
 
-      <Section title="Categoría">
+      <Section title={t('category')}>
         <ul className="space-y-2">
           {categories.map((c) => (
             <Option
               key={c}
-              label={CATEGORY_LABEL[c]}
+              label={labels.category(c)}
               count={facets?.category[c] ?? 0}
               checked={value.category.includes(c)}
               onToggle={() =>
@@ -339,12 +345,12 @@ export function FiltersSidebar({
         </ul>
       </Section>
 
-      <Section title="Departamento">
+      <Section title={t('department')}>
         <ul className="space-y-2">
           {departments.map((d) => (
             <Option
               key={d}
-              label={DEPARTMENT_LABEL[d]}
+              label={labels.department(d)}
               count={facets?.department[d] ?? 0}
               checked={value.department.includes(d)}
               onToggle={() =>
@@ -355,7 +361,7 @@ export function FiltersSidebar({
         </ul>
       </Section>
 
-      <Section title="Salario (Bs)">
+      <Section title={t('salary')}>
         {facets.salaryMax > facets.salaryMin ? (
           <SalaryRange
             min={facets.salaryMin}
@@ -374,8 +380,8 @@ export function FiltersSidebar({
           // Without a range there's nothing to filter: say so instead of hiding it.
           <p className="text-xs text-on-surface-variant">
             {facets.salaryMax > 0
-              ? `Todas las ofertas actuales pagan Bs ${facets.salaryMax.toLocaleString('es-BO')}.`
-              : 'Sin ofertas con salario publicado.'}
+              ? t('allSameSalary', { amount: labels.number(facets.salaryMax) })
+              : t('noSalary')}
           </p>
         )}
       </Section>

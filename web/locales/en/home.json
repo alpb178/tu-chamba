@@ -1,0 +1,57 @@
+{
+  "hero": {
+    "bannerAlt": "Offer or find work — connect directly, no CV needed"
+  },
+  "catalog": {
+    "title": "Find day jobs instantly",
+    "subtitle": "Connect directly with local employers — no CV, via WhatsApp. <link>Post or offer work anywhere in Bolivia.</link>",
+    "searchPlaceholder": "Search jobs",
+    "searchLabel": "Search jobs"
+  },
+  "chips": {
+    "remove": "Remove the {label} filter",
+    "salaryFrom": "Bs {min} or more",
+    "salaryRange": "Bs {min} – {max}",
+    "clearAll": "Clear all"
+  },
+  "toolbar": {
+    "openFilters": "Open filters",
+    "filters": "Filters",
+    "count": "<b>{count}</b> <muted>{count, plural, one {job} other {jobs}}</muted>",
+    "countIn": "<b>{count}</b> <muted>{count, plural, one {job} other {jobs}} in {department}</muted>",
+    "sort": "Sort by",
+    "comfortable": "Comfortable view",
+    "compact": "Compact view",
+    "publish": "Post a job",
+    "refresh": "Refresh the list"
+  },
+  "empty": {
+    "title": "No jobs match these filters.",
+    "hint": "Try removing a filter or searching with different words.",
+    "clear": "Clear filters"
+  },
+  "list": {
+    "loadingMore": "Loading more jobs…",
+    "showing": "Showing {shown} of {total} {total, plural, one {job} other {jobs}}"
+  },
+  "drawer": {
+    "close": "Close filters",
+    "closeButton": "Close",
+    "title": "Filters",
+    "show": "Show {count} {count, plural, one {result} other {results}}"
+  },
+  "backToTop": "Back to top",
+  "pagination": {
+    "summary": "Showing <b>{from}</b> to <b>{to}</b> of <b>{total}</b> {total, plural, one {result} other {results}}",
+    "label": "Pagination",
+    "previous": "Previous page",
+    "next": "Next page",
+    "page": "Page {page}"
+  },
+  "select": {
+    "placeholder": "Select…",
+    "search": "Search…",
+    "searchLabel": "Search options",
+    "noMatches": "No matches."
+  }
+}
