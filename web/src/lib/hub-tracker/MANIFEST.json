@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "files": {
+    "HubAnalytics.tsx": "c0c3724276ec46ef7931532b29fb1091ae438ed17c202183f64a417883e79fb0",
+    "click-target.ts": "5e4a24dd4f01603a7c87410b23f076a749e68ac56b6ec5d9c812f8b91ad7abe9",
+    "client.ts": "95c3176485fafb4af782ee45f3c63ef874c428b6b523eb0d023a7620b0e324db",
+    "contract.ts": "b76166157ffbae7a33abd874ce42f9236c63b0060190cfc8d47f76d6dc6137e9",
+    "group-sites.ts": "9a05682893eb436b31a63165d62d16c9e4d260f5ba73c8ce3cae8d5b4e6def60",
+    "handler.ts": "af463cfa7be8b6088ac8ed091572494db6bafa85e07467d3919076794a2f3266",
+    "path.ts": "0fe2c9ba9b4f1588f33303e7bdcf49a0c2162271953d085570d5d5c19aad1388",
+    "user-agent.ts": "195f7e4a4090aa03d4f6036a68481079b2ee7dca300c61b3d4b30d71edb87fd3",
+    "visit-origin.ts": "0b5707d1db970ca0168d53394efba84ab698a648fa6b195d96141872842f83fe"
+  }
+}
