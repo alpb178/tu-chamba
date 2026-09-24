@@ -1,9 +1,8 @@
+// GENERATED from corpsc-hub/tracker v2.0.0. Do not edit this copy:
+// change it in corpsc-hub/tracker and run `pnpm sync <this folder>` there.
 /**
  * Where a click happened, in words the hub panel can show: the zone of the page
  * (`section`) and the name of what was clicked (`label`).
- *
- * Contract: corpsc-admin/docs/envio-de-metricas/eventos.md. This file is the
- * same in every site of the group; change it everywhere or nowhere.
  *
  * Nothing a visitor types is ever read. In private areas —an admin panel, an
  * account page— the text on screen can be someone's name or email, so there
@@ -77,8 +76,7 @@ function publicLabel(element: Element): string {
   const explicit = developerLabel(element);
   if (explicit) return explicit;
 
-  const text =
-    element instanceof HTMLInputElement ? element.value : clean(element.textContent ?? '');
+  const text = element instanceof HTMLInputElement ? element.value : element.textContent ?? '';
   return (
     clean(text) ||
     clean(element.querySelector('img[alt]')?.getAttribute('alt') ?? '') ||

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Libre_Franklin, Merriweather } from 'next/font/google';
 import { NextIntlClientProvider, type AbstractIntlMessages } from 'next-intl';
 import { AuthProvider } from '@/lib/auth';
-import { HubAnalytics } from '@/components/HubAnalytics';
+import { SiteAnalytics } from '@/components/SiteAnalytics';
 
 // Design system typefaces (editorial style ported from Iris Natural): Libre
 // Franklin for body/UI and Merriweather (serif) for editorial headings.
@@ -37,7 +37,7 @@ export function RootDocument({
         <NextIntlClientProvider {...(messages ? { messages } : {})}>
           <AuthProvider>{children}</AuthProvider>
           {/* Renders nothing: sends visits and clicks to the group hub. */}
-          <HubAnalytics />
+          <SiteAnalytics />
         </NextIntlClientProvider>
       </body>
     </html>
