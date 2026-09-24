@@ -1,8 +1,7 @@
+// GENERATED from corpsc-hub/tracker v2.0.0. Do not edit this copy:
+// change it in corpsc-hub/tracker and run `pnpm sync <this folder>` there.
 /**
  * Where this visit came from, read once, on the page the visitor lands on.
- *
- * Contract: corpsc-admin/docs/envio-de-metricas/eventos.md. This file is the
- * same in every site of the group; change it everywhere or nowhere.
  *
  * Only the referring DOMAIN leaves the browser, never the full URL: a search
  * results page or a shared link can carry the visitor's query or an id. The
@@ -23,9 +22,11 @@ export function visitOrigin(): VisitOrigin {
 
   try {
     if (document.referrer) {
-      const host = new URL(document.referrer).host.toLowerCase();
+      // `hostname`, not `host`: a port would make the hub reject the domain.
+      const host = new URL(document.referrer).hostname.toLowerCase();
+      const own = window.location.hostname.toLowerCase();
       // Coming from our own pages is navigation, not a source.
-      if (host && host !== window.location.host.toLowerCase()) origin.referrer = host;
+      if (host && withoutWww(host) !== withoutWww(own)) origin.referrer = host;
     }
   } catch {
     // A referrer that is not a URL says nothing useful.
@@ -38,4 +39,8 @@ export function visitOrigin(): VisitOrigin {
   origin.utmCampaign = utm('utm_campaign');
 
   return origin;
+}
+
+function withoutWww(host: string): string {
+  return host.replace(/^www\./, '');
 }
