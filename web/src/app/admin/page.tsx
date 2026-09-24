@@ -62,12 +62,12 @@ export default function DashboardPage() {
               href="/admin/listings"
             />
             <StatCard
-              label="Visitas al sitio (últimas 24 h)"
+              label="Páginas vistas (últimas 24 h)"
               value={stats.siteVisits.last24h}
               href="/admin/activity"
             />
             <StatCard
-              label="Visitas al sitio (últimos 7 días)"
+              label="Páginas vistas (últimos 7 días)"
               value={stats.siteVisits.last7Days}
               href="/admin/activity"
             />
@@ -76,13 +76,13 @@ export default function DashboardPage() {
           {/* Each chart also links to its series' section. */}
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <ChartCard
-              title="Visitas al sitio por día (últimos 14 días)"
+              title="Páginas vistas por día (últimos 14 días)"
               href="/admin/activity"
             >
               <DailyColumns
                 data={stats.siteVisits.byDay}
                 color={SITE_VISITS_COLOR}
-                unit="visitas"
+                unit="páginas vistas"
               />
             </ChartCard>
             <ChartCard
@@ -121,18 +121,18 @@ export default function DashboardPage() {
           </div>
 
           <ChartCard
-            title="Visitas al sitio por hora del día (últimos 7 días)"
+            title="Páginas vistas por hora del día (últimos 7 días)"
             href="/admin/activity"
           >
             <HourlyColumns
               data={stats.siteVisits.byHour}
               color={SITE_VISITS_COLOR}
-              unit="visitas"
+              unit="páginas vistas"
             />
           </ChartCard>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <ChartCard title="Visitas al sitio acumuladas" href="/admin/activity">
+            <ChartCard title="Páginas vistas acumuladas" href="/admin/activity">
               <p className="text-4xl font-bold text-brand">
                 {stats.siteVisits.total.toLocaleString('es-BO')}
               </p>
