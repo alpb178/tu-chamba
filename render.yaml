@@ -19,7 +19,7 @@ services:
     runtime: node
     plan: free
     region: oregon
-    rootDir: backend
+    rootDir: api
     # Branch Render deploys. Production lives on main (develop is merged into
     # main). Change it if your production service tracks another branch.
     branch: main
