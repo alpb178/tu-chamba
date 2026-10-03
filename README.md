@@ -4,20 +4,19 @@ Monorepo con 4 proyectos independientes que comparten la misma API REST.
 
 ```
 tu-chamba/
-  backend/   NestJS + Prisma + PostgreSQL  (API)         -> http://localhost:3001
-  web/       Next.js + Tailwind (sitio público)          -> http://localhost:3000
-  admin/     Next.js + Tailwind (panel de administración)-> http://localhost:3002
+  api/       NestJS + Prisma + PostgreSQL  (API)         -> http://localhost:3001
+  web/       Next.js + Tailwind (sitio público + panel admin en /admin) -> http://localhost:3000
   mobile/    React Native (Expo) + NativeWind (APK)
 ```
 
 ## Roles
-- **ADMIN** — gestiona usuarios y todos los anuncios (solo en el panel `admin`).
+- **ADMIN** — gestiona usuarios y todos los anuncios (solo en el panel `/admin` de `web`).
 - **EMPLEADOR** — publica anuncios de trabajo.
 - **TRABAJADOR** — busca empleos y ve detalles.
 
 ## Orden de arranque
-1. `backend` (necesita PostgreSQL). Ver [backend/README.md](backend/README.md).
-2. `web`, `admin`, `mobile` — cada uno apunta al backend vía variable de entorno.
+1. `api` (necesita PostgreSQL). Ver [api/README.md](api/README.md).
+2. `web`, `mobile` — cada uno apunta a la API vía variable de entorno.
 
 ## Sistema de diseño (compartido)
 Inspirado en los clasificados de El Deber: marca **verde** sobre fondo blanco.
