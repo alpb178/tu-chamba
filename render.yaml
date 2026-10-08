@@ -51,6 +51,12 @@ services:
         sync: false
       - key: GOOGLE_INDEXING_PRIVATE_KEY
         sync: false
+      # corpsc-hub: daily push of business metrics (sign-ups). Filled in by
+      # hand in the dashboard; without them the push is a no-op.
+      - key: HUB_URL
+        sync: false
+      - key: HUB_API_KEY
+        sync: false
       - key: NODE_VERSION
         value: "20"
       # Explicit heap cap for the build: `nest build` (tsc) needs ~350 MB
