@@ -1,5 +1,5 @@
 {
-  "name": "tu-chamba-backend",
+  "name": "tu-chamba-api",
   "version": "1.0.0",
   "description": "API de Tu Chamba (portal de empleos)",
   "scripts": {
