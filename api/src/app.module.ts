@@ -18,6 +18,7 @@ import { VisitsModule } from './visits/visits.module';
 import { AdminModule } from './admin/admin.module';
 import { ObservabilityModule } from './observability/observability.module';
 import { IndexingModule } from './indexing/indexing.module';
+import { HubModule } from './hub/hub.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { IndexingModule } from './indexing/indexing.module';
     AdminModule,
     ObservabilityModule,
     IndexingModule,
+    HubModule,
     HealthModule,
   ],
 })
