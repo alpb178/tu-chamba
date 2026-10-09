@@ -7,13 +7,32 @@ function buildService() {
 }
 
 describe('HubService.build', () => {
+  // The service issues two queries: signups-by-provider first, then the
+  // cumulative users-total snapshot. Mock them in that call order.
+  function mockQueries(
+    prisma: { $queryRawUnsafe: jest.Mock },
+    signupRows: unknown[],
+    totalRows: unknown[],
+  ) {
+    prisma.$queryRawUnsafe
+      .mockResolvedValueOnce(signupRows)
+      .mockResolvedValueOnce(totalRows);
+  }
+
   it('sends only the signups metric, split by provider, with every day in range present', async () => {
     const { service, prisma } = buildService();
-    prisma.$queryRawUnsafe.mockResolvedValue([
-      { day: '2026-03-01', provider: 'google', value: 2 },
-      { day: '2026-03-01', provider: 'email', value: 1 },
-      // 2026-03-02 has no rows at all: must still appear with zeros.
-    ]);
+    mockQueries(
+      prisma,
+      [
+        { day: '2026-03-01', provider: 'google', value: 2 },
+        { day: '2026-03-01', provider: 'email', value: 1 },
+        // 2026-03-02 has no rows at all: must still appear with zeros.
+      ],
+      [
+        { day: '2026-03-01', total: 10 },
+        { day: '2026-03-02', total: 13 },
+      ],
+    );
 
     const payload = await service.build('2026-03-01', '2026-03-02');
 
@@ -22,19 +41,27 @@ describe('HubService.build', () => {
       project: 'tu-chamba',
       timezone: 'America/La_Paz',
       range: { from: '2026-03-01', to: '2026-03-02' },
-      definitions: [{ key: 'signups', label: 'Altas', unit: 'count' }],
+      definitions: [
+        { key: 'signups', label: 'Altas', unit: 'count' },
+        {
+          key: 'users_total',
+          label: 'Usuarios registrados',
+          unit: 'count',
+          aggregation: 'last',
+        },
+      ],
     });
     expect(payload.days).toEqual([
       {
         date: '2026-03-01',
-        metrics: { signups: 3 },
+        metrics: { signups: 3, users_total: 10 },
         breakdowns: [
           { metric: 'signups', dimension: 'provider', values: { google: 2, email: 1 } },
         ],
       },
       {
         date: '2026-03-02',
-        metrics: { signups: 0 },
+        metrics: { signups: 0, users_total: 13 },
         breakdowns: [
           { metric: 'signups', dimension: 'provider', values: { google: 0, email: 0 } },
         ],
@@ -42,17 +69,59 @@ describe('HubService.build', () => {
     ]);
     // No traffic metric (visits/page_views/...) is ever declared or sent:
     // that is owned by the events beacon pipeline.
-    expect(payload.definitions).toHaveLength(1);
+    expect(payload.definitions).toHaveLength(2);
   });
 
   it('never sends a currency- or traffic-shaped definition', async () => {
     const { service, prisma } = buildService();
-    prisma.$queryRawUnsafe.mockResolvedValue([]);
+    mockQueries(prisma, [], []);
 
     const payload = await service.build('2026-03-01', '2026-03-01');
 
     const keys = payload.definitions.map((d) => d.key);
-    expect(keys).toEqual(['signups']);
+    expect(keys).toEqual(['signups', 'users_total']);
+  });
+
+  it('users_total is cumulative as of each day: users created after that day are excluded', async () => {
+    const { service, prisma } = buildService();
+    mockQueries(
+      prisma,
+      [],
+      [
+        // A user created on 2026-03-01 counts toward every day from then on;
+        // a user created on 2026-03-03 must not count on 2026-03-01 or -02.
+        { day: '2026-03-01', total: 1 },
+        { day: '2026-03-02', total: 1 },
+        { day: '2026-03-03', total: 2 },
+      ],
+    );
+
+    const payload = await service.build('2026-03-01', '2026-03-03');
+
+    expect(payload.days.map((d) => d.metrics.users_total)).toEqual([1, 1, 2]);
+    expect(payload.definitions).toContainEqual({
+      key: 'users_total',
+      label: 'Usuarios registrados',
+      unit: 'count',
+      aggregation: 'last',
+    });
+  });
+
+  it('defaults users_total to 0 for a day missing from the query result', async () => {
+    const { service, prisma } = buildService();
+    mockQueries(prisma, [], []);
+
+    const payload = await service.build('2026-03-01', '2026-03-01');
+
+    expect(payload.days).toEqual([
+      {
+        date: '2026-03-01',
+        metrics: { signups: 0, users_total: 0 },
+        breakdowns: [
+          { metric: 'signups', dimension: 'provider', values: { google: 0, email: 0 } },
+        ],
+      },
+    ]);
   });
 });
 
@@ -122,6 +191,9 @@ describe('HubService.push', () => {
     expect(Object.keys(body.definitions[0])).toEqual(
       expect.arrayContaining(['key', 'label', 'unit']),
     );
-    expect(body.definitions.map((d: { key: string }) => d.key)).toEqual(['signups']);
+    expect(body.definitions.map((d: { key: string }) => d.key)).toEqual([
+      'signups',
+      'users_total',
+    ]);
   });
 });
