@@ -19,11 +19,17 @@ interface SignupRow {
   value: number;
 }
 
-// Pushes Tu Chamba's one business metric the hub can't see from the
-// browser: sign-ups, split by how the account was created. Traffic
-// (visits/page_views/clicks) is already covered live by the events beacon
-// (HubAnalytics / /api/hub-track) and must not be re-sent here — the hub
-// replaces whatever window a push declares, so sending both would race.
+interface UsersTotalRow {
+  day: string;
+  total: number;
+}
+
+// Pushes Tu Chamba's business metrics the hub can't see from the browser:
+// daily sign-ups (split by how the account was created) and the cumulative
+// total of registered users. Traffic (visits/page_views/clicks) is already
+// covered live by the events beacon (HubAnalytics / /api/hub-track) and must
+// not be re-sent here — the hub replaces whatever window a push declares, so
+// sending both would race.
 @Injectable()
 export class HubService {
   private readonly logger = new Logger(HubService.name);
@@ -71,7 +77,10 @@ export class HubService {
   }
 
   async build(from: string, to: string) {
-    const rows = await this.signupsByProvider(from, to);
+    const [rows, totalsRows] = await Promise.all([
+      this.signupsByProvider(from, to),
+      this.usersTotalByDay(from, to),
+    ]);
 
     const byDay = new Map<string, { google: number; email: number }>();
     for (const row of rows) {
@@ -82,6 +91,9 @@ export class HubService {
       byDay.set(row.day, bucket);
     }
 
+    const totalByDay = new Map<string, number>();
+    for (const row of totalsRows) totalByDay.set(row.day, Number(row.total));
+
     // Every calendar day in the declared range gets an explicit entry, zero
     // included: the hub replaces the whole window, so a day silently missing
     // from `days` is indistinguishable from "delete this day's data".
@@ -89,7 +101,13 @@ export class HubService {
       const split = byDay.get(date) ?? { google: 0, email: 0 };
       return {
         date,
-        metrics: { signups: split.google + split.email },
+        metrics: {
+          signups: split.google + split.email,
+          // Cumulative snapshot, not this day's new signups (those are
+          // `signups` above) — `aggregation: 'last'` tells the hub to keep
+          // only the most recent day's value instead of summing the window.
+          users_total: totalByDay.get(date) ?? 0,
+        },
         breakdowns: [
           {
             metric: 'signups',
@@ -109,7 +127,15 @@ export class HubService {
       generatedAt: new Date().toISOString(),
       // `range` manda: el hub reemplaza exactamente este periodo.
       range: { from, to },
-      definitions: [{ key: 'signups', label: 'Altas', unit: 'count' }],
+      definitions: [
+        { key: 'signups', label: 'Altas', unit: 'count' },
+        {
+          key: 'users_total',
+          label: 'Usuarios registrados',
+          unit: 'count',
+          aggregation: 'last',
+        },
+      ],
       days,
     };
   }
@@ -134,6 +160,31 @@ export class HubService {
          FROM "User"
         WHERE ("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE $3)::date BETWEEN $1::date AND $2::date
         GROUP BY 1, 2 ORDER BY 1, 2`,
+      from,
+      to,
+      TZ,
+    );
+  }
+
+  /**
+   * Total cumulative registered users as of each local day in the window
+   * (a snapshot, not that day's new signups — see `signupsByProvider`).
+   * `aggregation: 'last'` in the push contract exists for exactly this: the
+   * hub keeps only the most recent day's value instead of summing the window.
+   *
+   * A correlated subquery per day is cheap here because the window is only
+   * `RESEND_DAYS` (3) days wide. The table name is concatenated because
+   * Postgres doesn't allow parameters for identifiers; only the literal
+   * written in this file is used — nothing from a request reaches this query.
+   */
+  private usersTotalByDay(from: string, to: string): Promise<UsersTotalRow[]> {
+    return this.prisma.$queryRawUnsafe<UsersTotalRow[]>(
+      `SELECT to_char(gs.day, 'YYYY-MM-DD') AS day,
+              (SELECT count(*)::int FROM "User" u
+                WHERE (u."createdAt" AT TIME ZONE 'UTC' AT TIME ZONE $3)::date <= gs.day
+              ) AS total
+         FROM generate_series($1::date, $2::date, '1 day') AS gs(day)
+        ORDER BY 1`,
       from,
       to,
       TZ,
